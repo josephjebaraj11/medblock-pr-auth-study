@@ -1,0 +1,1250 @@
+<title>Anatomy of Medblocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+  :root {
+    --paper:      #EEF3F4;
+    --surface:    #FFFFFF;
+    --sunken:     #E3EBEC;
+    --ink:        #101A1E;
+    --ink-soft:   #4E5F66;
+    --ink-faint:  #7C8C92;
+    --rule:       #CDD8DB;
+    --rule-soft:  #E1E9EB;
+    --accent:     #0B6A6F;
+    --accent-ink: #084C50;
+    --accent-wash:#DCEBEB;
+    --ok:         #1E7440;
+    --warn:       #8E5300;
+    --crit:       #9E2420;
+    --neutral:    #5A6B72;
+
+    --sans: "IBM Plex Sans Condensed", "Helvetica Neue", Arial, sans-serif;
+    --serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:      #0D1416;
+      --surface:    #141E21;
+      --sunken:     #1A2528;
+      --ink:        #E2EAEC;
+      --ink-soft:   #9AAAB0;
+      --ink-faint:  #6E8086;
+      --rule:       #263539;
+      --rule-soft:  #1E2C30;
+      --accent:     #4FC9C6;
+      --accent-ink: #8EE0DD;
+      --accent-wash:#12302F;
+      --ok:         #52C07C;
+      --warn:       #D79A3C;
+      --crit:       #E0736C;
+      --neutral:    #8A9BA2;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:      #0D1416;
+    --surface:    #141E21;
+    --sunken:     #1A2528;
+    --ink:        #E2EAEC;
+    --ink-soft:   #9AAAB0;
+    --ink-faint:  #6E8086;
+    --rule:       #263539;
+    --rule-soft:  #1E2C30;
+    --accent:     #4FC9C6;
+    --accent-ink: #8EE0DD;
+    --accent-wash:#12302F;
+    --ok:         #52C07C;
+    --warn:       #D79A3C;
+    --crit:       #E0736C;
+    --neutral:    #8A9BA2;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-decoration-color: var(--rule); text-underline-offset: 3px; }
+  a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  /* ---------- shell ---------- */
+  .sheet { max-width: 1240px; margin: 0 auto; padding: 0 20px 80px; }
+  .layout { display: grid; gap: 48px; }
+  @media (min-width: 1080px) {
+    .layout { grid-template-columns: 196px minmax(0, 1fr); align-items: start; }
+  }
+  .doc { min-width: 0; display: flex; flex-direction: column; gap: 56px; }
+
+  /* ---------- masthead ---------- */
+  .masthead { border-bottom: 2px solid var(--ink); padding: 44px 0 22px; margin-bottom: 44px; }
+  .stamp {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-ink); display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 26px;
+  }
+  .stamp b { font-weight: 500; color: var(--ink-faint); }
+  h1 {
+    font-family: var(--sans); font-weight: 700; font-size: clamp(2.6rem, 7.4vw, 4.6rem);
+    line-height: .96; letter-spacing: -.02em; margin: 0 0 18px; text-wrap: balance;
+  }
+  .lede { font-size: 1.28rem; line-height: 1.5; color: var(--ink-soft); max-width: 40ch; margin: 0; }
+  .filed {
+    margin-top: 30px; display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); grid-template-columns: repeat(auto-fit, minmax(168px, 1fr));
+  }
+  .filed div { background: var(--surface); padding: 12px 14px; }
+  .filed dt {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 5px;
+  }
+  .filed dd { margin: 0; font-family: var(--sans); font-size: .96rem; font-weight: 500; line-height: 1.35; }
+
+  /* ---------- contents rail ---------- */
+  .rail { font-family: var(--sans); font-size: .93rem; }
+  @media (min-width: 1080px) { .rail { position: sticky; top: 24px; } }
+  .rail h2 {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 1px solid var(--rule);
+    font-weight: 400;
+  }
+  .rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+  .rail a { display: block; padding: 3px 0; color: var(--ink-soft); text-decoration: none; border-left: 2px solid transparent; padding-left: 10px; margin-left: -12px; }
+  .rail a:hover { color: var(--accent-ink); border-left-color: var(--accent); }
+
+  /* ---------- sections ---------- */
+  section { scroll-margin-top: 20px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 10px; display: flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  h2.head {
+    font-family: var(--sans); font-weight: 600; font-size: clamp(1.7rem, 3.4vw, 2.3rem);
+    line-height: 1.08; letter-spacing: -.012em; margin: 0 0 18px; text-wrap: balance; max-width: 28ch;
+  }
+  h3 {
+    font-family: var(--sans); font-weight: 600; font-size: 1.16rem; letter-spacing: -.004em;
+    margin: 36px 0 10px; text-wrap: balance;
+  }
+  h4 {
+    font-family: var(--mono); font-weight: 500; font-size: 11px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 8px;
+  }
+  .doc p { max-width: 66ch; margin: 0 0 16px; }
+  .doc > section > p:last-child { margin-bottom: 0; }
+  ul.body, ol.body { max-width: 66ch; margin: 0 0 16px; padding-left: 22px; }
+  ul.body li, ol.body li { margin-bottom: 7px; }
+  ul.body li::marker { color: var(--accent); }
+  strong { font-weight: 600; }
+  em.term { font-style: normal; font-family: var(--mono); font-size: .88em; color: var(--accent-ink); }
+
+  /* ---------- figures ---------- */
+  figure { margin: 30px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 20px 18px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 620px; max-width: 100%; height: auto; color: var(--ink); }
+  figcaption {
+    font-family: var(--sans); font-size: .93rem; color: var(--ink-soft); margin-top: 11px;
+    padding-left: 12px; border-left: 2px solid var(--accent); max-width: 70ch; line-height: 1.45;
+  }
+  .svg-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .svg-box-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .svg-box-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.6; }
+  .svg-t { font-family: var(--sans); font-size: 13px; font-weight: 500; fill: currentColor; }
+  .svg-t-sm { font-family: var(--sans); font-size: 11.5px; fill: var(--ink-soft); }
+  .svg-l { font-family: var(--mono); font-size: 10.5px; fill: var(--accent-ink); }
+  .svg-cap { font-family: var(--mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; fill: var(--ink-faint); }
+  .svg-line { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .svg-line-hot { stroke: var(--accent); stroke-width: 1.7; fill: none; }
+  .svg-life { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 3 4; }
+  .svg-patch { fill: var(--surface); }
+
+  /* ---------- tables ---------- */
+  .tbl-wrap { overflow-x: auto; margin: 26px 0; border: 1px solid var(--rule); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; font-family: var(--sans); font-size: .95rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.42; }
+  thead th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 400; border-bottom: 1px solid var(--rule); background: var(--sunken);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td code, th code, p code, li code { font-family: var(--mono); font-size: .86em; color: var(--accent-ink); }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10.5px; letter-spacing: .04em;
+    padding: 2px 8px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .p-ok { color: var(--ok); } .p-warn { color: var(--warn); }
+  .p-crit { color: var(--crit); } .p-neu { color: var(--neutral); }
+
+  /* ---------- code ---------- */
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.62; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 2px solid var(--accent);
+    padding: 16px 18px; overflow-x: auto; margin: 20px 0; color: var(--ink);
+  }
+  pre .c { color: var(--ink-faint); }
+  pre .k { color: var(--accent-ink); }
+  .codelabel {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 24px 0 -12px;
+  }
+
+  /* ---------- surfaces grid ---------- */
+  .doors { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 26px 0; }
+  @media (min-width: 680px) { .doors { grid-template-columns: 1fr 1fr; } }
+  .door { background: var(--surface); padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+  .door-k { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: var(--accent-ink); }
+  .door h3 { margin: 0; font-size: 1.1rem; }
+  .door p { margin: 0; font-size: .97rem; color: var(--ink-soft); line-height: 1.5; max-width: none; }
+  .door dl { margin: 6px 0 0; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-family: var(--sans); font-size: .9rem; }
+  .door dt { font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px; }
+  .door dd { margin: 0; }
+
+  /* ---------- callout ---------- */
+  .callout {
+    background: var(--surface); border: 1px solid var(--rule); border-top: 2px solid var(--accent);
+    padding: 18px 20px; margin: 26px 0;
+  }
+  .callout h4 { margin-top: 0; color: var(--accent-ink); }
+  .callout p { margin-bottom: 0; }
+  .callout p + p { margin-top: 12px; }
+
+  /* ---------- phases ---------- */
+  .phases { display: flex; flex-direction: column; margin: 26px 0; border-top: 1px solid var(--rule); }
+  .phase { display: grid; gap: 4px 20px; padding: 20px 0; border-bottom: 1px solid var(--rule); }
+  @media (min-width: 620px) { .phase { grid-template-columns: 92px minmax(0,1fr); } }
+  .phase-n {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em; color: var(--accent-ink);
+    text-transform: uppercase; padding-top: 4px;
+  }
+  .phase-n span { display: block; color: var(--ink-faint); font-size: 10px; margin-top: 3px; letter-spacing: .06em; }
+  .phase h3 { margin: 0 0 8px; font-size: 1.08rem; }
+  .phase p { margin: 0 0 10px; }
+  .phase p:last-child, .phase ul:last-child { margin-bottom: 0; }
+
+  /* ---------- verdict ---------- */
+  .verdict {
+    background: var(--ink); color: var(--paper); padding: 30px 28px; margin-top: 8px;
+  }
+  .verdict h3 { color: var(--paper); margin: 0 0 14px; font-size: 1.45rem; }
+  .verdict p { color: var(--paper); opacity: .84; margin-bottom: 12px; max-width: 62ch; }
+  .verdict p:last-child { margin-bottom: 0; }
+  .verdict strong { opacity: 1; }
+  .verdict code { font-family: var(--mono); font-size: .86em; color: var(--paper); }
+
+  footer {
+    margin-top: 64px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; line-height: 1.8; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-soft); }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="sheet">
+
+  <header class="masthead">
+    <div class="stamp">
+      <span><b>Subject</b> medblocks.com/docs</span>
+      <span><b>Type</b> Technical case study</span>
+      <span><b>Read</b> 25 min</span>
+    </div>
+    <h1>Anatomy of<br>Medblocks</h1>
+    <p class="lede">How one platform turned the messiest problem in health tech — getting a patient’s records out of a hospital — into four SDK calls. And what it would actually take to build the same thing.</p>
+
+    <dl class="filed">
+      <div><dt>What it is</dt><dd>Healthcare data integration middleware</dd></div>
+      <div><dt>Core bet</dt><dd>Regulation already opened the APIs</dd></div>
+      <div><dt>Surfaces covered</dt><dd>Patient · Clinician · Backend · Network</dd></div>
+      <div><dt>Entry price</dt><dd>Free to 1,000 patients · $60k/yr</dd></div>
+      <div><dt>Replication estimate</dt><dd>9–15 months, 3–5 engineers</dd></div>
+    </dl>
+  </header>
+
+  <div class="layout">
+    <nav class="rail" aria-label="Contents">
+      <h2>Contents</h2>
+      <ol>
+        <li><a href="#thesis">1 · The thesis</a></li>
+        <li><a href="#boundary">2 · Where it sits</a></li>
+        <li><a href="#doors">3 · The four doors</a></li>
+        <li><a href="#handshake">4 · The handshake</a></li>
+        <li><a href="#model">5 · The data model</a></li>
+        <li><a href="#meaning">6 · Raw FHIR → meaning</a></li>
+        <li><a href="#dataout">7 · Getting data out</a></li>
+        <li><a href="#ops">8 · Keeping it alive</a></li>
+        <li><a href="#money">9 · The economics</a></li>
+        <li><a href="#blueprint">10 · Replication blueprint</a></li>
+        <li><a href="#stack">11 · Concrete stack</a></li>
+        <li><a href="#hard">12 · What’s actually hard</a></li>
+        <li><a href="#verdict">13 · Verdict</a></li>
+      </ol>
+    </nav>
+
+    <main class="doc">
+
+      <!-- ============ 1 ============ -->
+      <section id="thesis">
+        <p class="eyebrow">The thesis</p>
+        <h2 class="head">They are not selling access. They are selling the plumbing on top of access that already exists.</h2>
+
+        <p>For twenty years, getting clinical data out of a hospital meant signing a contract with the hospital, or paying a broker who had. Both routes took months and cost a fortune. Medblocks’ founding observation is that this is no longer technically true: regulation now <em>requires</em> US health systems and payers to expose standardised FHIR APIs, and requires them to let a patient authorise any app they choose.</p>
+
+        <p>The docs state the position bluntly — <strong>“A great healthcare product that can’t integrate is just a demo.”</strong> Traditional vendors, they argue, function as <em>access brokers</em>: they own the relationship, they charge for it, and they lock you in. Medblocks instead hands you the machinery to walk through the doors regulation already opened, using <strong>your own credentials</strong> and <strong>your own brand</strong>. They claim this comes out roughly <span class="num">10–12×</span> cheaper than a bundled integration deal.</p>
+
+        <p>Three consequences fall out of that single decision, and they explain nearly every design choice in the product:</p>
+
+        <ul class="body">
+          <li><strong>No sales cycle gates the first integration.</strong> If your product has a relationship with the <em>patient</em>, the patient can authorise you today. No hospital signature required. The docs call this “the fastest way to launch.”</li>
+          <li><strong>They never hold the credentials.</strong> You register your app with Epic; you own the OAuth client. The patient approves <em>your</em> app on the consent screen. Medblocks is infrastructure behind it, not a party to it.</li>
+          <li><strong>Their real product is everything after the token.</strong> Anyone can do one OAuth dance. The hard, unglamorous, permanent work is refreshing tokens forever, crawling paginated FHIR for years, reconciling the same patient across five systems, and making a lab value mean the same thing regardless of who sent it.</li>
+        </ul>
+
+        <div class="callout">
+          <h4>The uncomfortable part they lead with</h4>
+          <p>Most integration vendors treat data reconciliation as a data-quality footnote. Medblocks frames it as <strong>a clinical safety problem</strong>: duplicate patient records and inconsistent clinical coding can harm a patient directly. That framing is why normalisation and master data management sit in the middle of their architecture rather than bolted on at the edge.</p>
+        </div>
+      </section>
+
+      <!-- ============ 2 ============ -->
+      <section id="boundary">
+        <p class="eyebrow">Mechanism · 01</p>
+        <h2 class="head">Where the platform sits, and what it absorbs</h2>
+
+        <p>Medblocks is middleware. It sits between your product and every system that holds patient data, and it draws a very specific line about what stays yours. Read the diagram as a boundary negotiation: everything in the middle column is work you are choosing not to do.</p>
+
+        <figure>
+          <div class="figbox">
+            <svg viewBox="0 0 900 440" role="img" aria-label="Medblocks sits between your product and healthcare sources, absorbing the hosted consent UI, token vault and refresh, the pull engine, normalisation and storage, and fan-out; you keep patient identity, your UI and your own source credentials.">
+              <defs>
+                <marker id="d1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                </marker>
+                <marker id="d1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+                </marker>
+              </defs>
+
+              <text class="svg-cap" x="24" y="40">Yours</text>
+              <text class="svg-cap" x="252" y="40">Medblocks</text>
+              <text class="svg-cap" x="700" y="40">Not yours</text>
+
+              <rect class="svg-box" x="24" y="120" width="172" height="150"/>
+              <text class="svg-t" x="110" y="168" text-anchor="middle">Your product</text>
+              <text class="svg-t-sm" x="110" y="190" text-anchor="middle">patient identity</text>
+              <text class="svg-t-sm" x="110" y="208" text-anchor="middle">your UI + brand</text>
+              <text class="svg-t-sm" x="110" y="226" text-anchor="middle">your OAuth client</text>
+
+              <rect class="svg-box-soft" x="250" y="56" width="386" height="324"/>
+              <rect class="svg-box-hot" x="266" y="76" width="354" height="48"/>
+              <text class="svg-t" x="443" y="105" text-anchor="middle">Hosted consent UI + facility picker</text>
+              <rect class="svg-box-hot" x="266" y="136" width="354" height="48"/>
+              <text class="svg-t" x="443" y="165" text-anchor="middle">Token vault + proactive refresh</text>
+              <rect class="svg-box-hot" x="266" y="196" width="354" height="48"/>
+              <text class="svg-t" x="443" y="225" text-anchor="middle">Pull engine — FHIR crawl, paging, refs</text>
+              <rect class="svg-box-hot" x="266" y="256" width="354" height="48"/>
+              <text class="svg-t" x="443" y="285" text-anchor="middle">Normalise · de-duplicate · store</text>
+              <rect class="svg-box-hot" x="266" y="316" width="354" height="48"/>
+              <text class="svg-t" x="443" y="345" text-anchor="middle">Fan-out — API · exports · webhooks</text>
+
+              <rect class="svg-box" x="690" y="120" width="186" height="150"/>
+              <text class="svg-t" x="783" y="160" text-anchor="middle">Epic · Oracle Health</text>
+              <text class="svg-t" x="783" y="180" text-anchor="middle">athenahealth · Meditech</text>
+              <text class="svg-t" x="783" y="200" text-anchor="middle">eClinicalWorks</text>
+              <text class="svg-t-sm" x="783" y="222" text-anchor="middle">payers · CMS Blue Button</text>
+              <text class="svg-t-sm" x="783" y="242" text-anchor="middle">TEFCA networks · devices</text>
+
+              <line class="svg-line" x1="196" y1="152" x2="246" y2="152" marker-end="url(#d1a)"/>
+              <text class="svg-l" x="221" y="142" text-anchor="middle">start</text>
+              <line class="svg-line" x1="246" y1="238" x2="196" y2="238" marker-end="url(#d1a)"/>
+              <text class="svg-l" x="221" y="256" text-anchor="middle">read</text>
+
+              <line class="svg-line" x1="636" y1="152" x2="686" y2="152" marker-end="url(#d1a)"/>
+              <text class="svg-l" x="661" y="142" text-anchor="middle">auth</text>
+              <line class="svg-line" x1="686" y1="238" x2="636" y2="238" marker-end="url(#d1a)"/>
+              <text class="svg-l" x="661" y="256" text-anchor="middle">FHIR</text>
+
+              <text class="svg-l" x="24" y="410">You keep the customer relationship.</text>
+              <text class="svg-l" x="24" y="426">They keep the vendor dialects.</text>
+            </svg>
+          </div>
+          <figcaption><strong>The boundary.</strong> You hand over one call and a patient id; you get back records and events. The five bands in the middle are the parts that never stop needing maintenance — and the reason the platform exists.</figcaption>
+        </figure>
+
+        <p>The docs reduce this to two nouns you will see on every page, so it is worth fixing them now:</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Noun</th><th>Definition from the docs</th><th>In practice</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Source</strong></td>
+                <td>A catalog entry for a system Medblocks has already integrated — Epic, Oracle Health, athenahealth, eClinicalWorks, Meditech, CMS Blue Button, payer APIs, networks.</td>
+                <td>Exists <em>before</em> anyone authorises anything. Carries display name, logo, portal URL, FHIR endpoint, vendor type, setup requirements.</td>
+              </tr>
+              <tr>
+                <td><strong>Connection</strong></td>
+                <td>The live, authorised link between your app and one source. “A connection exists after authorization.”</td>
+                <td>One per relationship — not one enterprise contract covering everything. Has a lifecycle you must handle.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>And the pipeline is five stages, in this order: <strong>identify a source</strong> you can legitimately reach → <strong>establish a connection</strong> once authorised → <strong>pull</strong> records into the platform → <strong>monitor</strong> via webhooks and dashboard → <strong>export</strong> onward.</p>
+      </section>
+
+      <!-- ============ 3 ============ -->
+      <section id="doors">
+        <p class="eyebrow">Mechanism · 02</p>
+        <h2 class="head">Four doors into healthcare, and who holds each key</h2>
+
+        <p>This is the most useful idea in the whole documentation set, and it is almost entirely non-technical. There are four legitimate ways to reach healthcare data, they differ by <em>who can authorise you</em>, and choosing the wrong one is how integration projects die. Medblocks positions itself as the only vendor spanning all four plus the data layer beneath them.</p>
+
+        <div class="doors">
+          <article class="door">
+            <p class="door-k">Door 1 · the patient authorises</p>
+            <h3>Patient Access</h3>
+            <p>The patient signs into their own portal — MyChart and its equivalents — and approves your app. This unlocks their EHR records, insurance data, and other patient-controlled sources.</p>
+            <dl>
+              <dt>Protocol</dt><dd>SMART on FHIR, OAuth 2.0 authorization code</dd>
+              <dt>Gate</dt><dd>You have a direct relationship with the patient</dd>
+              <dt>Speed</dt><dd>Fastest — no hospital contract at all</dd>
+            </dl>
+          </article>
+          <article class="door">
+            <p class="door-k">Door 2 · the provider org enables you</p>
+            <h3>Clinician Workflow</h3>
+            <p>Your app appears inside the EHR. <strong>SMART App Launch</strong> opens your full application with patient and user context pre-loaded; <strong>CDS Hooks</strong> returns cards at moments like opening a chart or placing an order.</p>
+            <dl>
+              <dt>Protocol</dt><dd>SMART App Launch · CDS Hooks discovery</dd>
+              <dt>Gate</dt><dd>An EHR administrator registers you</dd>
+              <dt>Why</dt><dd>“About usage, not just data” — puts you where the work happens</dd>
+            </dl>
+          </article>
+          <article class="door">
+            <p class="door-k">Door 3 · the org authorises your server</p>
+            <h3>Backend</h3>
+            <p>Server-to-server movement with no human in the loop. Scheduled, organisation-scoped syncs for cohort analysis, operational reporting and continuous background updates.</p>
+            <dl>
+              <dt>Protocol</dt><dd>SMART Backend Services · FHIR Bulk Data</dd>
+              <dt>Gate</dt><dd>Organisation-level authorisation</dd>
+              <dt>Shape</dt><dd>Batch, not interactive</dd>
+            </dl>
+          </article>
+          <article class="door">
+            <p class="door-k">Door 4 · a treatment relationship unlocks it</p>
+            <h3>Network</h3>
+            <p>Reach records from organisations you have no direct integration with, via TEFCA and CMS-aligned exchange networks. The docs are explicit that this <em>“requires clinical context and permitted purpose”</em> and is not a workaround for the relationship requirement.</p>
+            <dl>
+              <dt>Protocol</dt><dd>TEFCA / QHIN exchange</dd>
+              <dt>Gate</dt><dd>A genuine treatment relationship</dd>
+              <dt>Use</dt><dd>Care coordination across networks</dd>
+            </dl>
+          </article>
+        </div>
+
+        <div class="callout">
+          <h4>Why this matters more than the code</h4>
+          <p>Every technical decision downstream — which OAuth flow, whose credentials, what scopes, which legal agreement — is determined by which door you walked through. If you are replicating this, <strong>pick one door and finish it</strong> before opening a second. The four are not variations on a theme; they are four different products sharing a storage layer.</p>
+        </div>
+      </section>
+
+      <!-- ============ 4 ============ -->
+      <section id="handshake">
+        <p class="eyebrow">Mechanism · 03</p>
+        <h2 class="head">The handshake, step by step</h2>
+
+        <p>Door 1 is the one the docs teach first, so it is the one to understand in full. Below is the complete round trip, from a patient tapping a button to your server reading FHIR resources. Note where the work is <em>asynchronous</em> — this is the single most common thing teams get wrong.</p>
+
+        <figure>
+          <div class="figbox">
+            <svg viewBox="0 0 900 486" role="img" aria-label="Sequence diagram of the patient access flow: the patient starts in your app, your server calls patientSession.init, Medblocks serves a hosted picker and consent screen, the patient signs in at the EHR portal, the portal returns an auth code that Medblocks exchanges for tokens, the patient is redirected to your return URL, Medblocks crawls FHIR in the background, sends a records.sync.completed webhook, and your app then reads records.">
+              <defs>
+                <marker id="d2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                </marker>
+              </defs>
+
+              <text class="svg-t" x="80" y="30" text-anchor="middle">Patient</text>
+              <text class="svg-t" x="300" y="30" text-anchor="middle">Your server</text>
+              <text class="svg-t" x="540" y="30" text-anchor="middle">Medblocks</text>
+              <text class="svg-t" x="790" y="30" text-anchor="middle">EHR portal</text>
+
+              <line class="svg-life" x1="80" y1="44" x2="80" y2="446"/>
+              <line class="svg-life" x1="300" y1="44" x2="300" y2="446"/>
+              <line class="svg-life" x1="540" y1="44" x2="540" y2="446"/>
+              <line class="svg-life" x1="790" y1="44" x2="790" y2="446"/>
+
+              <line class="svg-line" x1="80" y1="86" x2="296" y2="86" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="120" y="66" width="136" height="14"/>
+              <text class="svg-l" x="188" y="78" text-anchor="middle">“Connect my records”</text>
+
+              <line class="svg-line" x1="300" y1="122" x2="536" y2="122" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="348" y="102" width="144" height="14"/>
+              <text class="svg-l" x="420" y="114" text-anchor="middle">patientSession.init()</text>
+
+              <line class="svg-line" x1="540" y1="158" x2="84" y2="158" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="208" y="138" width="204" height="14"/>
+              <text class="svg-l" x="310" y="150" text-anchor="middle">hosted picker + consent screen</text>
+
+              <line class="svg-line" x1="80" y1="194" x2="786" y2="194" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="322" y="174" width="226" height="14"/>
+              <text class="svg-l" x="435" y="186" text-anchor="middle">signs in, approves your app</text>
+
+              <line class="svg-line" x1="790" y1="230" x2="544" y2="230" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="604" y="210" width="122" height="14"/>
+              <text class="svg-l" x="665" y="222" text-anchor="middle">auth code → tokens</text>
+
+              <line class="svg-line-hot" x1="540" y1="266" x2="304" y2="266" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="350" y="246" width="140" height="14"/>
+              <text class="svg-l" x="420" y="258" text-anchor="middle">redirect → return_url</text>
+
+              <line class="svg-line" x1="540" y1="310" x2="786" y2="310" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="592" y="290" width="146" height="14"/>
+              <text class="svg-l" x="665" y="302" text-anchor="middle">background FHIR crawl</text>
+
+              <line class="svg-line" x1="790" y1="346" x2="544" y2="346" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="608" y="326" width="114" height="14"/>
+              <text class="svg-l" x="665" y="338" text-anchor="middle">paged resources</text>
+
+              <line class="svg-line-hot" x1="540" y1="386" x2="304" y2="386" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="344" y="366" width="152" height="14"/>
+              <text class="svg-l" x="420" y="378" text-anchor="middle">records.sync.completed</text>
+
+              <line class="svg-line" x1="300" y1="422" x2="536" y2="422" marker-end="url(#d2a)"/>
+              <rect class="svg-patch" x="334" y="402" width="172" height="14"/>
+              <text class="svg-l" x="420" y="414" text-anchor="middle">GET /patients/{id}/records</text>
+
+              <text class="svg-cap" x="80" y="472">Two teal arrows = the two moments your backend must handle</text>
+            </svg>
+          </div>
+          <figcaption><strong>The trap is between the two teal arrows.</strong> The redirect to <code>return_url</code> means <em>authorisation finished</em>. It does <strong>not</strong> mean records exist. The docs say it outright: “A completed browser flow means access was granted or rejected; it does not mean every record is already available.” Records arrive later, announced by a webhook.</figcaption>
+        </figure>
+
+        <h3>What that looks like in code</h3>
+        <p>The whole flow is four SDK calls. This is verbatim from their quickstart, trimmed to the essential path.</p>
+
+        <p class="codelabel">Install and initialise · src/medblocks.ts</p>
+<pre><span class="c">// npm install medblocks   (pnpm / yarn / bun all supported)</span>
+<span class="c">// .env →  MEDBLOCKS_API_KEY="mb_sk_live_..."</span>
+
+<span class="k">import</span> { Medblocks } <span class="k">from</span> "medblocks";
+
+<span class="k">const</span> apiKey = process.env.MEDBLOCKS_API_KEY;
+<span class="k">if</span> (!apiKey) <span class="k">throw new</span> Error("MEDBLOCKS_API_KEY is not configured");
+
+<span class="k">export const</span> mb = <span class="k">new</span> Medblocks(apiKey);</pre>
+
+        <p class="codelabel">Step 1 — send the patient to the hosted flow</p>
+<pre><span class="k">const</span> session = <span class="k">await</span> mb.patientSession.init({
+  patient_id: "demo-patient",                      <span class="c">// YOUR id for this person</span>
+  return_url: "https://app.example.com/connected", <span class="c">// must be HTTPS in prod</span>
+  return_button_label: "Back to Acme Health",      <span class="c">// your brand, not theirs</span>
+});
+
+res.redirect(session.url);</pre>
+
+        <p class="codelabel">Step 2 — handle the return, then verify server-side</p>
+<pre><span class="k">import</span> { parseReturnUrl } <span class="k">from</span> "medblocks";
+
+<span class="k">const</span> result = parseReturnUrl(<span class="k">new</span> URL(req.url, origin).searchParams);
+<span class="k">if</span> (!result) <span class="k">return</span> res.status(400).send("Not a return URL");
+
+<span class="c">// Treat the return URL as UI state only. Confirm with a server-side read.</span>
+<span class="k">const</span> connections = <span class="k">await</span> mb.patients.getConnections(result.patient_id, {
+  hydrate: <span class="k">true</span>,
+});
+<span class="k">const</span> facilities = connections.map((c) =&gt; c.name).join(", ");</pre>
+
+        <p class="codelabel">Step 3 — read the records once the pull lands</p>
+<pre><span class="k">const</span> page = <span class="k">await</span> mb.patients.records(patientId, { count: 100 });
+<span class="c">// → GET /patients/{id}/records — paginated list of latest stored resources</span>
+
+<span class="k">for</span> (<span class="k">const</span> item <span class="k">of</span> page.data) {
+  console.log(item.resource.resourceType, item.resource.id);
+}</pre>
+
+        <p>That is the entire integration. The remaining <span class="num">95%</span> of the documentation is about the parts that go wrong afterwards — which is exactly where the real engineering is.</p>
+      </section>
+
+      <!-- ============ 5 ============ -->
+      <section id="model">
+        <p class="eyebrow">Mechanism · 04</p>
+        <h2 class="head">The data model, and the state machine you must respect</h2>
+
+        <p>A connection is not a boolean. It is a long-lived credential that decays, and the docs give a firm instruction about it: <strong>“Your app should act on connection state, not just on whether a browser flow finished.”</strong> Here are the states they define and what each one obliges you to do.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>State</th><th>Meaning</th><th>What your app must do</th></tr></thead>
+            <tbody>
+              <tr><td><span class="pill p-ok">active</span></td><td>Access functions and records flow normally.</td><td>Nothing. Show the facility as connected.</td></tr>
+              <tr><td><span class="pill p-crit">failed</span></td><td>Authorization did not complete successfully.</td><td>Offer a retry. Never show a half-connected state.</td></tr>
+              <tr><td><span class="pill p-warn">refresh_failed</span></td><td>Previously working access; token refresh now fails.</td><td>Prompt a reconnect. This is the state most teams forget.</td></tr>
+              <tr><td><span class="pill p-neu">expired</span></td><td>Access is no longer usable.</td><td>Treat as disconnected; stop promising fresh data.</td></tr>
+              <tr><td><span class="pill p-neu">disconnected</span></td><td>Access was revoked for your workspace — by you or by the patient.</td><td>Honour it immediately. Consider your retention policy.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <figure>
+          <div class="figbox">
+            <svg viewBox="0 0 900 358" role="img" aria-label="State machine: authorizing leads either to failed on denial or to active when tokens are stored. From active, access can break three ways — refresh_failed when the stored refresh token is rejected, expired when access is no longer usable, or disconnected when revoked. Any of these requires the patient to re-authorize, returning to authorizing.">
+              <defs>
+                <marker id="d3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                </marker>
+                <marker id="d3b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+                </marker>
+              </defs>
+
+              <rect class="svg-box" x="20" y="120" width="160" height="48"/>
+              <text class="svg-t" x="100" y="150" text-anchor="middle">authorizing</text>
+
+              <rect class="svg-box" x="330" y="30" width="150" height="44"/>
+              <text class="svg-t" x="405" y="58" text-anchor="middle">failed</text>
+
+              <rect class="svg-box-hot" x="330" y="120" width="150" height="48"/>
+              <text class="svg-t" x="405" y="150" text-anchor="middle">active</text>
+
+              <path class="svg-line" d="M100,116 L100,58 L326,58" marker-end="url(#d3a)"/>
+              <rect class="svg-patch" x="120" y="42" width="190" height="14"/>
+              <text class="svg-l" x="215" y="54" text-anchor="middle">consent denied · oauth_error</text>
+
+              <line class="svg-line-hot" x1="180" y1="150" x2="326" y2="150" marker-end="url(#d3b)"/>
+              <rect class="svg-patch" x="202" y="134" width="102" height="14"/>
+              <text class="svg-l" x="253" y="146" text-anchor="middle">tokens stored</text>
+
+              <line class="svg-line" x1="405" y1="168" x2="405" y2="221" marker-end="url(#d3a)"/>
+              <text class="svg-l" x="418" y="200">when access breaks:</text>
+
+              <line class="svg-line" x1="255" y1="225" x2="735" y2="225"/>
+              <line class="svg-line" x1="255" y1="225" x2="255" y2="246" marker-end="url(#d3a)"/>
+              <line class="svg-line" x1="495" y1="225" x2="495" y2="246" marker-end="url(#d3a)"/>
+              <line class="svg-line" x1="735" y1="225" x2="735" y2="246" marker-end="url(#d3a)"/>
+
+              <rect class="svg-box" x="150" y="250" width="210" height="58"/>
+              <text class="svg-t" x="255" y="274" text-anchor="middle">refresh_failed</text>
+              <text class="svg-t-sm" x="255" y="294" text-anchor="middle">refresh token rejected</text>
+
+              <rect class="svg-box" x="390" y="250" width="210" height="58"/>
+              <text class="svg-t" x="495" y="274" text-anchor="middle">expired</text>
+              <text class="svg-t-sm" x="495" y="294" text-anchor="middle">no longer usable</text>
+
+              <rect class="svg-box" x="630" y="250" width="210" height="58"/>
+              <text class="svg-t" x="735" y="274" text-anchor="middle">disconnected</text>
+              <text class="svg-t-sm" x="735" y="294" text-anchor="middle">revoked by you or patient</text>
+
+              <path class="svg-line" d="M146,279 L60,279 L60,172" marker-end="url(#d3a)" stroke-dasharray="5 4"/>
+              <text class="svg-l" x="68" y="216">reconnect</text>
+            </svg>
+          </div>
+          <figcaption><strong>Only one state delivers records.</strong> Three different failure modes collapse into the same user-facing need — ask the patient to reconnect — but they have different causes, and the platform reports them separately so you can tell a revocation from an outage.</figcaption>
+        </figure>
+
+        <h3>Whose credentials, and why it matters</h3>
+        <p>Medblocks runs a <strong>bring-your-own-credentials</strong> model. You can start on Medblocks-supplied credentials for testing, then switch a connection to your own when you are ready to launch. The docs are unambiguous about the reason: <em>“The access is tied to your app, your customer relationship, and your compliance workflow.”</em> Patients and clinicians approve <strong>your</strong> registered app, not a generic intermediary — which is both a branding win and the thing that prevents lock-in.</p>
+      </section>
+
+      <!-- ============ 6 ============ -->
+      <section id="meaning">
+        <p class="eyebrow">Mechanism · 05</p>
+        <h2 class="head">FHIR is a transport format, not an answer</h2>
+
+        <p>This is where Medblocks earns most of its money, and where a replication attempt is most likely to stall. Their framing: <strong>“FHIR is the transport format, but source data still varies.”</strong> Every system speaks FHIR and no two say the same thing the same way.</p>
+
+        <p>Consider a question as trivial as <em>“what is this patient’s latest BMI?”</em> Across five hospitals you may find it as a calculated <code>Observation</code>, as height and weight you must compute from, under different LOINC codes, in metric or imperial units, duplicated three times from the same encounter, or buried in a PDF document. Raw FHIR does not resolve any of that. <strong>Clinical Domain Models</strong> are Medblocks’ answer: product-facing abstractions layered over the raw store.</p>
+
+        <figure>
+          <div class="figbox">
+            <svg viewBox="0 0 900 300" role="img" aria-label="Sources are crawled over FHIR into a raw store holding resources as sent; a normalise and de-duplicate step produces Clinical Domain Models, which fan out three ways: on-demand API and SDK reads to your app, delta exports to a FHIR R4 server or NDJSON object storage, and signed webhook events to your backend.">
+              <defs>
+                <marker id="d4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                </marker>
+                <marker id="d4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/>
+                </marker>
+              </defs>
+
+              <rect class="svg-box-soft" x="14" y="40" width="96" height="40"/>
+              <text class="svg-t-sm" x="62" y="65" text-anchor="middle">Epic</text>
+              <rect class="svg-box-soft" x="14" y="100" width="96" height="40"/>
+              <text class="svg-t-sm" x="62" y="125" text-anchor="middle">athenahealth</text>
+              <rect class="svg-box-soft" x="14" y="160" width="96" height="40"/>
+              <text class="svg-t-sm" x="62" y="185" text-anchor="middle">Blue Button</text>
+
+              <line class="svg-line" x1="110" y1="60" x2="192" y2="60" marker-end="url(#d4a)"/>
+              <line class="svg-line" x1="110" y1="120" x2="192" y2="120" marker-end="url(#d4a)"/>
+              <line class="svg-line" x1="110" y1="180" x2="192" y2="180" marker-end="url(#d4a)"/>
+              <text class="svg-l" x="151" y="46" text-anchor="middle">crawl</text>
+
+              <rect class="svg-box" x="196" y="30" width="144" height="200"/>
+              <text class="svg-t" x="268" y="118" text-anchor="middle">Raw FHIR</text>
+              <text class="svg-t" x="268" y="136" text-anchor="middle">store</text>
+              <text class="svg-t-sm" x="268" y="160" text-anchor="middle">exactly as</text>
+              <text class="svg-t-sm" x="268" y="177" text-anchor="middle">the source sent</text>
+
+              <line class="svg-line-hot" x1="340" y1="130" x2="422" y2="130" marker-end="url(#d4b)"/>
+              <text class="svg-l" x="381" y="108" text-anchor="middle">normalise</text>
+              <text class="svg-l" x="381" y="122" text-anchor="middle">de-duplicate</text>
+
+              <rect class="svg-box-hot" x="426" y="30" width="164" height="200"/>
+              <text class="svg-t" x="508" y="108" text-anchor="middle">Clinical</text>
+              <text class="svg-t" x="508" y="126" text-anchor="middle">Domain Models</text>
+              <text class="svg-t-sm" x="508" y="150" text-anchor="middle">medications · labs</text>
+              <text class="svg-t-sm" x="508" y="167" text-anchor="middle">conditions · allergies</text>
+              <text class="svg-t-sm" x="508" y="184" text-anchor="middle">visits · documents</text>
+
+              <line class="svg-line" x1="590" y1="56" x2="746" y2="56" marker-end="url(#d4a)"/>
+              <text class="svg-l" x="668" y="46" text-anchor="middle">on-demand read</text>
+              <line class="svg-line" x1="590" y1="130" x2="746" y2="130" marker-end="url(#d4a)"/>
+              <text class="svg-l" x="668" y="120" text-anchor="middle">delta after each pull</text>
+              <line class="svg-line" x1="590" y1="204" x2="746" y2="204" marker-end="url(#d4a)"/>
+              <text class="svg-l" x="668" y="194" text-anchor="middle">signed event</text>
+
+              <rect class="svg-box" x="750" y="30" width="140" height="52"/>
+              <text class="svg-t-sm" x="820" y="52" text-anchor="middle">API / SDK</text>
+              <text class="svg-t-sm" x="820" y="69" text-anchor="middle">to your app</text>
+              <rect class="svg-box" x="750" y="104" width="140" height="52"/>
+              <text class="svg-t-sm" x="820" y="126" text-anchor="middle">FHIR server or</text>
+              <text class="svg-t-sm" x="820" y="143" text-anchor="middle">NDJSON in S3</text>
+              <rect class="svg-box" x="750" y="178" width="140" height="52"/>
+              <text class="svg-t-sm" x="820" y="200" text-anchor="middle">Webhooks</text>
+              <text class="svg-t-sm" x="820" y="217" text-anchor="middle">to your backend</text>
+
+              <text class="svg-cap" x="196" y="272">Provenance travels with every field: source resource reference, timestamp, performer</text>
+            </svg>
+          </div>
+          <figcaption><strong>Two stores, not one.</strong> The raw layer is kept for auditability — you can always show a regulator exactly what the hospital sent. The domain-model layer is what your product queries. Collapsing these two into one is the mistake that makes an integration platform unauditable.</figcaption>
+        </figure>
+
+        <p>The docs list four jobs the domain models do:</p>
+        <ol class="body">
+          <li><strong>Clinical abstraction</strong> — medications, labs, conditions, allergies, visits and documents as meaningful entities, not raw resources.</li>
+          <li><strong>Normalised querying</strong> — “common filters and display fields are lifted into a consistent shape,” so one query works regardless of origin.</li>
+          <li><strong>Source preservation</strong> — they keep “source context you need for auditability.”</li>
+          <li><strong>Provenance</strong> — resource references, timestamps and performer details, so downstream audit trails hold up.</li>
+        </ol>
+
+        <p>Underneath sit the unglamorous mechanics: unit conversion (BMI in <code>kg/m²</code>), code-system mapping (LOINC <code>39156-5</code> for body mass index), and aggregation rules — latest, average, minimum — which is also where de-duplication of repeated observations from one encounter gets resolved.</p>
+
+        <p class="codelabel">Illustrative shape of a normalised value — not a verbatim doc sample</p>
+<pre>{
+  "code":   { "system": "http://loinc.org", "code": "39156-5",
+              "display": "Body mass index (BMI) [Ratio]" },
+  "value":  27.4,
+  "unit":   "kg/m2",
+  "effective": "2026-08-14T09:12:00Z",
+  "provenance": {
+    "source":   "epic-sandbox",
+    "resource": "Observation/eXyZ-1024",   <span class="c">// trace back to raw</span>
+    "performer":"Practitioner/9a2f"
+  }
+}</pre>
+
+        <div class="callout">
+          <h4>Reconciliation is two problems, not one</h4>
+          <p><strong>Identity:</strong> is the Jane Smith from Hospital A the same Jane Smith from Hospital B? That is master data management, and it is statistical, never certain.</p>
+          <p><strong>Meaning:</strong> does “metformin 500mg” from one system refer to the same drug concept as another system’s coding? That is terminology mapping — LOINC for labs, RxNorm for drugs, SNOMED CT for clinical findings.</p>
+          <p>Medblocks resolves both <em>before</em> data reaches your application. If you replicate this, budget for both separately; they need different skills and different people.</p>
+        </div>
+      </section>
+
+      <!-- ============ 7 ============ -->
+      <section id="dataout">
+        <p class="eyebrow">Mechanism · 06</p>
+        <h2 class="head">Three exits, chosen by what you are feeding</h2>
+
+        <p>Once records are ingested there are exactly three ways out, and the docs are clear about which to use when.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Exit</th><th>Shape</th><th>Use it when</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Exports</strong></td>
+                <td>FHIR R4 resources pushed to a FHIR server, or NDJSON files written to S3-compatible storage, GCS, or Azure Blob. Initial full export, then deltas.</td>
+                <td>You are keeping a downstream system in sync — a warehouse, a lakehouse, a customer’s own FHIR endpoint.</td>
+              </tr>
+              <tr>
+                <td><strong>Webhooks</strong></td>
+                <td>Signed POST events. Four of them.</td>
+                <td>Something in your product must react — refresh a dashboard, page an on-call engineer, prompt a reconnect.</td>
+              </tr>
+              <tr>
+                <td><strong>API / SDK reads</strong></td>
+                <td><code>GET /patients/{id}/records</code>, paginated.</td>
+                <td>Operational queries and on-demand inspection of one patient.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>The four events</h3>
+        <p>These are the complete set, and they map neatly onto the failure modes above.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Event</th><th>Fires when</th><th>Handle it by</th></tr></thead>
+            <tbody>
+              <tr><td><code>patient_session.completed</code></td><td>Patient finishes the hosted flow.</td><td>Update UI, kick off downstream work.</td></tr>
+              <tr><td><code>records.sync.completed</code></td><td>A background pull finishes.</td><td>Refresh views, process the new data.</td></tr>
+              <tr><td><code>records.sync.failed</code></td><td>A pull fails.</td><td>Alert on-call.</td></tr>
+              <tr><td><code>connection.token_refresh_failed</code></td><td>A refresh token is no longer usable.</td><td>Ask the patient to reconnect.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>The receiver contract is strict and worth copying verbatim into your own platform if you build one: accept HTTPS POST with JSON, <strong>read the raw body before parsing</strong>, validate the <code>Medblocks-Signature</code> header against the endpoint’s signing secret, respond <span class="num">2xx</span> within <span class="num">5 seconds</span>, and de-duplicate on <code>event.id</code> because deliveries can repeat.</p>
+
+        <p class="codelabel">Webhook receiver — the signature check is not optional</p>
+<pre><span class="c">// Raw body FIRST. Parsed JSON will not verify.</span>
+<span class="k">const</span> raw = <span class="k">await</span> readRawBody(req);
+<span class="k">const</span> sig = req.headers["medblocks-signature"];
+
+<span class="k">const</span> event = mb.webhooks.constructEvent(raw, sig, process.env.MB_WEBHOOK_SECRET);
+
+<span class="k">if</span> (<span class="k">await</span> alreadyHandled(event.id)) <span class="k">return</span> res.status(200).end();  <span class="c">// idempotent</span>
+
+<span class="k">switch</span> (event.type) {
+  <span class="k">case</span> "records.sync.completed":          <span class="k">await</span> reindexPatient(event); <span class="k">break</span>;
+  <span class="k">case</span> "records.sync.failed":             <span class="k">await</span> pageOnCall(event);     <span class="k">break</span>;
+  <span class="k">case</span> "connection.token_refresh_failed": <span class="k">await</span> promptReconnect(event); <span class="k">break</span>;
+  <span class="k">case</span> "patient_session.completed":       <span class="k">await</span> markConnected(event);  <span class="k">break</span>;
+}
+res.status(200).end();  <span class="c">// under 5 seconds — queue the real work</span></pre>
+
+        <h3>How they make exports joinable</h3>
+        <p>A detail worth stealing: exported <code>Patient</code> resources carry <strong>your</strong> patient identifier inside the FHIR <code>identifier</code> array, alongside the source EHR’s own identifiers such as MRNs. In object storage the matching key is the identifier system <code>urn:medblocks:patient-id</code>. That single convention is what lets a warehouse join hospital data back to your application’s users without a separate mapping table.</p>
+
+        <p>Other operational properties of the export layer: each destination runs independently, so one failure does not block the others; disabled destinations are skipped and resume from their checkpoint when re-enabled; NDJSON files are <strong>rewritten in full on each run</strong> — which means your ingestion must be idempotent; and watermark tracking drives delta detection.</p>
+      </section>
+
+      <!-- ============ 8 ============ -->
+      <section id="ops">
+        <p class="eyebrow">Mechanism · 07</p>
+        <h2 class="head">The half of the product that only exists because things break</h2>
+
+        <p>Skim the documentation tree and a pattern emerges: a small number of pages teach the happy path, and a large number exist purely to answer <em>“it didn’t work, why?”</em> This is the most transferable lesson in the whole case study.</p>
+
+        <h4>Pull monitoring — did the records arrive?</h4>
+        <p>A <em>pull</em> is the background job that retrieves records after authorisation. It starts when a session yields an <code>active</code> connection, when an admin triggers it manually, or on a schedule or retry. Internally it runs FHIR queries per supported resource type, fetches resources, <strong>follows references</strong>, stores the data, and logs status throughout — refreshing access tokens proactively before expiry where possible. The dashboard shows per-patient record status, last pull time, account-level status and full history. Crucially: <strong>pull success and export success are independent</strong>. A connection can be healthy while its exports are failing.</p>
+
+        <h4>Auth event history — did the patient even reach the portal?</h4>
+        <p>A separate audit trail for the authorisation attempt itself, covering the whole OAuth flow from portal redirect through token refresh. It answers the two questions support actually gets asked: <em>did the patient reach the portal?</em> and <em>did the token exchange succeed?</em> Each event records source name, status, a stable error code, a human-readable description, and a timestamp. The docs ask you to log <code>session_id</code>, <code>connection_id</code>, success, <code>error</code>, <code>error_description</code> and the Medblocks <code>request_id</code> on your side so the two trails line up.</p>
+
+        <h4>A stable error envelope</h4>
+        <p>Every non-2xx response has the same shape, and every code is documented. This is table stakes for a platform whose users are debugging someone else’s hospital at 2am.</p>
+
+<pre>{
+  "error": {
+    "type":       "string",
+    "code":       "string",   <span class="c">// stable — safe to switch on</span>
+    "message":    "string",
+    "param":      "string or null",
+    "doc_url":    "string",
+    "request_id": "string"    <span class="c">// quote this to support</span>
+  }
+}</pre>
+
+        <p>The codes are grouped by what you should do about them, not by where they came from:</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Class</th><th>Representative codes</th><th>Meaning for you</th></tr></thead>
+            <tbody>
+              <tr><td class="num">401</td><td><code>missing_api_key</code> · <code>invalid_api_key</code> · <code>expired_api_key</code> · <code>session_expired</code></td><td>Your credentials. Fix your config.</td></tr>
+              <tr><td class="num">403</td><td><code>insufficient_scope</code> · <code>role_insufficient</code> · <code>scope_violation</code> · <code>patient_access_denied</code></td><td>Authorised, but not for this. Do not retry.</td></tr>
+              <tr><td class="num">400</td><td><code>invalid_data</code> · <code>oauth_state_expired</code> · <code>unsupported_api_version</code></td><td>Your request. Retrying unchanged won’t help.</td></tr>
+              <tr><td class="num">409</td><td><code>already_linked</code> · <code>external_id_already_exists</code></td><td>Identity collision — surface it, don’t swallow it.</td></tr>
+              <tr><td class="num">429</td><td><code>throttled</code> · <code>quota_exceeded</code> · <code>api_key_limit_exceeded</code></td><td>Back off exponentially.</td></tr>
+              <tr><td class="num">402</td><td><code>feature_not_enabled</code> · <code>quota_exceeded</code></td><td>Plan limit, not a bug. Free-tier patient cap.</td></tr>
+              <tr><td class="num">502</td><td><code>fhir_error</code> · <code>oauth_error</code> · <code>token_exchange_failed</code> · <code>token_unavailable</code> · <code>storage_error</code></td><td>The hospital or a dependency broke. Retry later.</td></tr>
+              <tr><td class="num">500</td><td><code>internal_error</code> · <code>db_error</code> · <code>config_missing</code></td><td>Theirs. Report with the <code>request_id</code>.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h4>Sandboxes that are actually usable</h4>
+        <p>Sandbox and production are <strong>separate workspaces</strong> with separate keys — <code>mb_sk_sbx_</code> and <code>mb_sk_live_</code> — and a sandbox key cannot open a session against a production source, or vice versa. Sandbox workspaces get their own sources, webhooks, exports and dashboard history. Epic, Cerner, athenahealth, eClinicalWorks, Meditech and CMS Blue Button all expose sandbox portals whose behaviour is “close enough to test OAuth and SMART on FHIR.” You can load <span class="num">10</span> pre-generated synthetic patients or upload your own FHIR bundles. The honest caveat is in the docs too: synthetic records are good for UI states, mapping logic, exports and webhook handlers, and useless for judging real source coverage or data quality.</p>
+
+        <h4>An MCP server, because the integrator is now an agent</h4>
+        <p>A genuinely forward-looking piece: the platform exposes an MCP server at <code>https://app.medblocks.com/mcp</code> (server name <code>medblocks-platform</code>) with around ten tools — workspace overview, health-system search, connection management, record reads, and deletion. OAuth for interactive use, API keys for backend services.</p>
+
+<pre><span class="c"># Claude Code</span>
+claude mcp add --transport http medblocks https://app.medblocks.com/mcp
+
+<span class="c"># with a workspace API key instead of interactive OAuth</span>
+claude mcp add --transport http medblocks https://app.medblocks.com/mcp \
+  --header "Authorization: Bearer mb_sk_..."
+
+<span class="c"># Codex</span>
+codex mcp add medblocks --url https://app.medblocks.com/mcp \
+  --oauth-resource https://app.medblocks.com/mcp</pre>
+
+        <p>They also ship installable skills for Claude Code, Cursor and Codex that teach an agent the patient access flow, record export, and the security rules — summarised as five non-negotiables: keys server-side only, verify webhook signatures before trusting a payload, treat the API reference as authoritative for wire shapes, log error codes and request ids server-side, and treat patient return URLs as UI state confirmed by a server-side read.</p>
+
+        <h4>Security posture, stated plainly</h4>
+        <p>HIPAA, SOC 2 Type II, ISO 27001 and GDPR, with BAA support on commercial plans. Their go-live checklist is the useful artefact: BAA executed, production credentials configured, webhook receivers verifying <code>Medblocks-Signature</code>, export destinations owned by your organisation, access controls and audit logging and retention policies implemented <em>in your app</em>, and application logs that exclude raw PHI unless explicitly permitted. They are explicit that they sit “in the path of PHI, patient authorization, source credentials, export credentials” — and that deciding what to retain is your job, not theirs.</p>
+      </section>
+
+      <!-- ============ 9 ============ -->
+      <section id="money">
+        <p class="eyebrow">The economics</p>
+        <h2 class="head">Free until it works, then a flat number</h2>
+
+        <p>The pricing is unusually legible for health IT, and the metering choice is the interesting part.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Plan</th><th>Price</th><th>Capacity</th><th>Includes</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>Free</strong></td>
+                <td class="num">$0</td>
+                <td class="num">1,000 active patients</td>
+                <td>Patient-mediated exchange, API access, device sync, exports</td>
+              </tr>
+              <tr>
+                <td><strong>Enterprise</strong></td>
+                <td class="num">$60,000 / year</td>
+                <td>Unlimited</td>
+                <td>Everything in Free, plus Backend Services, Clinical Workflows, OCR, data structuring</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>A patient counts as <em>active</em> <strong>the first time data is successfully pulled for them</strong> — creating a record costs nothing. That single definition means you pay only for integrations that actually worked, which removes the main financial risk of experimenting. Hit the cap and new sync attempts return <span class="num">402</span> with <code>quota_exceeded</code>; ask for a feature outside your plan and you get <code>feature_not_enabled</code> instead.</p>
+
+        <p>Note what is behind the paywall: Patient Access — Door 1 — is free. Doors 2 and 3, and the data-structuring layer, are not. That is a deliberate funnel: give away the door that needs no contract, charge for the ones that come with enterprise customers attached.</p>
+
+        <h3>Who they say they compete with</h3>
+        <p>The comparisons page names competitors directly, grouped into six categories. The claim is that no one else spans all four surfaces <em>plus</em> the data layer.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Category</th><th>Named vendors</th><th>Medblocks’ claimed gap</th></tr></thead>
+            <tbody>
+              <tr><td>EHR integrators</td><td>Redox, Vim, Leyr</td><td>Broker the access; you don’t own the relationship</td></tr>
+              <tr><td>Patient access tools</td><td>Flexpa, b.well, Human&nbsp;API, 1up&nbsp;Health</td><td>Door 1 only — no clinician or backend surface</td></tr>
+              <tr><td>Treatment-use networks</td><td>Health&nbsp;Gorilla, Particle&nbsp;Health, Kno2, Metriport, Zus</td><td>Door 4 only</td></tr>
+              <tr><td>Interface engines</td><td>Rhapsody, Mirth&nbsp;Connect, Cloverleaf, Iguana, WSO2</td><td>Built for legacy HL7v2, not modern APIs</td></tr>
+              <tr><td>FHIR CDRs</td><td>Medplum, Aidbox, HAPI, AWS&nbsp;HealthLake</td><td>Storage without acquisition — they don’t get the data</td></tr>
+              <tr><td>Analytics platforms</td><td>Tuva&nbsp;Health, Innovaccer, Arcadia</td><td>Consume data; don’t connect to sources</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p>That last row pairing is the real strategic insight, and it is worth internalising before you decide to build: <strong>FHIR data stores and integration platforms are different businesses.</strong> Medplum and HAPI will happily hold your records. Neither will go get them.</p>
+      </section>
+
+      <!-- ============ 10 ============ -->
+      <section id="blueprint">
+        <p class="eyebrow">Replication · the blueprint</p>
+        <h2 class="head">If you want to build this, here is the shape of the work</h2>
+
+        <p>Start by looking honestly at what you are choosing between. The diagram below is the same eight-layer stack twice: once where six layers are purchased, once where they are not.</p>
+
+        <figure>
+          <div class="figbox">
+            <svg viewBox="0 0 900 516" role="img" aria-label="Comparison of two stacks. Adopting means your product plus an SDK call, with six layers handled for you. Building means owning all eight layers yourself: product, consent UI and facility directory, per-vendor OAuth clients, token vault with proactive refresh, pull scheduler and FHIR crawler, FHIR store with patient master data management, terminology normalisation, and the export and webhook delivery pipeline. Five of those layers are marked as the expensive ones.">
+              <defs>
+                <marker id="d5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                  <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+                </marker>
+              </defs>
+
+              <text class="svg-cap" x="50" y="32">Adopt</text>
+              <text class="svg-cap" x="520" y="32">Build</text>
+              <line class="svg-life" x1="450" y1="20" x2="450" y2="496"/>
+
+              <rect class="svg-box" x="50" y="52" width="330" height="44"/>
+              <text class="svg-t" x="215" y="80" text-anchor="middle">Your product</text>
+              <rect class="svg-box-hot" x="50" y="104" width="330" height="44"/>
+              <text class="svg-t" x="215" y="132" text-anchor="middle">Medblocks SDK + API</text>
+
+              <rect class="svg-box-soft" x="50" y="156" width="330" height="332"/>
+              <text class="svg-t" x="215" y="196" text-anchor="middle">Handled for you</text>
+              <text class="svg-t-sm" x="215" y="232" text-anchor="middle">consent UI + facility directory</text>
+              <text class="svg-t-sm" x="215" y="262" text-anchor="middle">per-vendor OAuth clients</text>
+              <text class="svg-t-sm" x="215" y="292" text-anchor="middle">token vault + refresh</text>
+              <text class="svg-t-sm" x="215" y="322" text-anchor="middle">pull scheduler + FHIR crawler</text>
+              <text class="svg-t-sm" x="215" y="352" text-anchor="middle">store + patient MDM</text>
+              <text class="svg-t-sm" x="215" y="382" text-anchor="middle">terminology normalisation</text>
+              <text class="svg-t-sm" x="215" y="412" text-anchor="middle">exports + webhook delivery</text>
+              <text class="svg-l" x="215" y="452" text-anchor="middle">$0 to 1,000 patients</text>
+              <text class="svg-l" x="215" y="470" text-anchor="middle">$60k/yr thereafter</text>
+
+              <rect class="svg-box" x="520" y="52" width="330" height="44"/>
+              <text class="svg-t" x="685" y="80" text-anchor="middle">Your product</text>
+
+              <rect class="svg-box" x="520" y="104" width="330" height="44"/>
+              <text class="svg-t-sm" x="685" y="131" text-anchor="middle">Consent UI + facility directory</text>
+
+              <rect class="svg-box" x="520" y="156" width="330" height="44"/>
+              <rect x="520" y="156" width="4" height="44" fill="var(--accent)"/>
+              <text class="svg-t-sm" x="685" y="183" text-anchor="middle">OAuth client per vendor dialect</text>
+
+              <rect class="svg-box" x="520" y="208" width="330" height="44"/>
+              <rect x="520" y="208" width="4" height="44" fill="var(--accent)"/>
+              <text class="svg-t-sm" x="685" y="235" text-anchor="middle">Token vault + proactive refresh</text>
+
+              <rect class="svg-box" x="520" y="260" width="330" height="44"/>
+              <rect x="520" y="260" width="4" height="44" fill="var(--accent)"/>
+              <text class="svg-t-sm" x="685" y="287" text-anchor="middle">Pull scheduler + FHIR crawler</text>
+
+              <rect class="svg-box" x="520" y="312" width="330" height="44"/>
+              <rect x="520" y="312" width="4" height="44" fill="var(--accent)"/>
+              <text class="svg-t-sm" x="685" y="339" text-anchor="middle">FHIR store + patient MDM</text>
+
+              <rect class="svg-box" x="520" y="364" width="330" height="44"/>
+              <rect x="520" y="364" width="4" height="44" fill="var(--accent)"/>
+              <text class="svg-t-sm" x="685" y="391" text-anchor="middle">Terminology normalisation</text>
+
+              <rect class="svg-box" x="520" y="416" width="330" height="44"/>
+              <text class="svg-t-sm" x="685" y="443" text-anchor="middle">Exports + webhook delivery</text>
+
+              <text class="svg-l" x="520" y="482">+ app registration per vendor · SOC 2 · HIPAA · BAAs</text>
+              <text class="svg-cap" x="520" y="500">Teal stripe = the five layers that never stop costing</text>
+            </svg>
+          </div>
+          <figcaption><strong>The difference is five layers of permanent maintenance.</strong> The top and bottom layers of the build column are ordinary engineering you finish once. The five striped layers change every time a vendor updates an endpoint, a terminology release ships, or a token format shifts — which is continuously.</figcaption>
+        </figure>
+
+        <p>If you are going ahead, the sequence below is the one that works. It is ordered by dependency, not by difficulty — each phase is unblocked by the one before it, and every phase ends in something demonstrable.</p>
+
+        <div class="phases">
+          <div class="phase">
+            <p class="phase-n">Phase 0<span>4–12 weeks, mostly waiting</span></p>
+            <div>
+              <h3>Legal and registration, started before any code</h3>
+              <p>This is the real critical path and it runs in parallel with everything else. Begin it on day one.</p>
+              <ul class="body">
+                <li>Register a developer account and an app with your first vendor. Epic’s developer programme, Oracle Health’s, athenahealth’s — each has its own review. Expect <strong>weeks, not days</strong>, and expect to declare your redirect URIs and requested scopes up front.</li>
+                <li>Decide your PHI posture now: where data lives, how long you keep it, who can read it. It determines your schema.</li>
+                <li>Start SOC 2 Type II. The observation window alone is months; a compliance automation platform shortens the paperwork, not the clock.</li>
+                <li>Line up BAAs with every subprocessor that will touch PHI — cloud, logging, error tracking, queue.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="phase">
+            <p class="phase-n">Phase 1<span>4–8 weeks</span></p>
+            <div>
+              <h3>One source, one patient, end to end</h3>
+              <p>Resist breadth. Get a single sandbox — Epic’s is the obvious choice — all the way from consent screen to stored resource.</p>
+              <ul class="body">
+                <li>Implement SMART on FHIR authorization code flow with PKCE. Discover endpoints from the server’s <code>.well-known/smart-configuration</code> rather than hard-coding them.</li>
+                <li>Build the hosted consent flow: a facility picker, a consent screen, a redirect back to a caller-supplied <code>return_url</code>. Your branding, your domain.</li>
+                <li>Store the token pair encrypted. Envelope encryption with a managed KMS key, never plaintext, never in application logs.</li>
+                <li>Write a single-shot pull: query the supported resource types, page through <code>Bundle.link[next]</code>, follow references, persist raw.</li>
+              </ul>
+              <p><strong>Done when:</strong> a synthetic patient in the Epic sandbox authorises your app and their resources land in your database.</p>
+            </div>
+          </div>
+
+          <div class="phase">
+            <p class="phase-n">Phase 2<span>6–10 weeks</span></p>
+            <div>
+              <h3>Durability — the phase that decides whether this is a product</h3>
+              <p>Phase 1 is a demo. This is where it becomes something you can run. Every item here maps to a specific Medblocks page, which tells you they all turned out to be necessary.</p>
+              <ul class="body">
+                <li><strong>Connection state machine.</strong> Model all five states explicitly. Expose the state, not a boolean.</li>
+                <li><strong>Proactive token refresh.</strong> A scheduled job that refreshes <em>before</em> expiry. Refresh tokens rotate on many vendors — persist the new one atomically or you will lock yourself out.</li>
+                <li><strong>Durable pull orchestration.</strong> Pulls are long-running, resumable, and must survive a deploy mid-crawl. This is a workflow-engine problem, not a cron problem.</li>
+                <li><strong>Signed webhook delivery</strong> with retries, an event id for idempotency, and a replay tool.</li>
+                <li><strong>Two audit trails, separately.</strong> One for authorisation attempts, one for pull runs. Medblocks split these because support questions split that way: <em>did they reach the portal?</em> versus <em>did the records arrive?</em></li>
+                <li><strong>A stable error envelope</strong> with codes you commit to, and a request id in every response.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="phase">
+            <p class="phase-n">Phase 3<span>3–6 months, then forever</span></p>
+            <div>
+              <h3>Meaning — identity, then terminology</h3>
+              <p>Two distinct projects. Do identity first; normalisation on top of duplicate patients produces confidently wrong answers.</p>
+              <ul class="body">
+                <li><strong>Patient MDM.</strong> Start deterministic — name, date of birth, sex, address, MRN — then add probabilistic matching. Keep a human review queue for the middle band; in healthcare a false merge is worse than a missed one.</li>
+                <li><strong>Terminology.</strong> Map to LOINC (labs), RxNorm (medications), SNOMED CT (findings). Stand up a terminology server rather than embedding code tables in application logic.</li>
+                <li><strong>Units and aggregation.</strong> UCUM conversion, plus explicit rules for latest / average / minimum.</li>
+                <li><strong>Two layers, always.</strong> Keep the raw store immutable and derive the normalised layer from it, with provenance on every field pointing back. This is what makes you auditable, and it is the only way to re-derive when a mapping turns out to be wrong.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="phase">
+            <p class="phase-n">Phase 4<span>4–6 weeks</span></p>
+            <div>
+              <h3>Fan-out</h3>
+              <p>Comparatively ordinary engineering, and the phase where borrowing their design decisions pays off directly.</p>
+              <ul class="body">
+                <li>FHIR R4 push with no-auth, bearer, and OAuth 2.0 client-credentials options; validate connectivity before saving a destination.</li>
+                <li>NDJSON to S3-compatible, GCS and Azure Blob — one resource per line so consumers can stream.</li>
+                <li>Watermarks per destination for delta detection; independent failure domains; resume from checkpoint on re-enable.</li>
+                <li><strong>Copy the identifier convention.</strong> Stamp your own patient id into the exported <code>Patient.identifier</code> array under a namespaced system. It is the difference between a joinable warehouse and a useless one.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="phase">
+            <p class="phase-n">Phase 5<span>per surface</span></p>
+            <div>
+              <h3>Additional doors, only once Door 1 is boring</h3>
+              <ul class="body">
+                <li><strong>More vendors on Door 1:</strong> 2–4 weeks each, and most of that is registration latency rather than code. Endpoint directories are published — the ONC-maintained public FHIR endpoint lists are where a facility picker gets its catalogue.</li>
+                <li><strong>Door 2, clinician workflow:</strong> implement SMART App Launch (EHR-initiated launch with patient context) and a CDS Hooks discovery endpoint serving cards for hooks like <code>patient-view</code> and <code>order-select</code>. Requires an EHR admin to register you per organisation.</li>
+                <li><strong>Door 3, backend:</strong> SMART Backend Services — asymmetric client authentication with a JWK set — plus FHIR Bulk Data async export polling.</li>
+                <li><strong>Door 4, network:</strong> you do not build this. TEFCA participation means joining through a QHIN and satisfying permitted-purpose requirements. Treat it as a legal and partnership workstream with a thin technical component.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ 11 ============ -->
+      <section id="stack">
+        <p class="eyebrow">Replication · concrete choices</p>
+        <h2 class="head">What to actually use for each layer</h2>
+
+        <p>Opinionated picks, with the reasoning compressed. Where there is a clear default, it is listed first.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Layer</th><th>Use</th><th>Why, and the catch</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><strong>FHIR store</strong></td>
+                <td>Medplum (TypeScript, open source) · HAPI FHIR JPA (Java) · Aidbox (commercial) · AWS HealthLake / Google Cloud Healthcare (managed)</td>
+                <td>Do not write your own FHIR persistence and search. Medplum if you are a TS shop and want to read the code; HAPI if you want the reference implementation and Java is acceptable; managed if you would rather pay than operate.</td>
+              </tr>
+              <tr>
+                <td><strong>Raw landing store</strong></td>
+                <td>Postgres <code>jsonb</code>, or object storage partitioned by patient and pull</td>
+                <td>Keep it append-only and dumb. Its only job is to prove what the source actually sent.</td>
+              </tr>
+              <tr>
+                <td><strong>OAuth / SMART client</strong></td>
+                <td><code>openid-client</code> (Node) or your language’s equivalent, plus a per-vendor config table</td>
+                <td>There is no turnkey multi-vendor SMART client. Discover via <code>.well-known/smart-configuration</code>; expect per-vendor quirks in scope strings, refresh-token rotation and error bodies. This table is the moat you are choosing to dig.</td>
+              </tr>
+              <tr>
+                <td><strong>Token storage</strong></td>
+                <td>Postgres + envelope encryption via AWS KMS, GCP KMS or Vault</td>
+                <td>Refresh tokens are the crown jewels. Rotate keys, audit every read, and never let them reach a log line or an error report.</td>
+              </tr>
+              <tr>
+                <td><strong>Pull orchestration</strong></td>
+                <td>Temporal · Restate · (simpler: river, BullMQ, Sidekiq)</td>
+                <td>Pulls run for minutes to hours, resume after failure, and recur for years. A durable workflow engine gives you retries, timeouts and resumability for free. A cron table will not survive contact with a flaky hospital endpoint.</td>
+              </tr>
+              <tr>
+                <td><strong>Terminology</strong></td>
+                <td>HAPI’s terminology server · Ontoserver (commercial) · LOINC + RxNorm loaded into Postgres</td>
+                <td><strong>The licensing catch:</strong> LOINC and RxNorm are freely usable; <em>SNOMED CT requires an affiliate licence</em>, which in the US is covered by the NLM UMLS licence. Sort this before you ship, not after.</td>
+              </tr>
+              <tr>
+                <td><strong>Patient matching</strong></td>
+                <td>Deterministic rules first, then Splink (open source probabilistic linkage) · commercial: Verato, NextGate</td>
+                <td>Plan for a review queue from day one. There is no configuration of any tool that makes this fully automatic and safe.</td>
+              </tr>
+              <tr>
+                <td><strong>Webhook delivery</strong></td>
+                <td>Your queue + HMAC-SHA256 signing, or a delivery service</td>
+                <td>Signature over the <em>raw</em> body, a timestamp in the signed payload to bound replay, and at-least-once semantics with a documented event id.</td>
+              </tr>
+              <tr>
+                <td><strong>Facility directory</strong></td>
+                <td>ONC / CMS public FHIR endpoint lists, refreshed on a schedule</td>
+                <td>Vendors publish their customers’ endpoints because regulation requires it. Ingest, dedupe, and add the logos and portal URLs yourself — the picker is a UX product, not a data dump.</td>
+              </tr>
+              <tr>
+                <td><strong>Compliance</strong></td>
+                <td>Vanta or Drata for SOC 2 · a HIPAA-eligible cloud configuration · BAAs with every subprocessor</td>
+                <td>Automation compresses evidence collection. It does not compress the observation window or the auditor’s calendar.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 12 ============ -->
+      <section id="hard">
+        <p class="eyebrow">Replication · the honest part</p>
+        <h2 class="head">Five things that will cost more than you planned</h2>
+
+        <p>Not risks in the abstract — these are the specific places this class of project reliably overruns.</p>
+
+        <h3>1 · Vendor registration is a calendar problem, not an engineering one</h3>
+        <p>Your first production Epic app registration can take weeks to months, and every vendor has its own process, its own scope vocabulary, and its own review. No amount of engineering velocity compresses it. Start all of them in parallel on day one, and never let a launch date depend on an approval you do not control.</p>
+
+        <h3>2 · Token refresh at scale is a quiet, expensive failure mode</h3>
+        <p>One connection refreshing is trivial. Ten thousand connections across a dozen vendors, each with its own expiry semantics and some rotating the refresh token on every use, is a distributed systems problem with a nasty property: <strong>failures are silent and permanent.</strong> A dropped rotation locks that patient out until they re-authorise, and you will not find out until they complain. The fact that Medblocks gives <code>refresh_failed</code> its own connection state and its own webhook tells you how often this fires in production.</p>
+
+        <h3>3 · Every vendor’s FHIR is a dialect</h3>
+        <p>All of them claim R4. In practice they differ on which resources exist, which search parameters work, how deep <code>_include</code> goes, page sizes, rate limits, date handling, and what an error body looks like. The Medblocks docs concede the point about their own sandboxes — behaviour is “close enough to test OAuth and SMART on FHIR,” with production quirks that differ. Budget per-vendor work indefinitely; this line item never goes to zero.</p>
+
+        <h3>4 · Normalisation is an ongoing obligation, not a project</h3>
+        <p>LOINC and RxNorm ship releases. Vendors change how they code things. A mapping you got wrong two years ago is sitting in a customer’s warehouse right now. The only sane architecture is the one Medblocks uses: immutable raw layer, derived normalised layer, provenance on every field — so that when a mapping is wrong you can re-derive rather than apologise.</p>
+
+        <h3>5 · The unit economics are brutal at small scale</h3>
+        <p>Enterprise access is <span class="num">$60,000</span>/year with unlimited patients, and the first <span class="num">1,000</span> patients cost nothing. Three engineers for a year costs several times that before you have shipped Phase 3. The economics only invert if healthcare data integration <em>is</em> your product — if you are selling it, or if it is the thing that differentiates you and you cannot accept a dependency in the middle of it.</p>
+
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Workstream</th><th>Elapsed</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>One source, patient access, end to end</td><td class="num">4–8 weeks</td><td>Gated by registration, not code</td></tr>
+              <tr><td>Durability: refresh, pulls, monitoring, webhooks</td><td class="num">6–10 weeks</td><td>Where a demo becomes a platform</td></tr>
+              <tr><td>Each additional vendor</td><td class="num">2–4 weeks</td><td>Mostly approval latency</td></tr>
+              <tr><td>Normalisation layer</td><td class="num">3–6 months</td><td>Then permanent maintenance</td></tr>
+              <tr><td>Patient MDM</td><td class="num">2–4 months</td><td>Never finished</td></tr>
+              <tr><td>SOC 2 Type II + HIPAA readiness</td><td class="num">3–6 months</td><td>Runs in parallel; clock is fixed</td></tr>
+              <tr><td><strong>Parity on one surface</strong></td><td class="num"><strong>9–15 months</strong></td><td><strong>3–5 engineers</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============ 13 ============ -->
+      <section id="verdict">
+        <p class="eyebrow">Verdict</p>
+        <h2 class="head">Copy the architecture. Buy the integrations.</h2>
+
+        <p>Medblocks’ documentation is worth reading even if you never sign up, because it is a compressed field guide to a domain that punishes naïve designs. Six of its decisions are worth adopting regardless of what you build on:</p>
+
+        <ul class="body">
+          <li><strong>Separate the four doors explicitly.</strong> Who authorises you determines everything downstream. Do not build one abstraction over all four.</li>
+          <li><strong>Connections are stateful, and state is public API.</strong> Five states, exposed, with an event for the one that decays silently.</li>
+          <li><strong>Authorisation finishing ≠ data arriving.</strong> Two separate audit trails, because support questions split exactly there.</li>
+          <li><strong>Two storage layers.</strong> Immutable raw for audit, derived normalised for product, provenance linking them.</li>
+          <li><strong>Reconciliation is clinical safety.</strong> Identity and meaning are different problems, both resolved before data reaches an application.</li>
+          <li><strong>Stamp your own identifier into every export.</strong> One convention, and your warehouse joins.</li>
+        </ul>
+
+        <div class="verdict">
+          <h3>So: build or adopt?</h3>
+          <p><strong>Adopt</strong> if healthcare data is an <em>input</em> to your product. The free tier covers <code>1,000</code> active patients and a patient only counts once data has actually been pulled, so the entire Door 1 integration can be validated at zero cost — which is less than one week of one engineer. Spend your year on whatever your product does with the data instead.</p>
+          <p><strong>Build</strong> only in three situations: healthcare data integration <em>is</em> the product you are selling; you need a surface, geography or source no vendor covers; or a regulatory or contractual constraint genuinely forbids PHI transiting a third party. In the first case you are choosing to compete, and should read their comparisons page as a feature checklist. In the second, build only the missing door and buy the rest.</p>
+          <p><strong>The hybrid nobody advertises</strong> is usually right: adopt for acquisition — the doors, the tokens, the crawl — and own the normalisation and storage layers yourself, where your clinical logic actually lives and where you least want a black box. Their export-to-your-own-FHIR-server path exists precisely to make that shape possible.</p>
+        </div>
+      </section>
+
+      <footer>
+        <p>Compiled 25 September 2026 from the public documentation at <a href="https://medblocks.com/docs">medblocks.com/docs</a> — Get Started, Learn, Start Building, and Platform sections, plus the errors reference.</p>
+        <p>Quoted claims, pricing, error codes, event names, connection states and code samples are the vendor’s own. Effort estimates, stack recommendations, the phased blueprint and the risk assessment are independent analysis, not vendor statements. One JSON sample is marked illustrative where the docs describe a shape without publishing it.</p>
+      </footer>
+
+    </main>
+  </div>
+</div>

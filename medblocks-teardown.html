@@ -1,0 +1,779 @@
+<title>Medblocks Teardown</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+  :root {
+    --paper:   #E7EAEF;
+    --surface: #F9FAFC;
+    --sunken:  #DDE2EA;
+    --ink:     #0F151D;
+    --ink-soft:#495364;
+    --ink-faint:#798394;
+    --rule:    #C2C9D5;
+    --rule-soft:#DEE3EC;
+    --accent:  #23458F;
+    --accent-ink:#1B3670;
+    --accent-wash:#DCE3F2;
+    --conf:    #15613A;
+    --inf:     #8A5008;
+    --spec:    #63527A;
+    --grid:    rgba(35,69,143,.055);
+
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --sans: "Public Sans", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:   #0A0E14;
+      --surface: #111823;
+      --sunken:  #161F2C;
+      --ink:     #DCE3EC;
+      --ink-soft:#94A1B4;
+      --ink-faint:#6A7789;
+      --rule:    #253141;
+      --rule-soft:#1B2532;
+      --accent:  #7BA0E8;
+      --accent-ink:#A5C0F2;
+      --accent-wash:#152034;
+      --conf:    #56BE86;
+      --inf:     #D8A052;
+      --spec:    #AD9AC4;
+      --grid:    rgba(123,160,232,.06);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:   #0A0E14;
+    --surface: #111823;
+    --sunken:  #161F2C;
+    --ink:     #DCE3EC;
+    --ink-soft:#94A1B4;
+    --ink-faint:#6A7789;
+    --rule:    #253141;
+    --rule-soft:#1B2532;
+    --accent:  #7BA0E8;
+    --accent-ink:#A5C0F2;
+    --accent-wash:#152034;
+    --conf:    #56BE86;
+    --inf:     #D8A052;
+    --spec:    #AD9AC4;
+    --grid:    rgba(123,160,232,.06);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16.5px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .sheet { max-width: 1120px; margin: 0 auto; padding: 0 20px 72px; }
+
+  /* ---------- masthead ---------- */
+  .top {
+    border: 1px solid var(--ink); background: var(--surface);
+    margin: 28px 0 40px; padding: 0;
+  }
+  .top-bar {
+    background: var(--ink); color: var(--paper); padding: 7px 16px;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+    display: flex; flex-wrap: wrap; gap: 6px 22px; justify-content: space-between;
+  }
+  .top-in { padding: 30px 26px 26px; }
+  h1 {
+    font-family: var(--mono); font-weight: 700; font-size: clamp(2.1rem, 6.2vw, 3.7rem);
+    line-height: 1; letter-spacing: -.045em; margin: 0 0 16px;
+  }
+  .sub { font-size: 1.14rem; color: var(--ink-soft); max-width: 58ch; margin: 0; line-height: 1.5; }
+  .specimen {
+    margin: 26px 0 0; display: grid; gap: 1px; background: var(--rule);
+    border: 1px solid var(--rule); grid-template-columns: repeat(auto-fit, minmax(158px, 1fr));
+  }
+  .specimen div { background: var(--surface); padding: 11px 13px; }
+  .specimen dt {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 5px;
+  }
+  .specimen dd { margin: 0; font-family: var(--mono); font-size: .84rem; font-weight: 500; line-height: 1.4; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 56px; scroll-margin-top: 16px; }
+  .sec-h {
+    display: flex; align-items: baseline; gap: 14px; margin: 0 0 6px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 8px;
+  }
+  .sec-n {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    color: var(--accent-ink); white-space: nowrap;
+  }
+  h2 {
+    font-family: var(--mono); font-weight: 700; font-size: clamp(1.25rem, 2.7vw, 1.72rem);
+    letter-spacing: -.03em; margin: 0; line-height: 1.15; text-wrap: balance;
+  }
+  .sec-note { font-size: .96rem; color: var(--ink-soft); margin: 12px 0 22px; max-width: 70ch; }
+  p { max-width: 70ch; margin: 0 0 15px; }
+  ul.b, ol.b { max-width: 70ch; margin: 0 0 15px; padding-left: 20px; }
+  ul.b li, ol.b li { margin-bottom: 6px; }
+  ul.b li::marker { color: var(--accent); }
+  h3 { font-family: var(--mono); font-weight: 700; font-size: 1.04rem; letter-spacing: -.02em; margin: 0 0 10px; text-wrap: balance; }
+  h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; margin: 26px 0 8px;
+  }
+  code { font-family: var(--mono); font-size: .84em; color: var(--accent-ink); word-break: break-word; }
+  strong { font-weight: 600; }
+
+  /* ---------- confidence chips ---------- */
+  .chip {
+    display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em;
+    text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .c-conf { color: var(--conf); } .c-inf { color: var(--inf); } .c-spec { color: var(--spec); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 10px 26px; background: var(--surface);
+    border: 1px solid var(--rule); padding: 14px 16px; margin: 22px 0;
+  }
+  .legend div { display: flex; gap: 9px; align-items: baseline; font-size: .9rem; color: var(--ink-soft); }
+  .legend p { margin: 0; max-width: 34ch; font-size: .9rem; }
+
+  /* ---------- evidence ledger ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); margin: 22px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 640px; font-size: .92rem; }
+  th, td { text-align: left; padding: 10px 13px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.42; }
+  thead th {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; background: var(--sunken); border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td.ev { font-family: var(--mono); font-size: .8rem; font-weight: 500; color: var(--accent-ink); white-space: nowrap; }
+  .num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+  /* ---------- findings ---------- */
+  .finding {
+    display: grid; gap: 10px 24px; padding: 24px 0; border-top: 1px solid var(--rule);
+  }
+  @media (min-width: 760px) { .finding { grid-template-columns: 132px minmax(0,1fr); } }
+  .f-id { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+  .f-n { font-family: var(--mono); font-size: 1.02rem; font-weight: 700; letter-spacing: .02em; }
+  .f-body > p:last-child, .f-body > ul:last-child { margin-bottom: 0; }
+  .f-ev {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .06em; color: var(--ink-faint);
+    margin: 0 0 12px; text-transform: uppercase;
+  }
+  .f-ev b { color: var(--accent-ink); font-weight: 500; }
+  .sowhat {
+    border-left: 2px solid var(--accent); padding: 2px 0 2px 14px; margin: 14px 0 0;
+    color: var(--ink-soft); font-size: .96rem; max-width: 66ch;
+  }
+  .sowhat b { color: var(--ink); font-weight: 600; }
+
+  /* ---------- figures ---------- */
+  figure { margin: 26px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 18px 16px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 600px; height: auto; color: var(--ink); }
+  figcaption {
+    font-size: .92rem; color: var(--ink-soft); margin-top: 10px; padding-left: 12px;
+    border-left: 2px solid var(--rule); max-width: 72ch; line-height: 1.45;
+  }
+  .s-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .s-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .s-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.6; }
+  .s-t { font-family: var(--sans); font-size: 12.5px; font-weight: 500; fill: currentColor; }
+  .s-sm { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
+  .s-m { font-family: var(--mono); font-size: 10.5px; fill: var(--accent-ink); }
+  .s-mm { font-family: var(--mono); font-size: 10px; fill: var(--ink-soft); }
+  .s-cap { font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em; text-transform: uppercase; fill: var(--ink-faint); }
+  .s-l { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .s-lh { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .s-ld { stroke: var(--ink-faint); stroke-width: 1.2; fill: none; stroke-dasharray: 5 4; }
+  .s-div { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 4 5; }
+  .s-patch { fill: var(--surface); }
+
+  pre {
+    font-family: var(--mono); font-size: 12px; line-height: 1.6; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 2px solid var(--accent);
+    padding: 15px 16px; overflow-x: auto; margin: 18px 0; color: var(--ink);
+  }
+  pre .c { color: var(--ink-faint); }
+  pre .k { color: var(--accent-ink); }
+  pre .ok { color: var(--conf); }
+  .prelabel {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 22px 0 -10px;
+  }
+
+  .gap {
+    background: var(--surface); border: 1px solid var(--rule); border-top: 2px solid var(--spec);
+    padding: 16px 18px; margin: 20px 0;
+  }
+  .gap h4 { margin-top: 0; color: var(--spec); }
+  .gap ul { margin-bottom: 0; }
+
+  .close { background: var(--ink); color: var(--paper); padding: 28px 26px; }
+  .close h3 { color: var(--paper); font-size: 1.3rem; margin-bottom: 14px; }
+  .close p { color: var(--paper); opacity: .85; margin-bottom: 12px; max-width: 64ch; }
+  .close p:last-child { margin-bottom: 0; }
+  .close code { color: var(--paper); }
+  .close strong { opacity: 1; }
+
+  footer {
+    margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 10.5px; line-height: 1.85; color: var(--ink-faint);
+  }
+  footer a { color: var(--ink-soft); }
+  footer p { max-width: 86ch; margin: 0 0 10px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="sheet">
+
+  <header class="top">
+    <div class="top-bar">
+      <span>Teardown report</span>
+      <span>Target · medblocks.com</span>
+      <span>2026-09-25</span>
+    </div>
+    <div class="top-in">
+      <h1>Medblocks<br>Teardown</h1>
+      <p class="sub">Twelve findings about how the platform is actually built, derived from public documentation, a published public key, and one informative 404 — with every inference graded by how much it is worth trusting.</p>
+      <dl class="specimen">
+        <div><dt>Evidence items</dt><dd>15</dd></div>
+        <div><dt>Findings</dt><dd>12</dd></div>
+        <div><dt>Confirmed</dt><dd>6</dd></div>
+        <div><dt>Inferred</dt><dd>5</dd></div>
+        <div><dt>Speculative</dt><dd>1</dd></div>
+      </dl>
+    </div>
+  </header>
+
+  <!-- ===== METHOD ===== -->
+  <section id="method">
+    <div class="sec-h"><span class="sec-n">00</span><h2>Method</h2></div>
+    <p class="sec-note">A teardown is only as good as its discipline about what it actually knows. This one separates three things that are easy to blur: what was observed, what follows from it, and what merely sounds plausible.</p>
+
+    <div class="legend">
+      <div><span class="chip c-conf">confirmed</span><p>Directly observed in a public artifact, or computed from one. Quote it.</p></div>
+      <div><span class="chip c-inf">inferred</span><p>Follows from confirmed evidence with a short, stated reasoning chain. Likely right; not certain.</p></div>
+      <div><span class="chip c-spec">speculative</span><p>Consistent with the evidence but underdetermined. Treat as a hypothesis to test.</p></div>
+    </div>
+
+    <p><strong>Sources used:</strong> the public documentation tree at <code>medblocks.com/docs</code>, the public GitHub organisation, a public API directory listing, one public key set the vendor published to a public repository, and the HTTP response body of one unauthenticated request to a path that does not exist.</p>
+
+    <p><strong>Sources deliberately not used:</strong> no authenticated requests, no credentials, no account, no enumeration of the live API, no traffic to endpoints that process patient data. Every artifact below is one the vendor published on purpose. A teardown of a healthcare platform that probed its live surface would be a different document with a different ethics footing, and this is not that.</p>
+  </section>
+
+  <!-- ===== EVIDENCE ===== -->
+  <section id="evidence">
+    <div class="sec-h"><span class="sec-n">01</span><h2>Evidence ledger</h2></div>
+    <p class="sec-note">Findings cite these by id. Everything in this table was read directly; nothing here is interpretation.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Id</th><th>Artifact</th><th>What it contains</th></tr></thead>
+        <tbody>
+          <tr><td class="ev">EV-01</td><td>Documentation tree</td><td>28 pages across Get Started, Learn, Start Building, Platform, plus a generated API reference.</td></tr>
+          <tr><td class="ev">EV-02</td><td>Errors reference</td><td>8 HTTP status classes, ~35 stable error codes, and a fixed response envelope with <code>type</code>, <code>code</code>, <code>message</code>, <code>param</code>, <code>doc_url</code>, <code>request_id</code>.</td></tr>
+          <tr><td class="ev">EV-03</td><td>Quickstart code</td><td>npm package <code>medblocks</code>; class <code>Medblocks</code>; methods <code>patientSession.init</code>, <code>patients.getConnections</code>, <code>patients.records</code>; helper <code>parseReturnUrl</code>; <code>webhooks.constructEvent</code>.</td></tr>
+          <tr><td class="ev">EV-04</td><td>Epic configuration guide</td><td>Redirect URI <code>https://app.medblocks.com/api/auth/smart/callback</code>. JWKS URI <code>https://app.medblocks.com/.well-known/jwks.json</code>, stated as identical for sandbox and production. Confidential client, persistent/rolling refresh tokens, Automatic Client Distribution for USCDI&nbsp;v3.</td></tr>
+          <tr><td class="ev">EV-05</td><td>Published JWKS</td><td><code>github.com/medblocks/publickey-jwks</code> — one file, two commits, one key: <code>kty RSA</code>, <code>use sig</code>, <code>alg RS256</code>, <code>e AQAB</code>, <code>kid zoWmCnzEcimOswkElJHSIi6YxU9hnv_7j8TAmv6XypU</code>.</td></tr>
+          <tr><td class="ev">EV-06</td><td>Unknown-path response</td><td><code>app.medblocks.com</code> answers an unknown path with <code>{"error":"not_found"}</code> as <code>application/json;charset=utf-8</code>.</td></tr>
+          <tr><td class="ev">EV-07</td><td>API directory listing</td><td>9 named APIs with operation counts: Patients&nbsp;5, Webhooks&nbsp;4, Connections&nbsp;2, Patient&nbsp;Sessions&nbsp;2, Events&nbsp;1, Launch&nbsp;Contexts&nbsp;1, Health&nbsp;1, plus Certificates and Feeds.</td></tr>
+          <tr><td class="ev">EV-08</td><td>MCP server</td><td><code>https://app.medblocks.com/mcp</code>, server name <code>medblocks-platform</code>, ~10 tools, OAuth for interactive use and API keys for backends.</td></tr>
+          <tr><td class="ev">EV-09</td><td>Key format</td><td>Prefixes <code>mb_sk_live_</code> and <code>mb_sk_sbx_</code>; a sandbox key cannot open a session against a production source.</td></tr>
+          <tr><td class="ev">EV-10</td><td>Webhook contract</td><td>Header <code>Medblocks-Signature</code>; raw body required before parsing; 2xx within 5 seconds; de-duplicate on <code>event.id</code>; 4 event types.</td></tr>
+          <tr><td class="ev">EV-11</td><td>Export semantics</td><td>Identifier system <code>urn:medblocks:patient-id</code>; NDJSON files rewritten in full each run; per-destination watermarks; independent failure domains.</td></tr>
+          <tr><td class="ev">EV-12</td><td>GitHub organisation</td><td>62 repositories including <code>openFHIR</code> (Java), an <code>ehrbase</code> fork (Java, openEHR), <code>openehr-sync-service</code>, <code>medblocks-ui</code> (web components), <code>couchbase-fhir-ce</code>, <code>fhir-benchmarking</code>, <code>skills</code>.</td></tr>
+          <tr><td class="ev">EV-13</td><td>Billing definition</td><td>“A patient counts as ‘active’ the first time we successfully pull FHIR data for them.” Cap breach returns <span class="num">402</span> <code>quota_exceeded</code> on new sync attempts.</td></tr>
+          <tr><td class="ev">EV-14</td><td>Epic onboarding scripts</td><td>Browser-console scripts to bulk-select USCDI&nbsp;v3 scopes and bulk-activate customer organisations, against what the guide calls the “7000 clicks problem”.</td></tr>
+          <tr><td class="ev">EV-15</td><td>Session vs connection status</td><td>Session status <code>open</code> / <code>complete</code> / <code>expired</code>, documented as distinct from connection status <code>active</code> / <code>failed</code> / <code>refresh_failed</code>. “A session can finish with no connection.”</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== FINDINGS ===== -->
+  <section id="findings">
+    <div class="sec-h"><span class="sec-n">02</span><h2>Findings</h2></div>
+    <p class="sec-note">Twelve, ordered roughly from structural to strategic. Each states its evidence, its reasoning, and what it is worth to you.</p>
+
+    <article class="finding" id="f01">
+      <div class="f-id"><span class="f-n">F-01</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>One origin carries seven jobs</h3>
+        <p class="f-ev">Evidence — <b>EV-04</b>, <b>EV-06</b>, <b>EV-07</b>, <b>EV-08</b></p>
+        <p>Every product surface resolves to the single host <code>app.medblocks.com</code>: the dashboard, the REST API, the hosted consent UI, the OAuth callback, the JWKS document, and the MCP server. Content lives elsewhere, on <code>medblocks.com</code>.</p>
+        <p>The callback path is <code>/api/auth/smart/callback</code> and the key set is at <code>/.well-known/jwks.json</code>. The <code>/api/…</code> prefix, the co-located <code>.well-known</code> route and the JSON 404 from the same origin are the signature of a <strong>single application handling both pages and API routes</strong> — the Next.js App Router convention being the most likely specific shape, given the first-party SDK is TypeScript.</p>
+        <div class="sowhat"><b>Worth knowing:</b> there is no separate auth service to point at, no API subdomain, no split between control plane and data plane at the DNS level. For a platform at this stage that is the right call — one deploy, one session story — but it means the consent redirect, the token exchange and the dashboard share a blast radius.</div>
+      </div>
+    </article>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 442" role="img" aria-label="Topology: medblocks.com serves marketing, docs and feeds, while app.medblocks.com serves six product roles — dashboard, REST API, hosted consent UI, OAuth callback, JWKS document and MCP server — each reached by a different caller: your server, the patient browser, the EHR portal and an AI agent.">
+          <defs><marker id="t1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="s-soft" x="30" y="30" width="254" height="64"/>
+          <text class="s-t" x="157" y="55" text-anchor="middle">medblocks.com</text>
+          <text class="s-sm" x="157" y="76" text-anchor="middle">marketing · docs · blog · llms.txt</text>
+
+          <text class="s-cap" x="30" y="112">Callers</text>
+
+          <rect class="s-box" x="30" y="122" width="254" height="44"/>
+          <text class="s-t" x="157" y="150" text-anchor="middle">Your server</text>
+          <rect class="s-box" x="30" y="174" width="254" height="44"/>
+          <text class="s-t" x="157" y="202" text-anchor="middle">Patient browser</text>
+          <rect class="s-box" x="30" y="226" width="254" height="96"/>
+          <text class="s-t" x="157" y="268" text-anchor="middle">EHR portal (Epic)</text>
+          <text class="s-sm" x="157" y="288" text-anchor="middle">server-to-server</text>
+          <rect class="s-box" x="30" y="330" width="254" height="44"/>
+          <text class="s-t" x="157" y="358" text-anchor="middle">AI agent</text>
+
+          <rect class="s-box" x="470" y="30" width="400" height="384"/>
+          <text class="s-cap" x="486" y="50">app.medblocks.com</text>
+
+          <rect class="s-soft" x="486" y="60" width="368" height="44"/>
+          <text class="s-t" x="670" y="87" text-anchor="middle">Dashboard — control plane</text>
+          <rect class="s-hot" x="486" y="122" width="368" height="44"/>
+          <text class="s-t" x="670" y="149" text-anchor="middle">REST API — /api/*</text>
+          <rect class="s-hot" x="486" y="174" width="368" height="44"/>
+          <text class="s-t" x="670" y="201" text-anchor="middle">Hosted consent UI + picker</text>
+          <rect class="s-hot" x="486" y="226" width="368" height="44"/>
+          <text class="s-t" x="670" y="253" text-anchor="middle">/api/auth/smart/callback</text>
+          <rect class="s-hot" x="486" y="278" width="368" height="44"/>
+          <text class="s-t" x="670" y="305" text-anchor="middle">/.well-known/jwks.json</text>
+          <rect class="s-hot" x="486" y="330" width="368" height="44"/>
+          <text class="s-t" x="670" y="357" text-anchor="middle">/mcp — 10 tools</text>
+
+          <line class="s-l" x1="284" y1="144" x2="466" y2="144" marker-end="url(#t1)"/>
+          <rect class="s-patch" x="330" y="128" width="90" height="13"/>
+          <text class="s-m" x="375" y="139" text-anchor="middle">SDK / REST</text>
+
+          <line class="s-l" x1="284" y1="196" x2="466" y2="196" marker-end="url(#t1)"/>
+          <rect class="s-patch" x="338" y="180" width="74" height="13"/>
+          <text class="s-m" x="375" y="191" text-anchor="middle">redirect</text>
+
+          <line class="s-l" x1="284" y1="248" x2="466" y2="248" marker-end="url(#t1)"/>
+          <rect class="s-patch" x="330" y="232" width="90" height="13"/>
+          <text class="s-m" x="375" y="243" text-anchor="middle">auth code</text>
+
+          <line class="s-l" x1="284" y1="300" x2="466" y2="300" marker-end="url(#t1)"/>
+          <rect class="s-patch" x="320" y="284" width="110" height="13"/>
+          <text class="s-m" x="375" y="295" text-anchor="middle">fetch public key</text>
+
+          <line class="s-l" x1="284" y1="352" x2="466" y2="352" marker-end="url(#t1)"/>
+          <rect class="s-patch" x="346" y="336" width="58" height="13"/>
+          <text class="s-m" x="375" y="347" text-anchor="middle">tools</text>
+
+          <text class="s-cap" x="30" y="432">Two origins. One of them does everything that matters.</text>
+        </svg>
+      </div>
+      <figcaption><strong>F-01.</strong> Four very different callers — your backend, a patient’s browser, Epic’s servers, and an AI agent — all terminate on the same origin. The teal rows are the ones that handle credentials or PHI.</figcaption>
+    </figure>
+
+    <article class="finding" id="f02">
+      <div class="f-id"><span class="f-n">F-02</span><span class="chip c-conf">confirmed</span></div>
+      <div class="f-body">
+        <h3>They authenticate to Epic with a signed assertion, not a secret — using one RSA-2048 key for the entire platform</h3>
+        <p class="f-ev">Evidence — <b>EV-04</b>, <b>EV-05</b> · verified by computation</p>
+        <p>Epic requires a JWKS URI rather than a client secret, which means the client authenticates with <code>private_key_jwt</code>: Medblocks signs a short-lived JWT assertion with a private key, and Epic verifies it against the public key published at the JWKS URL. No shared secret ever transits.</p>
+        <p>The published key set contains exactly one key. Decoding it confirms the parameters, and the <code>kid</code> turns out to be derivable:</p>
+<pre><span class="c"># from the published jwks.json</span>
+modulus           <span class="ok">256 bytes → RSA-2048</span>
+exponent  e=AQAB  <span class="ok">→ 65537</span>
+alg               <span class="ok">RS256</span>   use  <span class="ok">sig</span>   keys in set  <span class="ok">1</span>
+
+<span class="c"># RFC 7638 thumbprint of {"e","kty","n"}, base64url(SHA-256(...))</span>
+computed   zoWmCnzEcimOswkElJHSIi6YxU9hnv_7j8TAmv6XypU
+published  zoWmCnzEcimOswkElJHSIi6YxU9hnv_7j8TAmv6XypU
+           <span class="ok">MATCH</span></pre>
+        <p>A <code>kid</code> that equals the RFC&nbsp;7638 thumbprint is not something a person types. It is what a JOSE library emits when it generates or imports a key — the behaviour of <code>jose</code> and its siblings in the Node ecosystem. That is a small corroboration of F-01’s TypeScript-backend reading.</p>
+        <div class="sowhat"><b>Worth knowing:</b> one key pair signs assertions for every workspace, every source and — per the docs — both sandbox and production. Rotation therefore means publishing a second key to the set, waiting for every vendor’s cache to pick it up, and only then retiring the first. Copy the mechanism; think hard before copying the single-key part.</div>
+      </div>
+    </article>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 348" role="img" aria-label="Medblocks signs a client assertion JWT with its single RSA-2048 private key and sends it to Epic's token endpoint, which fetches the matching public key by kid from the published JWKS and returns access and refresh tokens. No shared secret transits.">
+          <defs><marker id="t2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="s-hot" x="40" y="76" width="230" height="104"/>
+          <text class="s-t" x="155" y="112" text-anchor="middle">Medblocks</text>
+          <text class="s-sm" x="155" y="134" text-anchor="middle">holds ONE RSA-2048</text>
+          <text class="s-sm" x="155" y="152" text-anchor="middle">private key</text>
+
+          <rect class="s-box" x="630" y="76" width="230" height="104"/>
+          <text class="s-t" x="745" y="112" text-anchor="middle">Epic token endpoint</text>
+          <text class="s-sm" x="745" y="134" text-anchor="middle">per customer</text>
+          <text class="s-sm" x="745" y="152" text-anchor="middle">organization</text>
+
+          <line class="s-lh" x1="270" y1="106" x2="626" y2="106" marker-end="url(#t2)"/>
+          <rect class="s-patch" x="358" y="88" width="180" height="14"/>
+          <text class="s-m" x="448" y="100" text-anchor="middle">client_assertion — RS256 JWT</text>
+
+          <line class="s-l" x1="626" y1="152" x2="274" y2="152" marker-end="url(#t2)"/>
+          <rect class="s-patch" x="374" y="166" width="148" height="14"/>
+          <text class="s-m" x="448" y="177" text-anchor="middle">access + refresh token</text>
+
+          <rect class="s-soft" x="330" y="238" width="290" height="66"/>
+          <text class="s-t" x="475" y="264" text-anchor="middle">publickey-jwks / jwks.json</text>
+          <text class="s-mm" x="475" y="286" text-anchor="middle">1 key · RSA · RS256 · kid = thumbprint</text>
+
+          <path class="s-l" d="M155,180 V271 H326" marker-end="url(#t2)"/>
+          <rect class="s-patch" x="196" y="255" width="80" height="13"/>
+          <text class="s-m" x="236" y="266" text-anchor="middle">publishes</text>
+
+          <path class="s-l" d="M745,180 V271 H624" marker-end="url(#t2)"/>
+          <rect class="s-patch" x="640" y="255" width="94" height="13"/>
+          <text class="s-m" x="687" y="266" text-anchor="middle">fetch by kid</text>
+
+          <text class="s-cap" x="40" y="332">No shared secret transits — and no per-tenant key separation either</text>
+        </svg>
+      </div>
+      <figcaption><strong>F-02.</strong> The asymmetric design is strictly better than client secrets: nothing confidential crosses the wire and Epic never stores anything of yours. The cost is concentration — one private key is the whole platform’s authority.</figcaption>
+    </figure>
+
+    <article class="finding" id="f03">
+      <div class="f-id"><span class="f-n">F-03</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>A single redirect URI serves every tenant, and <code>state</code> is the demultiplexer</h3>
+        <p class="f-ev">Evidence — <b>EV-04</b>, <b>EV-02</b> (<code>oauth_state_expired</code>), <b>EV-15</b></p>
+        <p>The Epic guide instructs you to register one fixed redirect URI: <code>https://app.medblocks.com/api/auth/smart/callback</code>. Not one per workspace, not one per environment. Every authorisation, for every patient, at every hospital, across every customer, returns to that one path.</p>
+        <p>An OAuth callback receives only an authorisation code and whatever was round-tripped in <code>state</code>. For the platform to know which workspace, patient, source and session a returning browser belongs to — and where to send the patient afterwards — <code>state</code> must be an <strong>opaque server-side handle</strong> rather than encoded data, because it also has to carry the PKCE verifier, which must never be exposed.</p>
+        <p>The error taxonomy corroborates this precisely. <code>oauth_state_expired</code> is documented as “OAuth state expired before callback completion.” Something you merely decode cannot expire. Something you look up in a TTL-bounded store can.</p>
+        <div class="sowhat"><b>Worth knowing:</b> this is the design decision that lets you integrate without registering anything yourself, and it is the one most worth copying. It is also a chokepoint: one route, one state store, and a TTL that silently converts a slow patient into a support ticket.</div>
+      </div>
+    </article>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 424" role="img" aria-label="Many workspace-patient-source combinations all redirect back to one callback URL. An opaque state handle is looked up in a TTL-bounded server-side store, which resolves to the workspace, patient, source, session, return URL and PKCE verifier.">
+          <defs><marker id="t3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="s-box" x="20" y="40" width="190" height="50"/>
+          <text class="s-mm" x="115" y="62" text-anchor="middle">workspace A · patient 1</text>
+          <text class="s-mm" x="115" y="78" text-anchor="middle">Epic</text>
+          <rect class="s-box" x="240" y="40" width="190" height="50"/>
+          <text class="s-mm" x="335" y="62" text-anchor="middle">workspace A · patient 2</text>
+          <text class="s-mm" x="335" y="78" text-anchor="middle">athenahealth</text>
+          <rect class="s-box" x="460" y="40" width="190" height="50"/>
+          <text class="s-mm" x="555" y="62" text-anchor="middle">workspace B · patient 9</text>
+          <text class="s-mm" x="555" y="78" text-anchor="middle">Cerner</text>
+          <rect class="s-box" x="680" y="40" width="190" height="50"/>
+          <text class="s-mm" x="775" y="62" text-anchor="middle">… n more, all tenants</text>
+          <text class="s-mm" x="775" y="78" text-anchor="middle">all sources</text>
+
+          <line class="s-l" x1="115" y1="90" x2="330" y2="146" marker-end="url(#t3)"/>
+          <line class="s-l" x1="335" y1="90" x2="406" y2="146" marker-end="url(#t3)"/>
+          <line class="s-l" x1="555" y1="90" x2="494" y2="146" marker-end="url(#t3)"/>
+          <line class="s-l" x1="775" y1="90" x2="570" y2="146" marker-end="url(#t3)"/>
+
+          <rect class="s-hot" x="280" y="150" width="340" height="56"/>
+          <text class="s-mm" x="450" y="174" text-anchor="middle">ONE redirect URI</text>
+          <text class="s-m" x="450" y="194" text-anchor="middle">/api/auth/smart/callback</text>
+
+          <line class="s-lh" x1="450" y1="206" x2="450" y2="244" marker-end="url(#t3)"/>
+          <rect class="s-patch" x="462" y="218" width="160" height="13"/>
+          <text class="s-m" x="466" y="229">state = opaque handle</text>
+
+          <rect class="s-box" x="280" y="248" width="340" height="52"/>
+          <text class="s-t" x="450" y="270" text-anchor="middle">Server-side state store</text>
+          <text class="s-mm" x="450" y="290" text-anchor="middle">TTL bounded</text>
+
+          <line class="s-l" x1="450" y1="300" x2="450" y2="334" marker-end="url(#t3)"/>
+          <rect class="s-patch" x="462" y="310" width="120" height="13"/>
+          <text class="s-m" x="466" y="321">one lookup</text>
+
+          <rect class="s-soft" x="130" y="338" width="640" height="48"/>
+          <text class="s-mm" x="450" y="358" text-anchor="middle">workspace · patient · source · session · return_url · PKCE verifier</text>
+          <text class="s-mm" x="450" y="376" text-anchor="middle">→ exchange code, store tokens, redirect the patient home</text>
+
+          <text class="s-cap" x="20" y="412">When the TTL wins instead: 400 oauth_state_expired</text>
+        </svg>
+      </div>
+      <figcaption><strong>F-03.</strong> The funnel is the product. Everything upstream of the callback is arbitrary in cardinality; everything downstream is a single row lookup. This is why you never register a redirect URI, and why a patient who wanders off mid-flow gets a specific, named error rather than a mystery.</figcaption>
+    </figure>
+
+    <article class="finding" id="f04">
+      <div class="f-id"><span class="f-n">F-04</span><span class="chip c-conf">confirmed</span></div>
+      <div class="f-body">
+        <h3>There are two error systems, not one</h3>
+        <p class="f-ev">Evidence — <b>EV-02</b>, <b>EV-06</b></p>
+        <p>The documented envelope is rich and stable: <code>type</code>, <code>code</code>, <code>message</code>, <code>param</code>, <code>doc_url</code>, <code>request_id</code>. But an unknown path on the same origin returns something else entirely:</p>
+<pre><span class="c">// documented application layer</span>
+{ "error": { "type": …, "code": …, "message": …,
+             "param": …, "doc_url": …, "request_id": … } }
+
+<span class="c">// actual response from an unrouted path</span>
+{ "error": "not_found" }        <span class="c">// application/json;charset=utf-8</span></pre>
+        <p>A bare string where the contract promises an object. These are two different layers: an outer router that rejects before the API contract applies, and the inner handler stack that honours it.</p>
+        <div class="sowhat"><b>Worth knowing:</b> if you write a client that assumes <code>error.code</code> is always readable, a typo in a path will hand you <code>undefined</code> instead of a code. Parse defensively at the boundary. And if you are building something similar: make the 404 speak your documented envelope too — it costs one middleware and removes an entire class of confused bug report.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f05">
+      <div class="f-id"><span class="f-n">F-05</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>The <span class="num">502</span> class is an inventory of their dependencies</h3>
+        <p class="f-ev">Evidence — <b>EV-02</b></p>
+        <p>Error taxonomies leak architecture, because a team only mints a distinct code for a failure mode it actually has to distinguish. Sorting the documented codes by what they reveal produces a clean trust boundary.</p>
+        <p>The <span class="num">502</span> group is the most informative: <code>fhir_error</code>, <code>oauth_error</code>, <code>token_exchange_failed</code>, <code>token_unavailable</code>, <code>storage_error</code>, <code>email_error</code>. Read as a set, that enumerates <strong>an EHR FHIR client, an OAuth provider client, a token service, an object-storage adapter and a transactional email provider</strong> — five external dependencies, named by their failure.</p>
+        <p>Meanwhile <code>config_missing</code> (“required server configuration is missing”) sitting in the <span class="num">500</span> class is a quiet tell: some per-source configuration is resolved at request time and can be absent, which fits the picture of a source registry populated per vendor and per workspace.</p>
+      </div>
+    </article>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 392" role="img" aria-label="Error codes sorted into three bands: a policy and entitlement band of 402, 429 and 403 codes; an internals band of 500 codes plus the state-store 400; and an outside-the-boundary band of 502 codes that names each external dependency.">
+          <rect class="s-soft" x="20" y="60" width="256" height="278"/>
+          <text class="s-cap" x="20" y="50">Policy — not a bug</text>
+          <text class="s-mm" x="36" y="92">402 feature_not_enabled</text>
+          <text class="s-mm" x="36" y="120">402 quota_exceeded</text>
+          <text class="s-mm" x="36" y="148">429 throttled</text>
+          <text class="s-mm" x="36" y="176">429 api_key_limit_exceeded</text>
+          <text class="s-mm" x="36" y="204">403 role_insufficient</text>
+          <text class="s-mm" x="36" y="232">403 scope_violation</text>
+          <text class="s-m" x="36" y="292">Business rules, surfaced</text>
+          <text class="s-m" x="36" y="310">as HTTP. Never retry.</text>
+
+          <rect class="s-hot" x="304" y="60" width="276" height="278"/>
+          <text class="s-cap" x="304" y="50">Theirs to fix</text>
+          <text class="s-mm" x="320" y="92">500 internal_error</text>
+          <text class="s-mm" x="320" y="120">500 db_error</text>
+          <text class="s-mm" x="320" y="148">500 config_missing</text>
+          <text class="s-mm" x="320" y="176">400 oauth_state_expired</text>
+          <text class="s-mm" x="320" y="204">409 already_linked</text>
+          <text class="s-mm" x="320" y="232">409 external_id_already_exists</text>
+          <text class="s-m" x="320" y="292">A datastore, a config</text>
+          <text class="s-m" x="320" y="310">registry, a state store.</text>
+
+          <rect class="s-box" x="608" y="60" width="272" height="278"/>
+          <text class="s-cap" x="608" y="50">Outside the boundary</text>
+          <text class="s-mm" x="624" y="92">502 fhir_error</text>
+          <text class="s-mm" x="624" y="120">502 oauth_error</text>
+          <text class="s-mm" x="624" y="148">502 token_exchange_failed</text>
+          <text class="s-mm" x="624" y="176">502 token_unavailable</text>
+          <text class="s-mm" x="624" y="204">502 storage_error</text>
+          <text class="s-mm" x="624" y="232">502 email_error</text>
+          <text class="s-m" x="624" y="292">Five named dependencies.</text>
+          <text class="s-m" x="624" y="310">Retry with backoff.</text>
+
+          <text class="s-cap" x="20" y="376">Sort an error reference by blame and the architecture falls out of it</text>
+        </svg>
+      </div>
+      <figcaption><strong>F-05.</strong> Three bands, three different responses from your client: never retry the left, report the middle with a <code>request_id</code>, back off and retry the right. The right band doubles as a dependency list nobody published on purpose.</figcaption>
+    </figure>
+
+    <article class="finding" id="f06">
+      <div class="f-id"><span class="f-n">F-06</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>Nine services, sixteen counted operations — and the shape tells you what is finished</h3>
+        <p class="f-ev">Evidence — <b>EV-07</b>, <b>EV-03</b>, <b>EV-01</b></p>
+        <p>A public API directory lists the platform’s services with operation counts. Cross-referencing those counts against the SDK method names and the documentation gives a reasonable reconstruction of the surface — and, more usefully, a map of where the engineering has and has not gone.</p>
+        <div class="tw">
+          <table>
+            <thead><tr><th>Service</th><th class="num">Ops</th><th>Reading</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Patients</strong></td><td class="num">5</td><td>The core resource. Create, read, list, connections, records — matching <code>patients.getConnections</code> and <code>patients.records</code> in the SDK.</td></tr>
+              <tr><td><strong>Webhooks</strong></td><td class="num">4</td><td>CRUD over endpoints. Four operations for four event types is a coincidence; this is endpoint management, not event delivery.</td></tr>
+              <tr><td><strong>Connections</strong></td><td class="num">2</td><td>List and read. Notably <em>no create</em> — connections are born from the OAuth callback, never from an API call. That is F-03 showing up in the surface area.</td></tr>
+              <tr><td><strong>Patient Sessions</strong></td><td class="num">2</td><td>Init and list, exactly as the docs describe: start a session, later list a patient’s session history.</td></tr>
+              <tr><td><strong>Events</strong></td><td class="num">1</td><td>Read-only. This is the auth event history — an append-only audit log with one query operation.</td></tr>
+              <tr><td><strong>Launch Contexts</strong></td><td class="num">1</td><td>The clinician-workflow surface. <em>One operation.</em> See F-11.</td></tr>
+              <tr><td><strong>Health</strong></td><td class="num">1</td><td>Liveness probe.</td></tr>
+              <tr><td><strong>Certificates</strong></td><td>—</td><td>“Verify training certificates.” Not part of the integration platform at all. See F-12.</td></tr>
+              <tr><td><strong>Feeds</strong></td><td>—</td><td>Machine-readable content indexes — the <code>llms.txt</code> family.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="sowhat"><b>Worth knowing:</b> the absence of a create-connection operation is the single most load-bearing fact in the API. Connections cannot be forged, scripted, or bulk-imported; they exist only as the residue of a real human authorisation. That is a correct and deliberate constraint for a system holding delegated access to medical records.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f07">
+      <div class="f-id"><span class="f-n">F-07</span><span class="chip c-conf">confirmed</span></div>
+      <div class="f-body">
+        <h3>Sessions and connections are separate state machines that meet exactly once</h3>
+        <p class="f-ev">Evidence — <b>EV-15</b>, <b>EV-01</b></p>
+        <p>Session status (<code>open</code>, <code>complete</code>, <code>expired</code>) is documented as distinct from connection status (<code>active</code>, <code>failed</code>, <code>refresh_failed</code>, and the further <code>expired</code> and <code>disconnected</code>). The sentence that matters: <strong>“a session can finish with no connection.”</strong></p>
+        <p>These are objects with different lifespans. A session is a signed, TTL-bounded link that lives for minutes. A connection is a credential record that lives for months or years and decays through its own failure modes. Collapsing them — the obvious first design — makes it impossible to express a patient who completed the flow and then declined at the portal.</p>
+        <div class="sowhat"><b>Worth knowing:</b> this is the modelling decision most worth stealing wholesale. If you build this and use one status field, you will discover the need for the second one in production, with live customers, after your API is public.</div>
+      </div>
+    </article>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 358" role="img" aria-label="Two state machines side by side. A session goes from open to either complete or expired, living minutes. A completed session yields zero, one or many connections, each of which independently lives as active, failed, refresh_failed, expired or disconnected over months or years.">
+          <defs><marker id="t4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <text class="s-cap" x="30" y="36">Session — a signed link · minutes</text>
+          <line class="s-div" x1="450" y1="20" x2="450" y2="336"/>
+          <text class="s-cap" x="470" y="36">Connection — a credential · years</text>
+
+          <rect class="s-box" x="30" y="70" width="140" height="46"/>
+          <text class="s-t" x="100" y="98" text-anchor="middle">open</text>
+
+          <rect class="s-box" x="250" y="70" width="150" height="46"/>
+          <text class="s-t" x="325" y="98" text-anchor="middle">complete</text>
+
+          <rect class="s-box" x="250" y="170" width="150" height="46"/>
+          <text class="s-t" x="325" y="198" text-anchor="middle">expired</text>
+
+          <line class="s-l" x1="170" y1="93" x2="246" y2="93" marker-end="url(#t4)"/>
+          <rect class="s-patch" x="176" y="76" width="66" height="13"/>
+          <text class="s-m" x="209" y="87" text-anchor="middle">finishes</text>
+
+          <path class="s-l" d="M100,116 V193 H246" marker-end="url(#t4)"/>
+          <rect class="s-patch" x="140" y="177" width="42" height="13"/>
+          <text class="s-m" x="161" y="188" text-anchor="middle">TTL</text>
+
+          <path class="s-lh" d="M400,93 H580 V310"/>
+          <rect class="s-patch" x="432" y="76" width="126" height="13"/>
+          <text class="s-m" x="495" y="87" text-anchor="middle">0, 1 or many</text>
+
+          <line class="s-lh" x1="580" y1="93" x2="616" y2="93" marker-end="url(#t4)"/>
+          <line class="s-l" x1="580" y1="147" x2="616" y2="147" marker-end="url(#t4)"/>
+          <line class="s-l" x1="580" y1="201" x2="616" y2="201" marker-end="url(#t4)"/>
+          <line class="s-l" x1="580" y1="255" x2="616" y2="255" marker-end="url(#t4)"/>
+          <line class="s-l" x1="580" y1="310" x2="616" y2="310" marker-end="url(#t4)"/>
+
+          <rect class="s-hot" x="620" y="70" width="180" height="46"/>
+          <text class="s-t" x="710" y="98" text-anchor="middle">active</text>
+          <rect class="s-box" x="620" y="126" width="180" height="42"/>
+          <text class="s-t" x="710" y="152" text-anchor="middle">failed</text>
+          <rect class="s-box" x="620" y="180" width="180" height="42"/>
+          <text class="s-t" x="710" y="206" text-anchor="middle">refresh_failed</text>
+          <rect class="s-box" x="620" y="234" width="180" height="42"/>
+          <text class="s-t" x="710" y="260" text-anchor="middle">expired</text>
+          <rect class="s-box" x="620" y="288" width="180" height="42"/>
+          <text class="s-t" x="710" y="314" text-anchor="middle">disconnected</text>
+
+          <text class="s-cap" x="30" y="264">A session can finish</text>
+          <text class="s-cap" x="30" y="282">with no connection</text>
+          <text class="s-cap" x="30" y="300">at all.</text>
+        </svg>
+      </div>
+      <figcaption><strong>F-07.</strong> The two machines touch at exactly one point, and the cardinality there is zero-to-many — which is why a boolean “connected?” field cannot represent the system. Note that <code>expired</code> appears in both vocabularies meaning different things.</figcaption>
+    </figure>
+
+    <article class="finding" id="f08">
+      <div class="f-id"><span class="f-n">F-08</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>The billing meter is enforced in the sync path, not the create path</h3>
+        <p class="f-ev">Evidence — <b>EV-13</b>, <b>EV-02</b></p>
+        <p>“A patient counts as ‘active’ the first time we successfully pull FHIR data for them,” and breaching the free cap returns <span class="num">402</span> <code>quota_exceeded</code> on <em>new patient sync attempts</em>. Creating a patient record is free and unmetered.</p>
+        <p>That places the entitlement check inside the pull enqueue or pull completion path, and implies a per-patient marker — a nullable first-successful-pull timestamp is the natural shape — with the workspace’s active count derived from it. A metric measured at the point of value delivered, not at the point of record created.</p>
+        <div class="sowhat"><b>Worth knowing:</b> it is an unusually honest meter, and it is also good engineering. Failed integrations cost the customer nothing, which removes the main reason not to experiment — and it means their revenue tracks the thing they actually control.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f09">
+      <div class="f-id"><span class="f-n">F-09</span><span class="chip c-conf">confirmed</span></div>
+      <div class="f-body">
+        <h3>The real bottleneck is a browser automation script, and they published it</h3>
+        <p class="f-ev">Evidence — <b>EV-14</b>, <b>EV-04</b></p>
+        <p>The Epic registration guide includes browser-console scripts for two steps: selecting the full set of USCDI&nbsp;v3 and read-only R4 scopes, and activating customer organisations — against what the guide names the <strong>“7000 clicks problem.”</strong></p>
+        <p>Epic’s Automatic Client Distribution puts a registered patient app in front of Epic’s customer base, but reaching those organisations means per-organisation activation through a web UI with no bulk API. So the state of the art, for the vendor whose entire business is this, is a snippet you paste into devtools.</p>
+        <div class="sowhat"><b>Worth knowing:</b> this is the most valuable single fact in the teardown for anyone weighing build against buy. The hard part of healthcare integration is not the OAuth, the FHIR paging, or the normalisation — all of which are tractable engineering. It is thousands of manual clicks in someone else’s admin console, per vendor, forever. That is an operations cost with no technical solution, and it does not appear on any architecture diagram.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f10">
+      <div class="f-id"><span class="f-n">F-10</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>Environment separation is logical, not cryptographic</h3>
+        <p class="f-ev">Evidence — <b>EV-04</b>, <b>EV-09</b>, <b>EV-05</b></p>
+        <p>Sandbox and production are presented as strongly separated: different workspaces, different key prefixes (<code>mb_sk_sbx_</code> versus <code>mb_sk_live_</code>), separate sources, webhooks, exports and history, and a sandbox key that cannot open a session against a production source.</p>
+        <p>But the Epic guide gives the <em>same</em> JWKS URI for both environments, and the published key set holds one key. So the separation is enforced in application logic over a shared signing identity and — given F-01’s single origin — most likely a shared deployment with a tenant discriminator.</p>
+        <div class="sowhat"><b>Worth knowing:</b> entirely normal for a platform at this stage, and the logical separation is the part that protects customers day to day. Just size your expectations correctly: “sandbox” here means a different row in a database, not a different system.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f11">
+      <div class="f-id"><span class="f-n">F-11</span><span class="chip c-inf">inferred</span></div>
+      <div class="f-body">
+        <h3>Patient Access is finished; Clinician Workflow is a stub</h3>
+        <p class="f-ev">Evidence — <b>EV-07</b>, <b>EV-01</b></p>
+        <p>Count the surface per door. Patient Access has Patients (5 ops), Patient Sessions (2), Connections (2), Events (1) — ten operations, a hosted UI, a dedicated build guide, a quickstart, a per-vendor configuration guide, and four webhook events. <strong>Clinician Workflow has one operation</strong> — Launch Contexts — and a documentation page that describes what is possible and then directs you to a support form.</p>
+        <p>The pricing corroborates it: Patient Access is on the free plan; Clinical Workflows and Backend Services are enterprise-only, which is where a feature can be delivered as a partly-manual engagement without anyone noticing. Backend and Network doors have no visible API surface at all.</p>
+        <div class="sowhat"><b>Worth knowing:</b> the “all four surfaces” positioning is a roadmap claim, not a product claim, and the comparison table it supports should be read that way. If your product needs Door 2 or Door 3, expect a conversation with a human rather than a quickstart — and validate that before you build a plan around it.</div>
+      </div>
+    </article>
+
+    <article class="finding" id="f12">
+      <div class="f-id"><span class="f-n">F-12</span><span class="chip c-spec">speculative</span></div>
+      <div class="f-body">
+        <h3>The Clinical Domain Models are openEHR archetypes wearing FHIR clothes</h3>
+        <p class="f-ev">Evidence — <b>EV-12</b>, <b>EV-07</b>, <b>EV-01</b></p>
+        <p>The GitHub organisation is an archaeological record of a different company: 62 repositories dominated by Java and openEHR — <code>openFHIR</code> (a bidirectional openEHR↔FHIR mapping engine), a fork of <code>ehrbase</code> (an open-source openEHR server), <code>openehr-sync-service</code>, <code>medblocks-ui</code> web components, plus FHIR server benchmarking and a Couchbase-backed FHIR server. The <code>llms.txt</code> describes bootcamps with 1,100+ students and development services. A Certificates API for verifying training certificates is still listed on the live platform.</p>
+        <p>The current product is a TypeScript SDK over a Next.js platform selling US regulatory-API integration. That is a pivot from openEHR consultancy and training to a product business, and the old surface has not been fully swept away.</p>
+        <p>Which makes the “Clinical Domain Models” layer legible in a way the docs never state. Modelling clinical concepts as governed, reusable, terminology-bound structures separate from the transport format <em>is the central idea of openEHR</em>. Their documentation says FHIR is “the transport format” while meaning lives above it — that is archetype thinking, expressed in a FHIR-native product by people who spent years building openEHR tooling.</p>
+        <div class="sowhat"><b>Worth marking speculative:</b> the lineage is documented; the causal claim about the design is my reading, not theirs. But it predicts something testable — that their normalised models will look more like curated clinical archetypes than like thin FHIR profiles. If you are evaluating this layer, that is the question to ask on the call.</div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ===== GAPS ===== -->
+  <section id="gaps">
+    <div class="sec-h"><span class="sec-n">03</span><h2>What this teardown could not determine</h2></div>
+    <p class="sec-note">Stated plainly, because a teardown that only lists what it found is selling something.</p>
+
+    <div class="gap">
+      <h4>Unresolved</h4>
+      <ul class="b">
+        <li><strong>The storage engine.</strong> <code>db_error</code> confirms a primary datastore exists and nothing more. Whether the FHIR layer is a bought server, an open-source one, or hand-rolled is not observable from outside — though the <code>couchbase-fhir-ce</code> and <code>fhir-benchmarking</code> repositories suggest the question was researched seriously.</li>
+        <li><strong>The queue or workflow engine.</strong> Background pulls are documented as scheduled, retried and resumable. No artifact names what runs them.</li>
+        <li><strong>Whether normalisation is rules or models.</strong> The docs describe unit conversion, code-system mapping and aggregation rules. Nothing indicates whether a human curates the mappings, a model proposes them, or both.</li>
+        <li><strong>Tenant isolation below the application layer.</strong> F-10 establishes shared signing identity; it says nothing about data-layer isolation, which could be row-level, schema-level or database-level.</li>
+        <li><strong>Actual rate limits.</strong> <code>throttled</code> and <code>quota_exceeded</code> exist; no published numbers.</li>
+        <li><strong>Hosting and residency.</strong> Not stated publicly. The security page refers you to a contact form for controls detail — which is the normal and correct answer for a platform under a BAA.</li>
+      </ul>
+    </div>
+
+    <p>Every one of these is answerable in a single call with their engineering team, and all six are worth asking before you commit. The questions are sharper for having done the teardown first.</p>
+  </section>
+
+  <!-- ===== CLOSE ===== -->
+  <section id="close">
+    <div class="sec-h"><span class="sec-n">04</span><h2>What the teardown changes</h2></div>
+
+    <p>Three findings move a decision, and they point in different directions.</p>
+
+    <h4>Copy these</h4>
+    <ul class="b">
+      <li><strong>F-03 — one redirect URI, opaque state, server-side lookup.</strong> The mechanism that makes multi-tenant OAuth tractable. Give the state a TTL and a named expiry error from day one.</li>
+      <li><strong>F-07 — two state machines.</strong> Sessions and connections have different lifespans and different failure modes. One status field cannot carry both.</li>
+      <li><strong>F-06 — no create-connection operation.</strong> Make delegated access unforgeable by construction, not by policy.</li>
+      <li><strong>F-02 — asymmetric client auth.</strong> Signed assertions over shared secrets, everywhere it is supported. Then do better than one key.</li>
+    </ul>
+
+    <h4>Price these in</h4>
+    <ul class="b">
+      <li><strong>F-09 — the 7000 clicks.</strong> Vendor onboarding is an operations headcount, not a sprint. It is the cost that does not appear in any build estimate and does not go away after launch.</li>
+      <li><strong>F-11 — three of the four doors are thin.</strong> If your plan depends on clinician workflow, backend services, or network exchange, verify the surface exists before it becomes a dependency.</li>
+    </ul>
+
+    <div class="close">
+      <h3>The one-line version</h3>
+      <p>Medblocks is a well-modelled multi-tenant OAuth broker with a clinical data layer on top, built as a single TypeScript application, whose genuinely hard problem is not any of its code — it is <strong>clicking through Epic’s admin console a few thousand times</strong>, which is exactly the kind of work you would want to buy rather than build.</p>
+      <p>The architecture is copyable in a quarter. The onboarding operation is what you would actually be paying for, and <code>$60,000</code> a year against a headcount doing that work indefinitely is not a close call for most teams.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Teardown conducted 25 September 2026 against publicly published artifacts only: <a href="https://medblocks.com/docs">medblocks.com/docs</a>, the <a href="https://github.com/medblocks">medblocks GitHub organisation</a>, a public API directory listing, and the key set at <a href="https://github.com/medblocks/publickey-jwks">medblocks/publickey-jwks</a>. Cryptographic parameters in F-02 were verified by local computation over that published public key.</p>
+    <p>No authenticated request, credential, account, or live API enumeration was used. The single unauthenticated observation in EV-06 is the response body of one request to a path that does not exist. No endpoint that processes patient data was contacted.</p>
+    <p>Confirmed findings quote or compute from the evidence. Inferred and speculative findings are this document’s reasoning and are not vendor statements — they may be wrong, and each names what would test it. Companion document: <em>Anatomy of Medblocks</em>, which covers what the platform does and what replication would cost.</p>
+  </footer>
+
+</div>

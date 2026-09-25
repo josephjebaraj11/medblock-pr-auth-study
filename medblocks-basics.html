@@ -1,0 +1,638 @@
+<title>Medblocks in Five Layers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;600;700&family=Mulish:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper:     #F2EFF0;
+    --surface:   #FCFAFB;
+    --sunken:    #E7E1E3;
+    --ink:       #191315;
+    --ink-soft:  #55474B;
+    --ink-faint: #8A797E;
+    --rule:      #D4C9CC;
+    --rule-soft: #E6DEE0;
+    --accent:    #7A3B54;
+    --accent-ink:#5D2A3E;
+    --accent-wash:#EFDFE4;
+
+    --slab: "Bitter", Georgia, serif;
+    --sans: "Mulish", "Helvetica Neue", Arial, sans-serif;
+    --mono: "DM Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #120E10;
+      --surface:   #1B1619;
+      --sunken:    #241D21;
+      --ink:       #EAE1E4;
+      --ink-soft:  #A4939A;
+      --ink-faint: #79686E;
+      --rule:      #342A2E;
+      --rule-soft: #271F23;
+      --accent:    #D7899F;
+      --accent-ink:#E9AFC1;
+      --accent-wash:#2B1A21;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #120E10;
+    --surface:   #1B1619;
+    --sunken:    #241D21;
+    --ink:       #EAE1E4;
+    --ink-soft:  #A4939A;
+    --ink-faint: #79686E;
+    --rule:      #342A2E;
+    --rule-soft: #271F23;
+    --accent:    #D7899F;
+    --accent-ink:#E9AFC1;
+    --accent-wash:#2B1A21;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--sans); font-size: 17px; line-height: 1.64;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .page { max-width: 900px; margin: 0 auto; padding: 0 22px 80px; }
+
+  /* ---------- opener ---------- */
+  header.top { padding: 54px 0 34px; }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--slab); font-weight: 700; font-size: clamp(2.3rem, 6.4vw, 3.6rem);
+    line-height: 1.04; letter-spacing: -.028em; margin: 0 0 22px; text-wrap: balance;
+  }
+  .standfirst {
+    font-size: 1.22rem; line-height: 1.52; color: var(--ink-soft); max-width: 50ch; margin: 0;
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 56px; scroll-margin-top: 20px; }
+  .label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 12px;
+  }
+  h2 {
+    font-family: var(--slab); font-weight: 600; font-size: clamp(1.6rem, 3.8vw, 2.2rem);
+    line-height: 1.14; letter-spacing: -.02em; margin: 0 0 18px; text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--slab); font-weight: 600; font-size: 1.22rem; letter-spacing: -.012em;
+    margin: 34px 0 12px; text-wrap: balance;
+  }
+  h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; margin: 26px 0 10px;
+  }
+  p { max-width: 64ch; margin: 0 0 16px; }
+  .doc ul, .doc ol { max-width: 64ch; margin: 0 0 16px; padding-left: 21px; }
+  .doc li { margin-bottom: 6px; }
+  .doc li::marker { color: var(--accent); }
+  strong { font-weight: 700; }
+  code { font-family: var(--mono); font-size: .85em; color: var(--accent-ink); }
+
+  /* ---------- definition ---------- */
+  .define {
+    background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 22px 24px; margin: 0 0 26px;
+  }
+  .define p { margin: 0; font-size: 1.14rem; line-height: 1.55; max-width: none; }
+
+  /* ---------- analogy card ---------- */
+  .analogy {
+    background: var(--accent-wash); border: 1px solid var(--rule); padding: 20px 22px; margin: 24px 0;
+  }
+  .analogy .tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent-ink); display: block; margin-bottom: 10px;
+  }
+  .analogy p { margin: 0; max-width: 62ch; }
+  .analogy p + p { margin-top: 12px; }
+  .analogy strong { color: var(--accent-ink); }
+
+  /* ---------- equation rows ---------- */
+  .eq { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 22px 0; }
+  .eq div {
+    background: var(--surface); padding: 14px 18px; display: grid; gap: 4px 16px; align-items: baseline;
+  }
+  @media (min-width: 560px) { .eq div { grid-template-columns: 180px minmax(0,1fr); } }
+  .eq dt {
+    font-family: var(--mono); font-size: .88rem; font-weight: 500; color: var(--accent-ink); margin: 0;
+  }
+  .eq dd { margin: 0; font-size: .98rem; color: var(--ink-soft); }
+
+  /* ---------- source chips ---------- */
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 20px 0; max-width: 64ch; }
+  .chips span {
+    font-family: var(--mono); font-size: .8rem; background: var(--surface);
+    border: 1px solid var(--rule); padding: 6px 11px; color: var(--ink-soft);
+  }
+
+  /* ---------- layer heading ---------- */
+  .layer {
+    display: flex; align-items: center; gap: 18px; margin: 0 0 22px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .layer-n {
+    font-family: var(--slab); font-weight: 700; font-size: 2.6rem; line-height: .9;
+    color: var(--accent); flex-shrink: 0; letter-spacing: -.04em;
+  }
+  .layer h2 { margin: 0; }
+  .layer-sub {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 3px 0 0;
+  }
+
+  /* ---------- figures ---------- */
+  figure { margin: 32px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 20px 18px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 620px; height: auto; color: var(--ink); }
+  figcaption {
+    font-size: .93rem; color: var(--ink-soft); margin-top: 11px; padding-left: 13px;
+    border-left: 2px solid var(--accent); max-width: 68ch; line-height: 1.5;
+  }
+  .k-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .k-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .k-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.7; }
+  .k-t { font-family: var(--sans); font-size: 12.5px; font-weight: 600; fill: currentColor; }
+  .k-sm { font-family: var(--sans); font-size: 11px; fill: var(--ink-soft); }
+  .k-m { font-family: var(--mono); font-size: 10.5px; fill: var(--accent-ink); }
+  .k-mm { font-family: var(--mono); font-size: 10px; fill: var(--ink-soft); }
+  .k-cap { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; fill: var(--ink-faint); }
+  .k-l { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .k-lh { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .k-ld { stroke: var(--ink-faint); stroke-width: 1.1; fill: none; stroke-dasharray: 4 4; }
+  .k-div { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 4 5; }
+  .k-patch { fill: var(--surface); }
+
+  /* ---------- closing ---------- */
+  .close { background: var(--ink); color: var(--paper); padding: 30px 28px; }
+  .close h3 { color: var(--paper); margin: 0 0 16px; font-size: 1.4rem; }
+  .close p { color: var(--paper); opacity: .85; margin-bottom: 13px; max-width: 60ch; }
+  .close p:last-child { margin-bottom: 0; }
+  .close strong { opacity: 1; }
+
+  .links { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 24px 0 0; }
+  @media (min-width: 640px) { .links { grid-template-columns: 1fr 1fr; } }
+  .links a {
+    background: var(--surface); padding: 20px 22px; text-decoration: none; color: var(--ink);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .links a:hover { background: var(--accent-wash); }
+  .links a:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .l-k { font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase; color: var(--accent-ink); }
+  .l-t { font-family: var(--slab); font-weight: 600; font-size: 1.08rem; line-height: 1.2; }
+  .l-d { font-size: .93rem; color: var(--ink-soft); line-height: 1.45; }
+  .l-u { font-family: var(--mono); font-size: .74rem; color: var(--ink-faint); word-break: break-all; margin-top: 2px; }
+
+  footer {
+    margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; line-height: 1.85; color: var(--ink-faint);
+  }
+  footer p { max-width: 80ch; margin: 0 0 8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page doc">
+
+  <header class="top">
+    <p class="kicker">Study notes · the platform itself</p>
+    <h1>Medblocks in<br>Five Layers</h1>
+    <p class="standfirst">What Medblocks is, and how it works — one layer at a time, from where the data lives to where it ends up.</p>
+  </header>
+
+  <section id="more">
+    <p class="label">Reference links</p>
+    <h2>Straight from the source</h2>
+    <p>Medblocks builds a lot of this in the open. Worth keeping both open in a tab while you read the layers below.</p>
+
+    <div class="links">
+      <a href="https://github.com/medblocks">
+        <span class="l-k">Code</span>
+        <span class="l-t">GitHub — medblocks</span>
+        <span class="l-d">Their public repositories, including <strong>openFHIR</strong> (an openEHR to FHIR mapping engine), a fork of <strong>EHRbase</strong>, the <strong>medblocks-ui</strong> web component library, and the AI agent <strong>skills</strong> package.</span>
+        <span class="l-u">github.com/medblocks</span>
+      </a>
+      <a href="https://www.youtube.com/@medblocks">
+        <span class="l-k">Video</span>
+        <span class="l-t">YouTube — @medblocks</span>
+        <span class="l-d">Walkthroughs and bootcamp material on FHIR, openEHR and SMART on FHIR — useful when a written spec is heavy going and you want to watch someone build against it instead.</span>
+        <span class="l-u">youtube.com/@medblocks</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============ WHAT ============ -->
+  <section id="what">
+    <p class="label">Start here</p>
+    <h2>What is Medblocks?</h2>
+
+    <div class="define">
+      <p>Medblocks is the <strong>integration layer</strong> between your product and the healthcare systems that hold patient data. It helps you reach the systems your relationship allows, complete authorization, pull records in the background, and send those records to the systems where your team works.</p>
+    </div>
+
+    <h3>How does it work?</h3>
+    <p>It has <strong>five important layers</strong>. Each one hands off to the next, so the easiest way to hold the whole thing is as a single line running left to right.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 262" role="img" aria-label="The five layers as one pipeline: Source, where data lives; Connection, permission to reach it; Pull, fetching the records; Updates, webhooks and dashboard history; and Data out, exports, API reads and downstream workflows. The first three get data in; the last two tell you what happened and get it out.">
+          <defs><marker id="p1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="k-hot" x="20" y="60" width="148" height="86"/>
+          <text class="k-m" x="94" y="84" text-anchor="middle">01</text>
+          <text class="k-t" x="94" y="107" text-anchor="middle">Source</text>
+          <text class="k-sm" x="94" y="128" text-anchor="middle">where data lives</text>
+
+          <rect class="k-hot" x="196" y="60" width="148" height="86"/>
+          <text class="k-m" x="270" y="84" text-anchor="middle">02</text>
+          <text class="k-t" x="270" y="107" text-anchor="middle">Connection</text>
+          <text class="k-sm" x="270" y="128" text-anchor="middle">permission to enter</text>
+
+          <rect class="k-hot" x="372" y="60" width="148" height="86"/>
+          <text class="k-m" x="446" y="84" text-anchor="middle">03</text>
+          <text class="k-t" x="446" y="107" text-anchor="middle">Pull</text>
+          <text class="k-sm" x="446" y="128" text-anchor="middle">fetch the records</text>
+
+          <rect class="k-box" x="548" y="60" width="148" height="86"/>
+          <text class="k-m" x="622" y="84" text-anchor="middle">04</text>
+          <text class="k-t" x="622" y="107" text-anchor="middle">Updates</text>
+          <text class="k-sm" x="622" y="128" text-anchor="middle">webhooks · dashboard</text>
+
+          <rect class="k-box" x="724" y="60" width="148" height="86"/>
+          <text class="k-m" x="798" y="84" text-anchor="middle">05</text>
+          <text class="k-t" x="798" y="107" text-anchor="middle">Data out</text>
+          <text class="k-sm" x="798" y="128" text-anchor="middle">exports · API · flows</text>
+
+          <line class="k-l" x1="172" y1="103" x2="192" y2="103" marker-end="url(#p1)"/>
+          <line class="k-l" x1="348" y1="103" x2="368" y2="103" marker-end="url(#p1)"/>
+          <line class="k-l" x1="524" y1="103" x2="544" y2="103" marker-end="url(#p1)"/>
+          <line class="k-l" x1="700" y1="103" x2="720" y2="103" marker-end="url(#p1)"/>
+
+          <path class="k-ld" d="M20,176 V190 H520 V176"/>
+          <text class="k-cap" x="270" y="212" text-anchor="middle">Getting the data in</text>
+
+          <path class="k-ld" d="M548,176 V190 H872 V176"/>
+          <text class="k-cap" x="710" y="212" text-anchor="middle">Knowing, and getting it out</text>
+
+          <text class="k-cap" x="20" y="246">Each layer hands off to the next</text>
+        </svg>
+      </div>
+      <figcaption>Layers 1 to 3 are one continuous job: find the system, get permission, fetch the data. Layers 4 and 5 are what happens next — being told what occurred, and moving the records somewhere useful.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 1 SOURCE ============ -->
+  <section id="source">
+    <div class="layer">
+      <span class="layer-n">1</span>
+      <div><h2>Source</h2><p class="layer-sub">Where healthcare data comes from</p></div>
+    </div>
+
+    <div class="define">
+      <p>In Medblocks, a <strong>Source</strong> simply means: the place where healthcare data comes from.</p>
+    </div>
+
+    <p>Think of it like this — start with the patient's data, ask where it is stored, and whatever system answers that question is the Source.</p>
+
+    <h4>Examples of sources</h4>
+    <div class="chips">
+      <span>Epic EHR</span>
+      <span>Oracle Health (Cerner)</span>
+      <span>athenahealth</span>
+      <span>eClinicalWorks</span>
+      <span>Insurance payer systems</span>
+      <span>CMS Blue Button</span>
+      <span>Wearables — Apple Watch, Fitbit</span>
+      <span>Patient portals</span>
+      <span>HIE networks — Carequality, CommonWell</span>
+    </div>
+
+    <p>Medblocks calls all of these Sources.</p>
+
+    <h3>A simple real-world example</h3>
+    <p>Suppose a patient named <strong>John</strong> has data in a hospital running Epic, at his insurance company, and on his Apple Watch. For Medblocks, that is three sources — and it connects to all of them to gather the data.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 292" role="img" aria-label="One patient, John, has data in three places: a hospital running Epic, an insurance payer, and an Apple Watch. Medblocks calls each of these a Source, numbered one, two and three.">
+          <defs><marker id="p2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="k-hot" x="30" y="110" width="170" height="76"/>
+          <text class="k-t" x="115" y="144" text-anchor="middle">John</text>
+          <text class="k-sm" x="115" y="165" text-anchor="middle">one patient</text>
+
+          <line class="k-l" x1="200" y1="140" x2="396" y2="80" marker-end="url(#p2)"/>
+          <line class="k-l" x1="200" y1="148" x2="396" y2="150" marker-end="url(#p2)"/>
+          <line class="k-l" x1="200" y1="156" x2="396" y2="220" marker-end="url(#p2)"/>
+          <rect class="k-patch" x="238" y="96" width="92" height="13"/>
+          <text class="k-m" x="284" y="107" text-anchor="middle">has data in</text>
+
+          <text class="k-cap" x="400" y="46">Source 1</text>
+          <rect class="k-box" x="400" y="52" width="240" height="56"/>
+          <text class="k-t" x="520" y="78" text-anchor="middle">Hospital A</text>
+          <text class="k-sm" x="520" y="97" text-anchor="middle">Epic EHR</text>
+
+          <text class="k-cap" x="400" y="116">Source 2</text>
+          <rect class="k-box" x="400" y="122" width="240" height="56"/>
+          <text class="k-t" x="520" y="148" text-anchor="middle">Insurance company</text>
+          <text class="k-sm" x="520" y="167" text-anchor="middle">payer system</text>
+
+          <text class="k-cap" x="400" y="186">Source 3</text>
+          <rect class="k-box" x="400" y="192" width="240" height="56"/>
+          <text class="k-t" x="520" y="218" text-anchor="middle">Apple Watch</text>
+          <text class="k-sm" x="520" y="237" text-anchor="middle">wearable</text>
+
+          <path class="k-l" d="M664,52 H676 V248 H664"/>
+          <text class="k-m" x="692" y="136">Medblocks calls</text>
+          <text class="k-m" x="692" y="154">all of these</text>
+          <text class="k-m" x="692" y="172">Sources.</text>
+
+          <text class="k-cap" x="30" y="278">One patient · three places · three sources</text>
+        </svg>
+      </div>
+      <figcaption>A source is defined by where the data sits, not by what kind of organisation it is. A hospital, an insurer and a watch are all the same kind of thing to Medblocks.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 2 CONNECTION ============ -->
+  <section id="connection">
+    <div class="layer">
+      <span class="layer-n">2</span>
+      <div><h2>Connection</h2><p class="layer-sub">The authorized link to a source</p></div>
+    </div>
+
+    <div class="define">
+      <p>In Medblocks, a <strong>Connection</strong> is the authorized link between Medblocks and a Source.</p>
+    </div>
+
+    <div class="eq">
+      <div><dt>Source</dt><dd>Where the healthcare data lives</dd></div>
+      <div><dt>Connection</dt><dd>Permissioned bridge to access that data</dd></div>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">Think of it like this</span>
+      <p><strong>Google Drive</strong> is the source. <strong>Logged-in access from your app</strong> is the connection.</p>
+      <p>Without a connection, your app knows the source exists but cannot access its data.</p>
+    </div>
+
+    <h3>An easy example</h3>
+    <p>Suppose a patient's records are in Epic. The patient logs in and grants permission, a connection is created, and only then can Medblocks access the records. Epic is the Source; the authorized access to Epic is the Connection.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 340" role="img" aria-label="Four steps. Epic is the source. The patient logs in and grants permission. A connection is created. Medblocks can then access records. Alongside, the same four steps expressed as a house: the house exists, you ask the owner, you are given the key, you can go inside.">
+          <defs><marker id="p3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <text class="k-cap" x="60" y="26">What actually happens</text>
+          <text class="k-cap" x="470" y="26">The same thing, as a house</text>
+          <line class="k-div" x1="430" y1="12" x2="430" y2="322"/>
+
+          <rect class="k-box" x="60" y="38" width="280" height="50"/>
+          <text class="k-t" x="200" y="68" text-anchor="middle">Epic — the Source</text>
+
+          <line class="k-l" x1="200" y1="88" x2="200" y2="110" marker-end="url(#p3)"/>
+
+          <rect class="k-box" x="60" y="114" width="280" height="50"/>
+          <text class="k-t" x="200" y="137" text-anchor="middle">Patient logs in and</text>
+          <text class="k-t" x="200" y="154" text-anchor="middle">grants permission</text>
+
+          <line class="k-l" x1="200" y1="164" x2="200" y2="186" marker-end="url(#p3)"/>
+
+          <rect class="k-hot" x="60" y="190" width="280" height="50"/>
+          <text class="k-t" x="200" y="220" text-anchor="middle">Connection created</text>
+
+          <line class="k-lh" x1="200" y1="240" x2="200" y2="262" marker-end="url(#p3)"/>
+
+          <rect class="k-box" x="60" y="266" width="280" height="50"/>
+          <text class="k-t" x="200" y="296" text-anchor="middle">Medblocks can access records</text>
+
+          <path class="k-ld" d="M344,63 H466"/>
+          <text class="k-mm" x="474" y="67">The house exists, full of valuables</text>
+
+          <path class="k-ld" d="M344,139 H466"/>
+          <text class="k-mm" x="474" y="143">You ask the owner for entry</text>
+
+          <path class="k-ld" d="M344,215 H466"/>
+          <text class="k-m" x="474" y="219">You are given the key</text>
+
+          <path class="k-ld" d="M344,291 H466"/>
+          <text class="k-mm" x="474" y="295">You can go inside</text>
+
+          <text class="k-cap" x="470" y="330">Knowing the address is not the same as having the key</text>
+        </svg>
+      </div>
+      <figcaption>The house contains valuable things — the patient data. Having the address does not let you enter. You need a key, and that key is the Connection.</figcaption>
+    </figure>
+
+    <h3>Multiple sources, multiple connections</h3>
+    <p>A patient may have data in many places at once — Epic, Quest Diagnostics, an insurance company, Apple Health. Medblocks creates a <strong>separate connection to each</strong>. Once connected, it can retrieve data from all of them.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 268" role="img" aria-label="Four sources — Epic, Quest Diagnostics, an insurance company and Apple Health — each have their own separate connection into Medblocks. Four sources means four connections.">
+          <defs><marker id="p4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+
+          <text class="k-cap" x="30" y="30">John's data lives in four places</text>
+
+          <rect class="k-box" x="30" y="44" width="230" height="44"/>
+          <text class="k-t" x="145" y="71" text-anchor="middle">Epic</text>
+          <rect class="k-box" x="30" y="98" width="230" height="44"/>
+          <text class="k-t" x="145" y="125" text-anchor="middle">Quest Diagnostics</text>
+          <rect class="k-box" x="30" y="152" width="230" height="44"/>
+          <text class="k-t" x="145" y="179" text-anchor="middle">Insurance company</text>
+          <rect class="k-box" x="30" y="206" width="230" height="44"/>
+          <text class="k-t" x="145" y="233" text-anchor="middle">Apple Health</text>
+
+          <line class="k-lh" x1="260" y1="66" x2="596" y2="122" marker-end="url(#p4)"/>
+          <line class="k-lh" x1="260" y1="120" x2="596" y2="136" marker-end="url(#p4)"/>
+          <line class="k-lh" x1="260" y1="174" x2="596" y2="158" marker-end="url(#p4)"/>
+          <line class="k-lh" x1="260" y1="228" x2="596" y2="172" marker-end="url(#p4)"/>
+
+          <rect class="k-patch" x="330" y="76" width="200" height="14"/>
+          <text class="k-m" x="430" y="88" text-anchor="middle">four separate connections</text>
+
+          <rect class="k-hot" x="600" y="105" width="270" height="84"/>
+          <text class="k-t" x="735" y="140" text-anchor="middle">Medblocks</text>
+          <text class="k-sm" x="735" y="161" text-anchor="middle">can now retrieve from all four</text>
+
+          <text class="k-cap" x="30" y="262">One connection per source — never one for all of them</text>
+        </svg>
+      </div>
+      <figcaption>Connections are not shared or bundled. Each one is its own authorization, granted separately, and each can be revoked or break on its own without affecting the others.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 3 PULL ============ -->
+  <section id="pull">
+    <div class="layer">
+      <span class="layer-n">3</span>
+      <div><h2>Pull</h2><p class="layer-sub">Fetching the latest records</p></div>
+    </div>
+
+    <div class="define">
+      <p>In Medblocks, a <strong>Pull</strong> means: go to a connected source and fetch the latest patient data.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">A simple analogy</span>
+      <p>Think of Gmail on your phone. The Gmail server holds your mail; your phone checks for new email and downloads it. That action is a pull — your phone is pulling data from Gmail.</p>
+    </div>
+
+    <p>Medblocks does the same thing, with Epic in place of the Gmail server and a Connection in place of your signed-in account.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 342" role="img" aria-label="Side by side comparison of four matching steps. Gmail: the server holds your mail, your phone asks for new mail, receives it, and shows it in your inbox. Medblocks: Epic holds the records, Medblocks asks for the latest records, receives them, and stores them for your app.">
+          <defs><marker id="p5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <line class="k-div" x1="450" y1="14" x2="450" y2="326"/>
+          <text class="k-cap" x="30" y="30">Familiar — your phone and Gmail</text>
+          <text class="k-cap" x="470" y="30">The same shape — Medblocks and Epic</text>
+
+          <rect class="k-soft" x="30" y="44" width="390" height="48"/>
+          <text class="k-m" x="44" y="73">1</text>
+          <text class="k-t" x="225" y="73" text-anchor="middle">Gmail server holds your mail</text>
+          <line class="k-l" x1="225" y1="92" x2="225" y2="110" marker-end="url(#p5)"/>
+
+          <rect class="k-box" x="30" y="114" width="390" height="48"/>
+          <text class="k-m" x="44" y="143">2</text>
+          <text class="k-t" x="225" y="143" text-anchor="middle">Phone asks for new mail</text>
+          <line class="k-l" x1="225" y1="162" x2="225" y2="180" marker-end="url(#p5)"/>
+
+          <rect class="k-box" x="30" y="184" width="390" height="48"/>
+          <text class="k-m" x="44" y="213">3</text>
+          <text class="k-t" x="225" y="213" text-anchor="middle">Receives the mail</text>
+          <line class="k-l" x1="225" y1="232" x2="225" y2="250" marker-end="url(#p5)"/>
+
+          <rect class="k-box" x="30" y="254" width="390" height="48"/>
+          <text class="k-m" x="44" y="283">4</text>
+          <text class="k-t" x="225" y="283" text-anchor="middle">Shows it in your inbox</text>
+
+          <rect class="k-soft" x="470" y="44" width="400" height="48"/>
+          <text class="k-m" x="484" y="73">1</text>
+          <text class="k-t" x="670" y="73" text-anchor="middle">Epic holds the records</text>
+          <line class="k-lh" x1="670" y1="92" x2="670" y2="110" marker-end="url(#p5)"/>
+
+          <rect class="k-hot" x="470" y="114" width="400" height="48"/>
+          <text class="k-m" x="484" y="143">2</text>
+          <text class="k-t" x="670" y="143" text-anchor="middle">Medblocks asks for latest records</text>
+          <line class="k-lh" x1="670" y1="162" x2="670" y2="180" marker-end="url(#p5)"/>
+
+          <rect class="k-box" x="470" y="184" width="400" height="48"/>
+          <text class="k-m" x="484" y="213">3</text>
+          <text class="k-t" x="670" y="213" text-anchor="middle">Receives the records</text>
+          <line class="k-lh" x1="670" y1="232" x2="670" y2="250" marker-end="url(#p5)"/>
+
+          <rect class="k-box" x="470" y="254" width="400" height="48"/>
+          <text class="k-m" x="484" y="283">4</text>
+          <text class="k-t" x="670" y="283" text-anchor="middle">Stores them for your app</text>
+
+          <text class="k-cap" x="30" y="332">Step 2 only works because a connection already exists</text>
+        </svg>
+      </div>
+      <figcaption>The two flows are the same shape, step for step. The one difference that matters: your phone stays signed in to Gmail by itself, while a healthcare connection can lapse — which is what layer 4 exists to tell you about.</figcaption>
+    </figure>
+
+    <h3>A real-world example</h3>
+    <p>A patient visits a hospital today and receives a new diagnosis, a new lab result and a new prescription. Those updates now exist in Epic. When Medblocks runs a pull, the new lab result travels from Epic into Medblocks — and your application can see the latest information.</p>
+  </section>
+
+  <!-- ============ 4 UPDATES ============ -->
+  <section id="updates">
+    <div class="layer">
+      <span class="layer-n">4</span>
+      <div><h2>Updates</h2><p class="layer-sub">Knowing what happened</p></div>
+    </div>
+
+    <div class="define">
+      <p>Your app receives <strong>operational updates</strong> through webhooks and dashboard history.</p>
+    </div>
+
+    <p>A pull happens in the background, so your app is not watching it. Webhooks are how Medblocks tells you when something changed; the dashboard is where a person goes to look at what already happened. Four events cover the things worth reacting to:</p>
+
+    <div class="eq">
+      <div><dt>patient_session.completed</dt><dd>The patient finished the authorization flow</dd></div>
+      <div><dt>records.sync.completed</dt><dd>A background pull finished — new data is ready</dd></div>
+      <div><dt>records.sync.failed</dt><dd>A pull failed — worth alerting someone</dd></div>
+      <div><dt>connection.token_refresh_failed</dt><dd>Access lapsed — ask the patient to reconnect</dd></div>
+    </div>
+
+    <p>That last one is the reason this layer exists at all. A connection that worked yesterday can quietly stop working today, and nothing in layers 1 to 3 would tell you.</p>
+  </section>
+
+  <!-- ============ 5 DATA OUT ============ -->
+  <section id="out">
+    <div class="layer">
+      <span class="layer-n">5</span>
+      <div><h2>Data out</h2><p class="layer-sub">Where the records end up</p></div>
+    </div>
+
+    <div class="define">
+      <p>Records leave Medblocks through <strong>exports, API reads, or downstream workflows</strong>.</p>
+    </div>
+
+    <p>Three exits, chosen by what you are feeding. Exports keep another system in sync. API reads answer a question about one patient right now. Webhooks trigger a workflow the moment something lands.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 302" role="img" aria-label="Records leave Medblocks three ways: exports to a FHIR server or object storage after each pull, API and SDK reads on demand for one patient, and webhook events that trigger downstream workflows the moment data lands.">
+          <defs><marker id="p6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="k-hot" x="40" y="112" width="200" height="80"/>
+          <text class="k-t" x="140" y="146" text-anchor="middle">Medblocks</text>
+          <text class="k-sm" x="140" y="167" text-anchor="middle">records stored</text>
+
+          <path class="k-l" d="M240,152 H340"/>
+          <path class="k-l" d="M340,68 V236"/>
+          <rect class="k-patch" x="250" y="128" width="84" height="13"/>
+          <text class="k-m" x="292" y="139" text-anchor="middle">records out</text>
+
+          <line class="k-l" x1="340" y1="68" x2="416" y2="68" marker-end="url(#p6)"/>
+          <line class="k-l" x1="340" y1="152" x2="416" y2="152" marker-end="url(#p6)"/>
+          <line class="k-l" x1="340" y1="236" x2="416" y2="236" marker-end="url(#p6)"/>
+
+          <rect class="k-box" x="420" y="36" width="300" height="64"/>
+          <text class="k-t" x="570" y="62" text-anchor="middle">Exports</text>
+          <text class="k-sm" x="570" y="83" text-anchor="middle">FHIR server or object storage, after each pull</text>
+
+          <rect class="k-box" x="420" y="120" width="300" height="64"/>
+          <text class="k-t" x="570" y="146" text-anchor="middle">API / SDK reads</text>
+          <text class="k-sm" x="570" y="167" text-anchor="middle">on demand, one patient at a time</text>
+
+          <rect class="k-box" x="420" y="204" width="300" height="64"/>
+          <text class="k-t" x="570" y="230" text-anchor="middle">Downstream workflows</text>
+          <text class="k-sm" x="570" y="251" text-anchor="middle">triggered by webhook events</text>
+
+          <text class="k-mm" x="740" y="72">keep a system in sync</text>
+          <text class="k-mm" x="740" y="156">answer a question now</text>
+          <text class="k-mm" x="740" y="240">react to a change</text>
+
+          <text class="k-cap" x="40" y="292">Pick the exit by what you are feeding, not by what is easiest</text>
+        </svg>
+      </div>
+      <figcaption>All three carry the same records; they differ in timing and in who is asking. An export pushes without being asked, an API read pulls when you ask, and a workflow starts because something happened.</figcaption>
+    </figure>
+
+    <div class="close">
+      <h3>The whole thing, in one sentence</h3>
+      <p>Medblocks finds the system that holds a patient's data (<strong>Source</strong>), gets permission to reach it (<strong>Connection</strong>), fetches the records in the background (<strong>Pull</strong>), tells you what happened (<strong>Updates</strong>), and delivers the records to wherever your team works (<strong>Data out</strong>).</p>
+      <p>Everything else in the platform — the dashboards, the error codes, the sandboxes, the SDK — exists to make one of those five layers survive contact with a real hospital.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Study notes · part of a set. Companions: <em>openEHR and FHIR</em> (the standards underneath), <em>Anatomy of Medblocks</em> (the full case study and what replicating it would cost), and <em>Medblocks Teardown</em> (how the platform is actually built).</p>
+    <p>Definitions, examples and analogies on this page follow the author's own notes. The four webhook event names in layer 4 and the export destinations in layer 5 are taken from the Medblocks documentation.</p>
+  </footer>
+
+</div>

@@ -1,0 +1,1129 @@
+<title>Build Your Own Medblocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chivo:wght@600;700&family=Spectral:ital,wght@0,400;0,600;1,400&family=Source+Code+Pro:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper:     #E9ECEC;
+    --surface:   #FAFBFB;
+    --sunken:    #DCE2E2;
+    --ink:       #13191A;
+    --ink-soft:  #495355;
+    --ink-faint: #7C8689;
+    --rule:      #C5CCCD;
+    --rule-soft: #DDE3E3;
+    --accent:    #96590B;
+    --accent-ink:#744509;
+    --accent-wash:#F3E5CB;
+    --steel:     #3B5560;
+
+    --head: "Chivo", "Helvetica Neue", Arial, sans-serif;
+    --body: "Spectral", Georgia, serif;
+    --mono: "Source Code Pro", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0C1112;
+      --surface:   #141B1C;
+      --sunken:    #1A2223;
+      --ink:       #DFE6E6;
+      --ink-soft:  #95A0A2;
+      --ink-faint: #6B7678;
+      --rule:      #263030;
+      --rule-soft: #1D2626;
+      --accent:    #D9A052;
+      --accent-ink:#EDBD7D;
+      --accent-wash:#2A2013;
+      --steel:     #8FAEBC;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #0C1112;
+    --surface:   #141B1C;
+    --sunken:    #1A2223;
+    --ink:       #DFE6E6;
+    --ink-soft:  #95A0A2;
+    --ink-faint: #6B7678;
+    --rule:      #263030;
+    --rule-soft: #1D2626;
+    --accent:    #D9A052;
+    --accent-ink:#EDBD7D;
+    --accent-wash:#2A2013;
+    --steel:     #8FAEBC;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.64;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 0 22px 80px; }
+
+  /* ---------- opener ---------- */
+  header.top { padding: 56px 0 30px; border-bottom: 3px solid var(--ink); margin-bottom: 20px; }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .17em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 20px;
+  }
+  h1 {
+    font-family: var(--head); font-weight: 700; font-size: clamp(2.4rem, 6.6vw, 4rem);
+    line-height: .98; letter-spacing: -.035em; margin: 0 0 22px; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.24rem; line-height: 1.5; color: var(--ink-soft); max-width: 52ch; margin: 0; }
+  .partslist {
+    display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); margin: 0 0 50px;
+  }
+  .partslist a {
+    background: var(--surface); padding: 12px 13px; text-decoration: none; display: block;
+    font-family: var(--mono); font-size: .76rem; color: var(--ink-soft); line-height: 1.35;
+  }
+  .partslist a:hover { background: var(--accent-wash); color: var(--accent-ink); }
+  .partslist b { display: block; color: var(--accent-ink); font-weight: 500; margin-bottom: 3px; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 58px; scroll-margin-top: 18px; }
+  .part {
+    display: flex; align-items: flex-start; gap: 18px; margin: 0 0 20px;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px;
+  }
+  .part-n {
+    font-family: var(--head); font-weight: 700; font-size: 2.4rem; line-height: .88;
+    color: var(--accent); flex-shrink: 0; letter-spacing: -.05em; padding-top: 2px;
+  }
+  h2 {
+    font-family: var(--head); font-weight: 600; font-size: clamp(1.5rem, 3.6vw, 2.05rem);
+    line-height: 1.1; letter-spacing: -.024em; margin: 0; text-wrap: balance;
+  }
+  .part-sub {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .13em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 7px 0 0;
+  }
+  h3 {
+    font-family: var(--head); font-weight: 600; font-size: 1.16rem; letter-spacing: -.014em;
+    margin: 32px 0 11px; text-wrap: balance;
+  }
+  h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; margin: 26px 0 9px;
+  }
+  p { max-width: 66ch; margin: 0 0 16px; }
+  .doc ul, .doc ol { max-width: 66ch; margin: 0 0 16px; padding-left: 21px; }
+  .doc li { margin-bottom: 7px; }
+  .doc li::marker { color: var(--accent); }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: .84em; color: var(--accent-ink); word-break: break-word; }
+
+  /* ---------- plain-terms callout ---------- */
+  .simple {
+    background: var(--accent-wash); border: 1px solid var(--rule); padding: 18px 20px; margin: 0 0 24px;
+  }
+  .simple .tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent-ink); display: block; margin-bottom: 9px;
+  }
+  .simple p { margin: 0; max-width: 62ch; }
+  .simple p + p { margin-top: 11px; }
+
+  /* ---------- example block ---------- */
+  .egtag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 26px 0 -12px;
+  }
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.62; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 16px 18px; overflow-x: auto; margin: 20px 0; color: var(--ink);
+  }
+  pre .c { color: var(--ink-faint); }
+  pre .k { color: var(--accent-ink); }
+  pre .s { color: var(--steel); }
+
+  /* ---------- tables ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: .93rem; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.45; }
+  thead th {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; background: var(--sunken); border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; }
+
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 9.5px; letter-spacing: .1em;
+    text-transform: uppercase; padding: 2px 7px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .p-v1 { color: var(--accent-ink); }
+  .p-later { color: var(--ink-faint); }
+
+  /* ---------- figures ---------- */
+  figure { margin: 30px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 20px 18px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 620px; height: auto; color: var(--ink); }
+  figcaption {
+    font-size: .92rem; color: var(--ink-soft); margin-top: 11px; padding-left: 13px;
+    border-left: 2px solid var(--accent); max-width: 70ch; line-height: 1.5;
+  }
+  .g-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .g-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .g-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.7; }
+  .g-out { fill: none; stroke: var(--rule); stroke-width: 1.4; stroke-dasharray: 6 4; }
+  .g-t { font-family: var(--head); font-size: 12.5px; font-weight: 600; fill: currentColor; }
+  .g-sm { font-family: var(--body); font-size: 11.5px; fill: var(--ink-soft); }
+  .g-m { font-family: var(--mono); font-size: 10.5px; fill: var(--accent-ink); }
+  .g-mm { font-family: var(--mono); font-size: 10px; fill: var(--ink-soft); }
+  .g-cap { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; fill: var(--ink-faint); }
+  .g-l { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .g-lh { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .g-ld { stroke: var(--ink-faint); stroke-width: 1.1; fill: none; stroke-dasharray: 5 4; }
+  .g-patch { fill: var(--surface); }
+
+  /* ---------- per-layer stack ---------- */
+  .lstack { margin: 34px 0 0; }
+  .lstack-h {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid var(--accent);
+  }
+  .lstack .tw { margin: 0; }
+  .lstack table { min-width: 560px; }
+  .lstack td:first-child { white-space: nowrap; }
+  .lstack tbody td:nth-child(2) { font-family: var(--mono); font-size: .84rem; color: var(--accent-ink); }
+
+  /* ---------- closing ---------- */
+  .close { background: var(--ink); color: var(--paper); padding: 30px 28px; margin-top: 8px; }
+  .close h3 { color: var(--paper); margin: 0 0 15px; font-size: 1.36rem; }
+  .close p { color: var(--paper); opacity: .85; margin-bottom: 13px; max-width: 62ch; }
+  .close p:last-child { margin-bottom: 0; }
+  .close strong { opacity: 1; }
+  .close code { color: var(--paper); }
+
+  footer {
+    margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; line-height: 1.85; color: var(--ink-faint);
+  }
+  footer p { max-width: 82ch; margin: 0 0 8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page doc">
+
+  <header class="top">
+    <p class="kicker">Study notes · the build sheet</p>
+    <h1>Build Your Own<br>Medblocks</h1>
+    <p class="standfirst">The seven components you would have to write yourself — what each one does in plain terms, what it looks like in code, and the order to build them in.</p>
+  </header>
+
+  <nav class="partslist" aria-label="Components">
+    <a href="#p1"><b>01</b>Source catalog</a>
+    <a href="#p2"><b>02</b>Authorization</a>
+    <a href="#p3"><b>03</b>Connection state</a>
+    <a href="#p4"><b>04</b>Pull engine</a>
+    <a href="#p5"><b>05</b>Storage</a>
+    <a href="#p6"><b>06</b>Data out</a>
+    <a href="#p7"><b>07</b>Platform shell</a>
+    <a href="#stack"><b>→</b>Tech stack</a>
+  </nav>
+
+  <!-- ============ OVERVIEW ============ -->
+  <section id="overview">
+    <h2>How the seven fit together</h2>
+    <p>Six of the components form a single line: you look a system up, get permission, keep track of that permission, fetch the data, store it, and send it on. The seventh wraps around all of them — it is the workspace, the keys and the dashboard that make the other six usable by a team.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 452" role="img" aria-label="System map. The source catalog feeds the authorization layer, which produces a connection with a tracked state, which triggers the pull engine, which writes to storage and normalization, which feeds data out. All six sit inside a platform shell providing workspaces, API keys, a dashboard, an audit log and an SDK.">
+          <defs><marker id="o1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-out" x="40" y="58" width="780" height="366"/>
+          <text class="g-cap" x="56" y="82">07 · Platform shell — workspaces · API keys · dashboard · audit log · SDK</text>
+
+          <rect class="g-hot" x="90" y="100" width="280" height="76"/>
+          <text class="g-m" x="106" y="122">01</text>
+          <text class="g-t" x="230" y="132" text-anchor="middle">Source catalog</text>
+          <text class="g-sm" x="230" y="154" text-anchor="middle">every system you can connect to</text>
+
+          <rect class="g-hot" x="470" y="100" width="280" height="76"/>
+          <text class="g-m" x="486" y="122">02</text>
+          <text class="g-t" x="610" y="132" text-anchor="middle">Authorization layer</text>
+          <text class="g-sm" x="610" y="154" text-anchor="middle">four patterns, four standards</text>
+
+          <rect class="g-hot" x="90" y="210" width="280" height="76"/>
+          <text class="g-m" x="106" y="232">03</text>
+          <text class="g-t" x="230" y="242" text-anchor="middle">Connection state</text>
+          <text class="g-sm" x="230" y="264" text-anchor="middle">five states, every change an event</text>
+
+          <rect class="g-hot" x="470" y="210" width="280" height="76"/>
+          <text class="g-m" x="486" y="232">04</text>
+          <text class="g-t" x="610" y="242" text-anchor="middle">Pull engine</text>
+          <text class="g-sm" x="610" y="264" text-anchor="middle">background jobs, paged and retried</text>
+
+          <rect class="g-hot" x="90" y="320" width="280" height="76"/>
+          <text class="g-m" x="106" y="342">05</text>
+          <text class="g-t" x="230" y="352" text-anchor="middle">Storage + normalization</text>
+          <text class="g-sm" x="230" y="374" text-anchor="middle">raw FHIR, then clinical models</text>
+
+          <rect class="g-hot" x="470" y="320" width="280" height="76"/>
+          <text class="g-m" x="486" y="342">06</text>
+          <text class="g-t" x="610" y="352" text-anchor="middle">Data out</text>
+          <text class="g-sm" x="610" y="374" text-anchor="middle">reads · webhooks · exports</text>
+
+          <line class="g-l" x1="370" y1="138" x2="466" y2="138" marker-end="url(#o1)"/>
+          <rect class="g-patch" x="378" y="122" width="82" height="13"/>
+          <text class="g-m" x="419" y="133" text-anchor="middle">endpoints</text>
+
+          <path class="g-l" d="M610,176 V193 H230 V206" marker-end="url(#o1)"/>
+          <rect class="g-patch" x="378" y="187" width="84" height="13"/>
+          <text class="g-m" x="420" y="198" text-anchor="middle">tokens</text>
+
+          <line class="g-l" x1="370" y1="248" x2="466" y2="248" marker-end="url(#o1)"/>
+          <rect class="g-patch" x="374" y="232" width="90" height="13"/>
+          <text class="g-m" x="419" y="243" text-anchor="middle">state=active</text>
+
+          <path class="g-l" d="M610,286 V303 H230 V316" marker-end="url(#o1)"/>
+          <rect class="g-patch" x="374" y="297" width="92" height="13"/>
+          <text class="g-m" x="420" y="308" text-anchor="middle">resources</text>
+
+          <line class="g-l" x1="370" y1="358" x2="466" y2="358" marker-end="url(#o1)"/>
+          <rect class="g-patch" x="378" y="342" width="84" height="13"/>
+          <text class="g-m" x="419" y="353" text-anchor="middle">query</text>
+        </svg>
+      </div>
+      <figcaption>The numbering is a dependency order, not a difficulty order. You cannot test component 4 until 2 and 3 work, which is why the authorization layer is where most of the first month goes.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 1 ============ -->
+  <section id="p1">
+    <div class="part">
+      <span class="part-n">1</span>
+      <div><h2>Source catalog</h2><p class="part-sub">A directory of every system you can connect to</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>A phone book of hospitals. Before you can connect a patient to their hospital, you need a list of every hospital and the web address where its data lives.</p>
+    </div>
+
+    <p>This is a database of every system you can connect to. A source can have a <strong>display name, logo, portal URL, FHIR base URL, vendor type, and setup requirements</strong>.</p>
+
+    <p>You do not have to gather these by hand. Vendors publish them because regulation requires it: Epic publishes its FHIR endpoints on <code>open.epic.com</code>, and Oracle Health (Cerner) and athenahealth have similar lists. For each endpoint you fetch <code>/.well-known/smart-configuration</code>, which tells you that server's OAuth URLs.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 358" role="img" aria-label="Four-step pipeline for seeding the source catalog: download public endpoint lists, take each FHIR base URL, fetch its well-known smart-configuration to discover OAuth URLs, then insert a source row with name, logo, portal URL, base URL, vendor and auth endpoints.">
+          <defs><marker id="s1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-box" x="40" y="34" width="320" height="56"/>
+          <text class="g-t" x="200" y="68" text-anchor="middle">Download public endpoint lists</text>
+          <text class="g-mm" x="390" y="58">open.epic.com</text>
+          <text class="g-mm" x="390" y="74">Oracle Health · athenahealth</text>
+
+          <line class="g-l" x1="200" y1="90" x2="200" y2="112" marker-end="url(#s1)"/>
+
+          <rect class="g-box" x="40" y="116" width="320" height="56"/>
+          <text class="g-t" x="200" y="150" text-anchor="middle">Take each FHIR base URL</text>
+          <text class="g-mm" x="390" y="148">https://…/api/FHIR/R4</text>
+
+          <line class="g-l" x1="200" y1="172" x2="200" y2="194" marker-end="url(#s1)"/>
+
+          <rect class="g-hot" x="40" y="198" width="320" height="56"/>
+          <text class="g-t" x="200" y="224" text-anchor="middle">GET /.well-known/</text>
+          <text class="g-t" x="200" y="242" text-anchor="middle">smart-configuration</text>
+          <text class="g-m" x="390" y="222">→ authorization_endpoint</text>
+          <text class="g-m" x="390" y="238">→ token_endpoint</text>
+          <text class="g-m" x="390" y="254">→ scopes_supported</text>
+
+          <line class="g-l" x1="200" y1="254" x2="200" y2="276" marker-end="url(#s1)"/>
+
+          <rect class="g-box" x="40" y="280" width="320" height="56"/>
+          <text class="g-t" x="200" y="314" text-anchor="middle">Insert one source row</text>
+          <text class="g-mm" x="390" y="304">name · logo · portal_url · fhir_base</text>
+          <text class="g-mm" x="390" y="320">vendor · auth urls · setup notes</text>
+        </svg>
+      </div>
+      <figcaption>Step three is the one that saves you: you never hard-code a hospital's OAuth URLs, because every FHIR server is required to publish them at a fixed path. Re-run this job on a schedule and the catalog keeps itself current.</figcaption>
+    </figure>
+
+    <p class="egtag">Example — what step 3 returns</p>
+<pre><span class="c">GET https://fhir.example-hospital.org/api/FHIR/R4/.well-known/smart-configuration</span>
+
+{
+  <span class="s">"authorization_endpoint"</span>: <span class="s">"https://fhir.example-hospital.org/oauth2/authorize"</span>,
+  <span class="s">"token_endpoint"</span>:         <span class="s">"https://fhir.example-hospital.org/oauth2/token"</span>,
+  <span class="s">"capabilities"</span>: [<span class="s">"launch-standalone"</span>, <span class="s">"client-public"</span>, <span class="s">"permission-patient"</span>],
+  <span class="s">"code_challenge_methods_supported"</span>: [<span class="s">"S256"</span>],
+  <span class="s">"scopes_supported"</span>: [<span class="s">"openid"</span>, <span class="s">"fhirUser"</span>, <span class="s">"patient/*.read"</span>, <span class="s">"offline_access"</span>]
+}</pre>
+
+    <p class="egtag">Example — the table it fills</p>
+<pre><span class="k">CREATE TABLE</span> sources (
+  id              uuid <span class="k">PRIMARY KEY</span>,
+  display_name    text <span class="k">NOT NULL</span>,     <span class="c">-- "Example Hospital"</span>
+  logo_url        text,
+  portal_url      text,              <span class="c">-- where the patient signs in</span>
+  fhir_base_url   text <span class="k">NOT NULL</span>,
+  vendor          text <span class="k">NOT NULL</span>,     <span class="c">-- epic | cerner | athena | ...</span>
+  authorize_url   text,              <span class="c">-- from smart-configuration</span>
+  token_url       text,
+  scopes          text[],
+  setup_notes     text,
+  discovered_at   timestamptz
+);</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Where the rows live</td><td>Postgres</td><td>One <code>sources</code> table. No ORM gymnastics needed — it is a flat catalog.</td></tr>
+            <tr><td>Fetching the lists</td><td>native <code>fetch</code> + <code>undici</code></td><td>A plain Node script. Epic and Oracle publish files; the ONC <em>Lantern</em> dataset aggregates thousands of endpoints.</td></tr>
+            <tr><td>Running it repeatedly</td><td>BullMQ repeatable job or <code>pg_cron</code></td><td>Re-discover weekly. Endpoints move, and a stale base URL looks exactly like an outage.</td></tr>
+            <tr><td>Trusting the response</td><td><code>zod</code></td><td>Validate <code>smart-configuration</code> before you store it. A missing <code>token_endpoint</code> should fail loudly at discovery, not at 2am during a patient flow.</td></tr>
+            <tr><td>Searching in the picker</td><td><code>pg_trgm</code>, else Meilisearch</td><td>Patients type “Mass General”, not the legal entity name. Trigram similarity covers most of it; reach for a search engine only if you need typo tolerance.</td></tr>
+            <tr><td>Logos</td><td>S3 / Cloudflare R2 + CDN</td><td>Never hot-link a vendor's asset.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="p2">
+    <div class="part">
+      <span class="part-n">2</span>
+      <div><h2>Authorization layer</h2><p class="part-sub">The hardest part to get right</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>Getting permission, and keeping it. Four different people can give you that permission, and each one has its own official procedure you have to follow exactly.</p>
+    </div>
+
+    <p>Medblocks supports four patterns, and each maps to a published standard. The pattern you pick is decided by <em>who is able to say yes</em> — not by what is convenient.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 430" role="img" aria-label="Four authorization patterns. The patient signs in at their portal and approves your app, using SMART standalone launch. The provider organization has an admin register you and the EHR opens your app, using SMART EHR launch. The organization authorizes your server for unattended sync, using SMART Backend Services. A treatment relationship gives records across networks via Carequality, CommonWell or TEFCA, which needs legal membership and is left out of version one.">
+          <defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <text class="g-cap" x="30" y="40">Who can say yes</text>
+          <text class="g-cap" x="250" y="40">What happens</text>
+          <text class="g-cap" x="600" y="40">Standard to implement</text>
+
+          <rect class="g-hot" x="30" y="54" width="170" height="64"/>
+          <text class="g-t" x="115" y="92" text-anchor="middle">The patient</text>
+          <line class="g-l" x1="200" y1="86" x2="246" y2="86" marker-end="url(#a1)"/>
+          <rect class="g-box" x="250" y="54" width="300" height="64"/>
+          <text class="g-sm" x="400" y="80" text-anchor="middle">Signs in at their own portal</text>
+          <text class="g-sm" x="400" y="98" text-anchor="middle">and approves your app</text>
+          <line class="g-l" x1="550" y1="86" x2="596" y2="86" marker-end="url(#a1)"/>
+          <rect class="g-hot" x="600" y="54" width="270" height="64"/>
+          <text class="g-t" x="735" y="80" text-anchor="middle">SMART standalone launch</text>
+          <text class="g-m" x="735" y="99" text-anchor="middle">OAuth2 code flow + PKCE</text>
+
+          <rect class="g-box" x="30" y="140" width="170" height="64"/>
+          <text class="g-t" x="115" y="178" text-anchor="middle">The provider org</text>
+          <line class="g-l" x1="200" y1="172" x2="246" y2="172" marker-end="url(#a1)"/>
+          <rect class="g-box" x="250" y="140" width="300" height="64"/>
+          <text class="g-sm" x="400" y="166" text-anchor="middle">An EHR admin registers you;</text>
+          <text class="g-sm" x="400" y="184" text-anchor="middle">the EHR opens your app</text>
+          <line class="g-l" x1="550" y1="172" x2="596" y2="172" marker-end="url(#a1)"/>
+          <rect class="g-box" x="600" y="140" width="270" height="64"/>
+          <text class="g-t" x="735" y="166" text-anchor="middle">SMART EHR launch</text>
+          <text class="g-m" x="735" y="185" text-anchor="middle">launched from inside Epic</text>
+
+          <rect class="g-box" x="30" y="226" width="170" height="64"/>
+          <text class="g-t" x="115" y="264" text-anchor="middle">The organization</text>
+          <line class="g-l" x1="200" y1="258" x2="246" y2="258" marker-end="url(#a1)"/>
+          <rect class="g-box" x="250" y="226" width="300" height="64"/>
+          <text class="g-sm" x="400" y="252" text-anchor="middle">No human present — your server</text>
+          <text class="g-sm" x="400" y="270" text-anchor="middle">syncs on a schedule</text>
+          <line class="g-l" x1="550" y1="258" x2="596" y2="258" marker-end="url(#a1)"/>
+          <rect class="g-box" x="600" y="226" width="270" height="64"/>
+          <text class="g-t" x="735" y="252" text-anchor="middle">SMART Backend Services</text>
+          <text class="g-m" x="735" y="271" text-anchor="middle">JWT assertion + client_credentials</text>
+
+          <rect class="g-out" x="30" y="312" width="170" height="64"/>
+          <text class="g-sm" x="115" y="342" text-anchor="middle">A treatment</text>
+          <text class="g-sm" x="115" y="360" text-anchor="middle">relationship</text>
+          <line class="g-ld" x1="200" y1="344" x2="246" y2="344"/>
+          <rect class="g-out" x="250" y="312" width="300" height="64"/>
+          <text class="g-sm" x="400" y="338" text-anchor="middle">Records from organizations</text>
+          <text class="g-sm" x="400" y="356" text-anchor="middle">you never integrated with</text>
+          <line class="g-ld" x1="550" y1="344" x2="596" y2="344"/>
+          <rect class="g-out" x="600" y="312" width="270" height="64"/>
+          <text class="g-sm" x="735" y="338" text-anchor="middle">Carequality · CommonWell · TEFCA</text>
+          <text class="g-mm" x="735" y="357" text-anchor="middle">legal + organizational membership</text>
+
+          <text class="g-cap" x="30" y="408">Row four is dashed because it is not code — leave it out of v1</text>
+        </svg>
+      </div>
+      <figcaption>The first three rows are engineering you can start this week. The fourth is a contract negotiation with a network operator, and no amount of code moves it forward — which is why it belongs in a later version, not the first one.</figcaption>
+    </figure>
+
+    <h3>The three you can actually build</h3>
+
+    <p><strong>Patient access</strong> uses the SMART on FHIR <em>standalone launch</em> — an ordinary OAuth2 authorization code flow with PKCE. You send the patient to the hospital's authorize URL, they sign in and approve, and you exchange the returned code for tokens.</p>
+
+    <p class="egtag">Example — the authorize URL you send the patient to</p>
+<pre>https://fhir.example-hospital.org/oauth2/authorize
+  ?response_type=code
+  &amp;client_id=<span class="s">your-registered-client-id</span>
+  &amp;redirect_uri=<span class="s">https://app.yourco.com/auth/smart/callback</span>
+  &amp;scope=<span class="s">openid fhirUser patient/*.read offline_access</span>
+  &amp;state=<span class="s">OPAQUE_HANDLE</span>          <span class="c">// you look this up on return</span>
+  &amp;aud=<span class="s">https://fhir.example-hospital.org/api/FHIR/R4</span>
+  &amp;code_challenge=<span class="s">BASE64URL(SHA256(verifier))</span>
+  &amp;code_challenge_method=<span class="s">S256</span>
+
+<span class="c">// offline_access is what gets you a refresh token.</span>
+<span class="c">// Without it the connection dies the moment the access token expires.</span></pre>
+
+    <p><strong>Clinician workflow</strong> uses the SMART <em>EHR launch</em>, where your app is opened from inside Epic or Cerner. The EHR hands you a <code>launch</code> parameter carrying the patient context, and you exchange it the same way.</p>
+
+    <p><strong>Backend</strong> uses SMART Backend Services, which authenticates with a <strong>JWT client assertion</strong> and the <code>client_credentials</code> grant. No browser, no user, no refresh token — you sign a short-lived JWT with your private key each time.</p>
+
+    <p class="egtag">Example — the backend assertion</p>
+<pre><span class="c">// You sign this with your private key; they verify it against your JWKS.</span>
+{
+  <span class="s">"iss"</span>: <span class="s">"your-client-id"</span>,
+  <span class="s">"sub"</span>: <span class="s">"your-client-id"</span>,
+  <span class="s">"aud"</span>: <span class="s">"https://fhir.example-hospital.org/oauth2/token"</span>,
+  <span class="s">"exp"</span>: 1790000300,          <span class="c">// under 5 minutes out</span>
+  <span class="s">"jti"</span>: <span class="s">"one-time-id"</span>        <span class="c">// replay protection</span>
+}
+
+POST /oauth2/token
+  grant_type=client_credentials
+  &amp;scope=system/Patient.read system/Observation.read
+  &amp;client_assertion_type=urn:ietf:params:oauth:client-assertion-type:jwt-bearer
+  &amp;client_assertion=<span class="s">&lt;the signed JWT&gt;</span></pre>
+
+    <p><strong>Network access</strong> goes through Carequality, CommonWell, or TEFCA. This requires legal and organizational membership, so leave it out of your first version.</p>
+
+    <h3>Keeping the permission alive</h3>
+    <p>Store tokens <strong>encrypted</strong> — AWS KMS or Vault — and run a scheduler that refreshes them <em>before</em> they expire. Refreshing after expiry is often too late, and on servers that rotate the refresh token on every use, a failed write loses the connection permanently.</p>
+
+    <p class="egtag">Example — refresh ahead of time, and persist atomically</p>
+<pre><span class="c">// run every few minutes</span>
+<span class="k">const</span> due = <span class="k">await</span> db.query(`
+  <span class="k">SELECT</span> * <span class="k">FROM</span> connections
+  <span class="k">WHERE</span> state = 'active'
+    <span class="k">AND</span> access_expires_at &lt; now() + interval '10 minutes'
+`);
+
+<span class="k">for</span> (<span class="k">const</span> c <span class="k">of</span> due) {
+  <span class="k">try</span> {
+    <span class="k">const</span> t = <span class="k">await</span> refresh(c.token_url, decrypt(c.refresh_token));
+    <span class="c">// rotated refresh tokens MUST be written before the next attempt</span>
+    <span class="k">await</span> db.tx(() =&gt; saveTokens(c.id, encrypt(t.access), encrypt(t.refresh)));
+  } <span class="k">catch</span> {
+    <span class="k">await</span> setState(c.id, <span class="s">'refresh_failed'</span>);   <span class="c">// → emits an event</span>
+  }
+}</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>OAuth client</td><td><code>openid-client</code></td><td>A certified Node client. Handles discovery, PKCE, code exchange and refresh so you are not hand-rolling the flow per vendor.</td></tr>
+            <tr><td>Signing JWTs</td><td><code>jose</code></td><td>For the backend pattern's client assertion, and for publishing your JWKS. <code>exportJWK</code> gives you the public document to serve.</td></tr>
+            <tr><td>Where the private key lives</td><td>AWS KMS asymmetric key, or Vault</td><td>KMS signs without ever handing you the key material. If you generate locally, wrap it in Vault and never let it reach a log or an image.</td></tr>
+            <tr><td>Encrypting stored tokens</td><td><code>@aws-crypto/client-node</code></td><td>Envelope encryption: a KMS-wrapped data key per workspace. Rotate the wrapping key without re-encrypting everything.</td></tr>
+            <tr><td>The <code>state</code> store</td><td>Redis <code>SETEX</code>, or Postgres + TTL</td><td>Holds workspace, patient, source, return URL <strong>and the PKCE verifier</strong> — which is why it must be server-side, never encoded in the parameter.</td></tr>
+            <tr><td>Refresh scheduler</td><td>BullMQ repeatable job</td><td>Every few minutes, refresh anything expiring within ten. Persist rotated refresh tokens inside the same transaction.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p>One warning about <code>openid-client</code>: several EHR vendors deviate from strict OIDC discovery. Keep a per-vendor override table for scope strings and endpoint quirks rather than patching the library.</p>
+
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="p3">
+    <div class="part">
+      <span class="part-n">3</span>
+      <div><h2>Connection state machine</h2><p class="part-sub">Five states, and an event on every move</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>Permission is not permanent. It can be withdrawn, it can quietly stop working, and your app needs to know which of those happened so it can say the right thing to the patient.</p>
+    </div>
+
+    <p>Copy the lifecycle directly: <strong>active</strong> (access works), <strong>failed</strong> (authorization did not complete), <strong>refresh_failed</strong> (the refresh token stopped working), <strong>expired</strong>, and <strong>disconnected</strong> (access was revoked). Every token refresh and every API error should move the connection into the right state and emit an event.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 348" role="img" aria-label="State machine. Authorizing leads to failed when consent is denied, or to active when tokens are stored. From active, a failure moves the connection to refresh_failed, expired or disconnected. From any of those the patient must re-authorize, returning to authorizing.">
+          <defs><marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-box" x="40" y="140" width="160" height="56"/>
+          <text class="g-t" x="120" y="174" text-anchor="middle">authorizing</text>
+
+          <rect class="g-box" x="340" y="40" width="160" height="48"/>
+          <text class="g-t" x="420" y="70" text-anchor="middle">failed</text>
+
+          <rect class="g-hot" x="340" y="140" width="160" height="56"/>
+          <text class="g-t" x="420" y="174" text-anchor="middle">active</text>
+
+          <path class="g-l" d="M120,140 V64 H336" marker-end="url(#c1)"/>
+          <rect class="g-patch" x="140" y="48" width="130" height="13"/>
+          <text class="g-m" x="205" y="59" text-anchor="middle">consent denied</text>
+
+          <line class="g-lh" x1="200" y1="168" x2="336" y2="168" marker-end="url(#c1)"/>
+          <rect class="g-patch" x="222" y="152" width="94" height="13"/>
+          <text class="g-m" x="269" y="163" text-anchor="middle">tokens stored</text>
+
+          <path class="g-l" d="M500,168 H600"/>
+          <rect class="g-patch" x="516" y="152" width="70" height="13"/>
+          <text class="g-m" x="551" y="163" text-anchor="middle">on failure</text>
+          <path class="g-l" d="M600,62 V262"/>
+          <line class="g-l" x1="600" y1="62" x2="696" y2="62" marker-end="url(#c1)"/>
+          <line class="g-l" x1="600" y1="162" x2="696" y2="162" marker-end="url(#c1)"/>
+          <line class="g-l" x1="600" y1="262" x2="696" y2="262" marker-end="url(#c1)"/>
+
+          <rect class="g-box" x="700" y="36" width="180" height="52"/>
+          <text class="g-t" x="790" y="58" text-anchor="middle">refresh_failed</text>
+          <text class="g-mm" x="790" y="76" text-anchor="middle">refresh token rejected</text>
+
+          <rect class="g-box" x="700" y="136" width="180" height="52"/>
+          <text class="g-t" x="790" y="158" text-anchor="middle">expired</text>
+          <text class="g-mm" x="790" y="176" text-anchor="middle">no longer usable</text>
+
+          <rect class="g-box" x="700" y="236" width="180" height="52"/>
+          <text class="g-t" x="790" y="258" text-anchor="middle">disconnected</text>
+          <text class="g-mm" x="790" y="276" text-anchor="middle">revoked by the patient</text>
+
+          <path class="g-ld" d="M790,288 V312 H120 V200" marker-end="url(#c1)"/>
+          <rect class="g-patch" x="360" y="304" width="170" height="13"/>
+          <text class="g-m" x="445" y="315" text-anchor="middle">patient re-authorizes</text>
+
+          <text class="g-cap" x="40" y="336">Every arrow writes a row and emits an event</text>
+        </svg>
+      </div>
+      <figcaption>Three different failures land in three different states, but all three need the same thing from the patient. Keeping them separate is what lets you tell a revocation from an outage — and tell support something more useful than "it broke".</figcaption>
+    </figure>
+
+    <p class="egtag">Example — one place that owns every transition</p>
+<pre><span class="k">type</span> ConnectionState =
+  | <span class="s">'authorizing'</span> | <span class="s">'active'</span> | <span class="s">'failed'</span>
+  | <span class="s">'refresh_failed'</span> | <span class="s">'expired'</span> | <span class="s">'disconnected'</span>;
+
+<span class="k">const</span> ALLOWED: Record&lt;ConnectionState, ConnectionState[]&gt; = {
+  authorizing:    [<span class="s">'active'</span>, <span class="s">'failed'</span>],
+  active:         [<span class="s">'refresh_failed'</span>, <span class="s">'expired'</span>, <span class="s">'disconnected'</span>],
+  refresh_failed: [<span class="s">'authorizing'</span>, <span class="s">'disconnected'</span>],
+  expired:        [<span class="s">'authorizing'</span>],
+  failed:         [<span class="s">'authorizing'</span>],
+  disconnected:   [<span class="s">'authorizing'</span>],
+};
+
+<span class="k">export async function</span> setState(id, next, reason) {
+  <span class="k">const</span> cur = <span class="k">await</span> getState(id);
+  <span class="k">if</span> (!ALLOWED[cur].includes(next)) <span class="k">throw new</span> Error(`${cur} → ${next}`);
+
+  <span class="k">await</span> db.tx(<span class="k">async</span> () =&gt; {
+    <span class="k">await</span> db.update(<span class="s">'connections'</span>, id, { state: next, reason });
+    <span class="k">await</span> db.insert(<span class="s">'auth_events'</span>, { id, from: cur, to: next, reason });
+    <span class="k">await</span> outbox.emit(<span class="s">`connection.${next}`</span>, { connection_id: id });
+  });
+}</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>The machine itself</td><td>plain TypeScript map</td><td>A <code>Record&lt;State, State[]&gt;</code> and one <code>setState()</code> function is genuinely enough. Reach for <code>xstate</code> only if guards and side effects multiply.</td></tr>
+            <tr><td>Atomic transitions</td><td>Postgres transaction</td><td>State change, audit row and event must commit together or not at all.</td></tr>
+            <tr><td>Emitting events safely</td><td>transactional outbox table</td><td>Write the event to an <code>outbox</code> row in the same transaction, then a poller ships it to the queue. This is what stops the classic bug: state saved, webhook never sent.</td></tr>
+            <tr><td>Shipping from the outbox</td><td>BullMQ worker, or Postgres <code>LISTEN/NOTIFY</code></td><td>Poll-and-mark is simpler and perfectly fast at this scale.</td></tr>
+            <tr><td>The audit trail</td><td>append-only Postgres table</td><td>Grant <code>INSERT</code> only. No <code>UPDATE</code>, no <code>DELETE</code> — an audit log you can edit is not one.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="p4">
+    <div class="part">
+      <span class="part-n">4</span>
+      <div><h2>Background pull engine</h2><p class="part-sub">Fetching is not finished when the patient is</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>Once you have permission, you still have to go and collect the records — and that takes minutes or hours, long after the patient has closed the tab. Real portals hand data over slowly, a page at a time.</p>
+    </div>
+
+    <p>After a connection becomes active, you schedule retrieval jobs for the resources that source supports. Those jobs take time because real portals <strong>paginate slowly, return large histories, vary in which resources they support, and enforce different rate limits</strong>.</p>
+
+    <h3>What to build it out of</h3>
+    <ul>
+      <li><strong>A job queue.</strong> BullMQ on Redis is enough to start; Temporal is better for long, retryable workflows.</li>
+      <li><strong>Per-source resource lists</strong>, read from each server's <code>CapabilityStatement</code>. Typical resources are <code>Patient</code>, <code>Condition</code>, <code>Observation</code>, <code>MedicationRequest</code>, <code>AllergyIntolerance</code>, <code>Immunization</code>, <code>Encounter</code>, <code>DocumentReference</code>.</li>
+      <li><strong>Pagination</strong> by following <code>Bundle.link[next]</code>, plus per-source rate limiting and exponential backoff.</li>
+      <li><strong>Bulk FHIR</strong> (<code>$export</code>) for the backend pattern.</li>
+      <li><strong>A pull monitoring table</strong> recording status, counts and errors for each job.</li>
+    </ul>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 496" role="img" aria-label="The pull loop. A job fetches one page. If the response is rate limited or an error, wait with exponential backoff and retry the same page. Otherwise store each resource, then check whether the bundle has a next link — if yes, fetch the next page; if no, write a pull run row with status, counts and errors.">
+          <defs><marker id="u1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-box" x="300" y="30" width="300" height="48"/>
+          <text class="g-t" x="450" y="60" text-anchor="middle">Job — pull Observations for connection X</text>
+          <line class="g-l" x1="450" y1="78" x2="450" y2="100" marker-end="url(#u1)"/>
+
+          <rect class="g-hot" x="300" y="104" width="300" height="48"/>
+          <text class="g-t" x="450" y="126" text-anchor="middle">GET /Observation?patient=123</text>
+          <text class="g-m" x="450" y="144" text-anchor="middle">&amp;_count=100</text>
+          <line class="g-l" x1="450" y1="152" x2="450" y2="174" marker-end="url(#u1)"/>
+
+          <rect class="g-box" x="300" y="178" width="300" height="48"/>
+          <text class="g-t" x="450" y="208" text-anchor="middle">429 or 5xx?</text>
+
+          <line class="g-l" x1="600" y1="202" x2="676" y2="202" marker-end="url(#u1)"/>
+          <rect class="g-box" x="680" y="178" width="200" height="48"/>
+          <text class="g-t" x="780" y="200" text-anchor="middle">Wait</text>
+          <text class="g-mm" x="780" y="218" text-anchor="middle">exponential backoff</text>
+          <path class="g-l" d="M780,178 V128 H604" marker-end="url(#u1)"/>
+          <rect class="g-patch" x="690" y="114" width="62" height="13"/>
+          <text class="g-m" x="721" y="125" text-anchor="middle">retry</text>
+
+          <line class="g-l" x1="450" y1="226" x2="450" y2="248" marker-end="url(#u1)"/>
+          <text class="g-m" x="460" y="242">no</text>
+
+          <rect class="g-box" x="300" y="252" width="300" height="48"/>
+          <text class="g-t" x="450" y="274" text-anchor="middle">Store each resource</text>
+          <text class="g-mm" x="450" y="292" text-anchor="middle">upsert on (source, resource id)</text>
+          <line class="g-l" x1="450" y1="300" x2="450" y2="322" marker-end="url(#u1)"/>
+
+          <rect class="g-box" x="300" y="326" width="300" height="48"/>
+          <text class="g-t" x="450" y="356" text-anchor="middle">Bundle.link[next] present?</text>
+
+          <line class="g-lh" x1="300" y1="350" x2="224" y2="350" marker-end="url(#u1)"/>
+          <path class="g-lh" d="M224,350 H140 V128 H296" marker-end="url(#u1)"/>
+          <text class="g-m" x="148" y="236">yes —</text>
+          <text class="g-m" x="148" y="252">next page</text>
+
+          <line class="g-l" x1="450" y1="374" x2="450" y2="396" marker-end="url(#u1)"/>
+          <text class="g-m" x="460" y="390">no</text>
+
+          <rect class="g-soft" x="300" y="400" width="300" height="48"/>
+          <text class="g-t" x="450" y="422" text-anchor="middle">Write pull_runs row</text>
+          <text class="g-mm" x="450" y="440" text-anchor="middle">status · counts · errors</text>
+
+          <text class="g-cap" x="30" y="478">One resource type, one job, one loop — repeat per resource type</text>
+        </svg>
+      </div>
+      <figcaption>The two branches are what make it survive a real hospital. Without backoff you get rate-limited into failure; without following <code>link[next]</code> you silently collect only the first hundred records and never notice.</figcaption>
+    </figure>
+
+    <p class="egtag">Example — the loop in code</p>
+<pre><span class="k">export async function</span> pullResource(conn, resourceType) {
+  <span class="k">let</span> url = <span class="s">`${conn.fhir_base}/${resourceType}?patient=${conn.patient_ref}&amp;_count=100`</span>;
+  <span class="k">let</span> pages = 0, saved = 0;
+
+  <span class="k">while</span> (url) {
+    <span class="k">const</span> res = <span class="k">await</span> limiter(conn.source_id, () =&gt; fetchWithToken(url, conn));
+
+    <span class="k">if</span> (res.status === 429 || res.status &gt;= 500) {
+      <span class="k">await</span> sleep(backoff(pages, res.headers.get(<span class="s">'retry-after'</span>)));
+      <span class="k">continue</span>;                                <span class="c">// same url, try again</span>
+    }
+
+    <span class="k">const</span> bundle = <span class="k">await</span> res.json();
+    <span class="k">for</span> (<span class="k">const</span> e <span class="k">of</span> bundle.entry ?? []) {
+      <span class="k">await</span> upsertRaw(conn.source_id, e.resource);   <span class="c">// see component 5</span>
+      saved++;
+    }
+
+    url = bundle.link?.find(l =&gt; l.relation === <span class="s">'next'</span>)?.url;  <span class="c">// ← the loop</span>
+    pages++;
+  }
+
+  <span class="k">await</span> db.insert(<span class="s">'pull_runs'</span>, { conn: conn.id, resourceType, pages, saved, ok: <span class="k">true</span> });
+}</pre>
+
+    <p class="egtag">Example — ask the server what it actually supports</p>
+<pre><span class="c">// Never assume. Read the CapabilityStatement once per source and cache it.</span>
+<span class="k">const</span> cap = <span class="k">await</span> get(<span class="s">`${base}/metadata`</span>);
+<span class="k">const</span> supported = cap.rest[0].resource.map(r =&gt; r.type);
+<span class="c">// → ['Patient','Condition','Observation','MedicationRequest', ...]</span>
+
+<span class="k">for</span> (<span class="k">const</span> type <span class="k">of</span> WANTED.filter(t =&gt; supported.includes(t))) {
+  <span class="k">await</span> queue.add(<span class="s">'pull'</span>, { connectionId: conn.id, resourceType: type });
+}</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Job queue</td><td>BullMQ on Redis → Temporal</td><td>BullMQ gets you retries, backoff and concurrency in an afternoon. Switch to Temporal when a single pull spans hours and must survive a deploy mid-crawl.</td></tr>
+            <tr><td>Per-source rate limiting</td><td><code>bottleneck</code>, or a Redis token bucket</td><td>Limit by <em>source</em>, not globally. One strict vendor should not throttle every other integration.</td></tr>
+            <tr><td>Backoff</td><td>BullMQ exponential backoff</td><td>Honour <code>Retry-After</code> when present; fall back to exponential with jitter. Retry the same URL, never the next page.</td></tr>
+            <tr><td>HTTP layer</td><td><code>undici</code> + <code>p-retry</code></td><td>Connection pooling matters when you are making thousands of paged requests per pull.</td></tr>
+            <tr><td>FHIR types</td><td><code>@types/fhir</code></td><td>Typing <code>Bundle</code> and <code>link[]</code> catches the paging mistakes at compile time.</td></tr>
+            <tr><td>Bulk <code>$export</code></td><td>your own poller</td><td>Kick off the export, then poll the <code>Content-Location</code> until it returns the file manifest. Treat it as a long-running workflow, not a request.</td></tr>
+            <tr><td>Watching it</td><td><code>pull_runs</code> table + OpenTelemetry</td><td>Rows for humans, traces for you. Alert on queue depth and on failure rate per source.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="p5">
+    <div class="part">
+      <span class="part-n">5</span>
+      <div><h2>Storage and normalization</h2><p class="part-sub">Keep the raw truth, derive the useful shape</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>Save exactly what the hospital sent, so you can always prove it. Then build a second, tidier copy on top that your app is actually pleasant to query.</p>
+    </div>
+
+    <p>Store raw FHIR resources <strong>keyed by source and resource ID</strong> so that repeat pulls do not create duplicates, and record where each resource came from. You can use Postgres with <code>JSONB</code>, or run an actual FHIR server internally.</p>
+
+    <p>On top of that, add a <strong>Clinical Domain Models</strong> layer that turns raw FHIR into simpler objects — medications, labs, and so on — with codes mapped to standard terminologies like <strong>LOINC</strong>, <strong>SNOMED</strong> and <strong>RxNorm</strong>.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 312" role="img" aria-label="Three pulls arrive: the same Observation in January and March, plus a new one in March. Because the raw table is keyed on source plus resource id, the repeat updates the existing row instead of duplicating it, leaving two rows. A normalization step then derives clinical domain models with codes mapped to LOINC, SNOMED and RxNorm, each keeping a provenance pointer back to its raw row.">
+          <defs><marker id="r1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-box" x="24" y="40" width="210" height="46"/>
+          <text class="g-mm" x="129" y="60" text-anchor="middle">Pull · January</text>
+          <text class="g-m" x="129" y="77" text-anchor="middle">Observation/abc</text>
+          <rect class="g-box" x="24" y="104" width="210" height="46"/>
+          <text class="g-mm" x="129" y="124" text-anchor="middle">Pull · March</text>
+          <text class="g-m" x="129" y="141" text-anchor="middle">Observation/abc</text>
+          <rect class="g-box" x="24" y="168" width="210" height="46"/>
+          <text class="g-mm" x="129" y="188" text-anchor="middle">Pull · March</text>
+          <text class="g-m" x="129" y="205" text-anchor="middle">Observation/xyz</text>
+
+          <line class="g-l" x1="234" y1="63" x2="316" y2="100" marker-end="url(#r1)"/>
+          <line class="g-l" x1="234" y1="127" x2="316" y2="120" marker-end="url(#r1)"/>
+          <line class="g-l" x1="234" y1="191" x2="316" y2="160" marker-end="url(#r1)"/>
+
+          <rect class="g-box" x="320" y="40" width="240" height="186"/>
+          <text class="g-t" x="440" y="66" text-anchor="middle">Raw FHIR table</text>
+          <text class="g-mm" x="440" y="88" text-anchor="middle">UNIQUE (source_id, type, id)</text>
+          <rect class="g-soft" x="340" y="102" width="200" height="40"/>
+          <text class="g-m" x="440" y="127" text-anchor="middle">abc — updated in place</text>
+          <rect class="g-soft" x="340" y="152" width="200" height="40"/>
+          <text class="g-m" x="440" y="177" text-anchor="middle">xyz — inserted</text>
+          <text class="g-mm" x="440" y="212" text-anchor="middle">two rows, not three</text>
+
+          <line class="g-lh" x1="560" y1="133" x2="636" y2="133" marker-end="url(#r1)"/>
+          <rect class="g-patch" x="556" y="100" width="88" height="13"/>
+          <text class="g-m" x="600" y="111" text-anchor="middle">normalize</text>
+
+          <rect class="g-hot" x="640" y="40" width="236" height="186"/>
+          <text class="g-t" x="758" y="66" text-anchor="middle">Clinical domain models</text>
+          <text class="g-sm" x="758" y="94" text-anchor="middle">medications · labs</text>
+          <text class="g-sm" x="758" y="114" text-anchor="middle">conditions · allergies</text>
+          <text class="g-mm" x="758" y="146" text-anchor="middle">codes → LOINC · SNOMED</text>
+          <text class="g-mm" x="758" y="164" text-anchor="middle">RxNorm</text>
+          <text class="g-mm" x="758" y="196" text-anchor="middle">each row keeps a pointer</text>
+          <text class="g-mm" x="758" y="212" text-anchor="middle">back to its raw source</text>
+
+          <path class="g-ld" d="M758,226 V252 H440 V230" marker-end="url(#r1)"/>
+          <rect class="g-patch" x="540" y="244" width="88" height="13"/>
+          <text class="g-m" x="584" y="255" text-anchor="middle">provenance</text>
+
+          <text class="g-cap" x="24" y="294">The key is what makes a re-pull safe to run any number of times</text>
+        </svg>
+      </div>
+      <figcaption>Two layers, not one. The raw table is the record you can show a regulator; the derived layer is the one your product queries. Keeping the provenance pointer means that when a mapping turns out to be wrong, you re-derive rather than apologise.</figcaption>
+    </figure>
+
+    <p class="egtag">Example — the table, and why the key matters</p>
+<pre><span class="k">CREATE TABLE</span> raw_resources (
+  id             bigserial <span class="k">PRIMARY KEY</span>,
+  connection_id  uuid <span class="k">NOT NULL</span>,
+  source_id      uuid <span class="k">NOT NULL</span>,
+  resource_type  text <span class="k">NOT NULL</span>,        <span class="c">-- 'Observation'</span>
+  resource_id    text <span class="k">NOT NULL</span>,        <span class="c">-- 'abc' — the SOURCE's id</span>
+  body           jsonb <span class="k">NOT NULL</span>,
+  fetched_at     timestamptz <span class="k">NOT NULL</span>,
+  <span class="k">UNIQUE</span> (source_id, resource_type, resource_id)   <span class="c">-- ← the whole trick</span>
+);
+
+<span class="c">-- a re-pull updates instead of duplicating</span>
+<span class="k">INSERT INTO</span> raw_resources (...) <span class="k">VALUES</span> (...)
+<span class="k">ON CONFLICT</span> (source_id, resource_type, resource_id)
+<span class="k">DO UPDATE SET</span> body = excluded.body, fetched_at = excluded.fetched_at;</pre>
+
+    <p class="egtag">Example — one raw Observation, and the model derived from it</p>
+<pre><span class="c">// RAW — what the hospital actually sent</span>
+{ <span class="s">"resourceType"</span>: <span class="s">"Observation"</span>, <span class="s">"id"</span>: <span class="s">"abc"</span>,
+  <span class="s">"code"</span>: { <span class="s">"coding"</span>: [{ <span class="s">"system"</span>: <span class="s">"http://loinc.org"</span>, <span class="s">"code"</span>: <span class="s">"4548-4"</span> }] },
+  <span class="s">"valueQuantity"</span>: { <span class="s">"value"</span>: 6.7, <span class="s">"unit"</span>: <span class="s">"%"</span> },
+  <span class="s">"effectiveDateTime"</span>: <span class="s">"2026-08-14T09:12:00Z"</span> }
+
+<span class="c">// DERIVED — what your app queries</span>
+{ <span class="s">"kind"</span>: <span class="s">"lab"</span>,
+  <span class="s">"name"</span>: <span class="s">"HbA1c"</span>,
+  <span class="s">"loinc"</span>: <span class="s">"4548-4"</span>,
+  <span class="s">"value"</span>: 6.7, <span class="s">"unit"</span>: <span class="s">"%"</span>,
+  <span class="s">"takenAt"</span>: <span class="s">"2026-08-14T09:12:00Z"</span>,
+  <span class="s">"provenance"</span>: { <span class="s">"source"</span>: <span class="s">"example-hospital"</span>, <span class="s">"raw"</span>: <span class="s">"Observation/abc"</span> } }</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Raw storage</td><td>Postgres <code>JSONB</code> + GIN index</td><td>Good enough for a long time, and the unique key gives you idempotent re-pulls for free.</td></tr>
+            <tr><td>Or a real FHIR server</td><td>Medplum, HAPI FHIR, Aidbox</td><td>Medplum if you are a TypeScript shop and want to read the source; HAPI for the reference implementation; Aidbox if you would rather buy support.</td></tr>
+            <tr><td>Schema and queries</td><td>Drizzle or Kysely</td><td>Both stay out of the way of hand-written SQL, which you will want for <code>JSONB</code> and <code>ON CONFLICT</code>.</td></tr>
+            <tr><td>Lab and drug codes</td><td>LOINC + RxNorm loaded into Postgres</td><td>Both are freely redistributable. Load the release tables and join.</td></tr>
+            <tr><td>Clinical findings</td><td>HAPI terminology server or Ontoserver</td><td><strong>SNOMED CT needs an affiliate licence</strong> — in the US the NLM UMLS licence covers it. Settle this before you ship.</td></tr>
+            <tr><td>Running normalization</td><td>same queue, separate job type</td><td>Derive from raw, never in place. Keep it idempotent so a corrected mapping can be re-run over history.</td></tr>
+            <tr><td>Patient matching</td><td>deterministic SQL, then <code>splink</code></td><td>Start with name plus date of birth plus MRN. Add probabilistic linkage only with a human review queue behind it.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="p6">
+    <div class="part">
+      <span class="part-n">6</span>
+      <div><h2>Data out</h2><p class="part-sub">Three delivery methods</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>Three ways to hand the records over: your app asks for them, you tell your app something happened, or you push a copy into another system automatically.</p>
+    </div>
+
+    <p><strong>Direct reads.</strong> A records endpoint returns the patient's latest stored resources as a paginated list, where each item names the EHR source it came from.</p>
+
+    <p><strong>Webhooks</strong> for events such as a patient session completing, a background pull finishing or failing, and a connection losing access and needing the patient to reconnect. <strong>Sign each payload with HMAC</strong> and retry failed deliveries.</p>
+
+    <p><strong>Exports</strong> to a FHIR server receiving FHIR R4 resources, or to object storage as NDJSON files in S3-compatible storage, GCS, or Azure Blob. Keep a <strong>watermark per destination</strong> so each export only sends new data.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 386" role="img" aria-label="Storage feeds three exits: direct paginated reads, HMAC-signed retried webhooks, and exports to a FHIR server or NDJSON object storage. Exports keep a watermark per destination, and fire on four triggers: destination added, pull completed, destination reactivated, and manual retry.">
+          <defs><marker id="d1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="g-hot" x="30" y="140" width="180" height="80"/>
+          <text class="g-t" x="120" y="174" text-anchor="middle">Storage</text>
+          <text class="g-sm" x="120" y="195" text-anchor="middle">raw + models</text>
+
+          <path class="g-l" d="M210,180 H310"/>
+          <path class="g-l" d="M310,72 V284"/>
+          <line class="g-l" x1="310" y1="72" x2="416" y2="72" marker-end="url(#d1)"/>
+          <line class="g-l" x1="310" y1="180" x2="416" y2="180" marker-end="url(#d1)"/>
+          <line class="g-l" x1="310" y1="284" x2="416" y2="284" marker-end="url(#d1)"/>
+
+          <rect class="g-box" x="420" y="44" width="290" height="56"/>
+          <text class="g-t" x="565" y="68" text-anchor="middle">Direct reads</text>
+          <text class="g-mm" x="565" y="88" text-anchor="middle">GET /records — paginated, names the source</text>
+
+          <rect class="g-box" x="420" y="152" width="290" height="56"/>
+          <text class="g-t" x="565" y="176" text-anchor="middle">Webhooks</text>
+          <text class="g-mm" x="565" y="196" text-anchor="middle">HMAC signed · retried on failure</text>
+
+          <rect class="g-box" x="420" y="256" width="290" height="56"/>
+          <text class="g-t" x="565" y="280" text-anchor="middle">Exports</text>
+          <text class="g-mm" x="565" y="300" text-anchor="middle">FHIR R4 push · NDJSON to S3 / GCS / Azure</text>
+
+          <line class="g-lh" x1="710" y1="284" x2="746" y2="284" marker-end="url(#d1)"/>
+          <rect class="g-hot" x="750" y="256" width="130" height="56"/>
+          <text class="g-mm" x="815" y="280" text-anchor="middle">watermark</text>
+          <text class="g-mm" x="815" y="298" text-anchor="middle">per destination</text>
+
+          <text class="g-cap" x="420" y="342">Export triggers</text>
+          <text class="g-mm" x="420" y="360">destination added (backfill) · pull completed (delta)</text>
+          <text class="g-mm" x="420" y="376">reactivated (catch up from watermark) · manual retry</text>
+        </svg>
+      </div>
+      <figcaption>The watermark is what turns a nightly full dump into a cheap delta. Store it per destination, not globally, so one slow or disabled destination never holds the others back.</figcaption>
+    </figure>
+
+    <p class="egtag">Example — sign the webhook, and let the receiver verify it</p>
+<pre><span class="c">// sending</span>
+<span class="k">const</span> body = JSON.stringify({ id: evt.id, type: evt.type, data: evt.data });
+<span class="k">const</span> sig  = crypto.createHmac(<span class="s">'sha256'</span>, endpoint.secret)
+                   .update(<span class="s">`${timestamp}.${body}`</span>).digest(<span class="s">'hex'</span>);
+
+<span class="k">await</span> fetch(endpoint.url, {
+  method: <span class="s">'POST'</span>,
+  headers: { <span class="s">'content-type'</span>: <span class="s">'application/json'</span>,
+             <span class="s">'x-signature'</span>: <span class="s">`t=${timestamp},v1=${sig}`</span> },
+  body,
+});
+<span class="c">// on non-2xx or timeout: requeue with exponential backoff, keep evt.id stable</span>
+
+<span class="c">// receiving — raw body, never the parsed object</span>
+<span class="k">const</span> expected = crypto.createHmac(<span class="s">'sha256'</span>, SECRET)
+                        .update(<span class="s">`${t}.${rawBody}`</span>).digest(<span class="s">'hex'</span>);
+<span class="k">if</span> (!crypto.timingSafeEqual(Buffer.from(v1), Buffer.from(expected))) <span class="k">return</span> 400;</pre>
+
+    <p class="egtag">Example — NDJSON, one resource per line</p>
+<pre><span class="c"># s3://your-bucket/exports/2026-09-26/Observation.ndjson</span>
+{"resourceType":"Observation","id":"abc","status":"final", ...}
+{"resourceType":"Observation","id":"xyz","status":"final", ...}
+{"resourceType":"Observation","id":"def","status":"final", ...}
+
+<span class="c"># one JSON object per line means a consumer can stream the file</span>
+<span class="c"># instead of parsing one enormous array into memory.</span></pre>
+
+    <p class="egtag">Example — the watermark makes it a delta</p>
+<pre><span class="k">const</span> { watermark } = <span class="k">await</span> db.one(
+  <span class="s">`SELECT watermark FROM export_destinations WHERE id = $1`</span>, [dest.id]);
+
+<span class="k">const</span> rows = <span class="k">await</span> db.query(
+  <span class="s">`SELECT body FROM raw_resources
+     WHERE fetched_at &gt; $1 ORDER BY fetched_at LIMIT 10000`</span>, [watermark]);
+
+<span class="k">await</span> writeNdjson(dest, rows);
+<span class="k">await</span> db.update(<span class="s">'export_destinations'</span>, dest.id,
+                { watermark: last(rows).fetched_at });   <span class="c">// only after success</span></pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>The read API</td><td>Fastify + <code>zod</code></td><td>Keyset (cursor) pagination, not <code>OFFSET</code> — offsets drift and get slow exactly when a patient has a lot of history.</td></tr>
+            <tr><td>Webhook delivery</td><td>BullMQ + node <code>crypto</code></td><td>The queue gives you retries and dead-lettering; <code>createHmac</code> gives you the signature. Buy it from Svix if you would rather not own it.</td></tr>
+            <tr><td>Pushing to a FHIR server</td><td><code>openid-client</code> or plain <code>fetch</code></td><td>Client-credentials for OAuth destinations, a bearer header for simple ones. Validate connectivity before saving a destination.</td></tr>
+            <tr><td>Object storage</td><td><code>@aws-sdk/client-s3</code></td><td>One SDK covers S3, Cloudflare R2 and MinIO. Add <code>@google-cloud/storage</code> and <code>@azure/storage-blob</code> for the other two.</td></tr>
+            <tr><td>Writing NDJSON</td><td><code>node:stream</code> pipelines</td><td>Stream rows straight to the upload. Never assemble the array in memory — a patient's full history will not fit twice.</td></tr>
+            <tr><td>The watermark</td><td>one column per destination</td><td>Update it <strong>only after</strong> the destination confirms the write. Independent per destination so one failure never blocks the rest.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="p7">
+    <div class="part">
+      <span class="part-n">7</span>
+      <div><h2>Platform shell</h2><p class="part-sub">What makes the other six usable by a team</p></div>
+    </div>
+
+    <div class="simple">
+      <span class="tag">In simple terms</span>
+      <p>The account system. Somewhere for a team to keep their keys, try things safely before going live, and see what happened when a customer says it is broken.</p>
+    </div>
+
+    <p>You also need <strong>multi-tenant workspaces</strong> with separate sandbox and production modes, <strong>API keys</strong>, a <strong>dashboard</strong>, an <strong>auth event audit log</strong>, and a <strong>TypeScript SDK</strong>. Adding an MCP server later is optional.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Piece</th><th>What it does</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>Workspaces</td><td>Every row in every table carries a workspace id. Sandbox and production are separate workspaces with separate keys.</td><td><span class="pill p-v1">v1</span></td></tr>
+          <tr><td>API keys</td><td>Prefix them by environment so a key is self-describing — <code>sk_live_…</code> and <code>sk_sbx_…</code>. Store only a hash.</td><td><span class="pill p-v1">v1</span></td></tr>
+          <tr><td>Auth event log</td><td>Append-only record of every authorization attempt: source, outcome, error code, timestamp. This is what support reads.</td><td><span class="pill p-v1">v1</span></td></tr>
+          <tr><td>Dashboard</td><td>Connection states, pull history, export runs. Lets non-engineers answer questions without a database client.</td><td><span class="pill p-v1">v1</span></td></tr>
+          <tr><td>TypeScript SDK</td><td>A thin typed wrapper over the REST API. Mostly matters for adoption, not capability.</td><td><span class="pill p-later">later</span></td></tr>
+          <tr><td>MCP server</td><td>Lets an AI agent operate the workspace. Genuinely optional.</td><td><span class="pill p-later">later</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="egtag">Example — make tenancy impossible to forget</p>
+<pre><span class="c">-- put workspace_id on everything, and let the database enforce it</span>
+<span class="k">ALTER TABLE</span> connections <span class="k">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="k">CREATE POLICY</span> tenant_isolation <span class="k">ON</span> connections
+  <span class="k">USING</span> (workspace_id = current_setting('app.workspace_id')::uuid);
+
+<span class="c">-- then set it once per request, from the API key</span>
+<span class="k">SET LOCAL</span> app.workspace_id = '…';</pre>
+    <div class="lstack">
+      <p class="lstack-h">Tech stack for this layer</p>
+      <div class="tw">
+        <table>
+          <thead><tr><th>What you need</th><th>Use</th><th>How</th></tr></thead>
+          <tbody>
+            <tr><td>Human sign-in</td><td>Better Auth, Auth.js, or WorkOS</td><td>WorkOS if enterprise SSO will be asked for early, which in healthcare it will be.</td></tr>
+            <tr><td>API keys</td><td><code>crypto.randomBytes</code> + SHA-256</td><td>Show the key once, store only the hash, keep the environment in the prefix so a leaked key is instantly identifiable.</td></tr>
+            <tr><td>Tenancy</td><td>Postgres row-level security</td><td><code>SET LOCAL app.workspace_id</code> once per request. Then a forgotten <code>WHERE</code> clause leaks nothing.</td></tr>
+            <tr><td>Dashboard</td><td>Next.js + TanStack Table</td><td>The screens are mostly dense tables of connections, pulls and export runs.</td></tr>
+            <tr><td>SDK</td><td><code>openapi-typescript</code> or <code>orval</code></td><td>Generate from your OpenAPI document so the SDK cannot drift from the API.</td></tr>
+            <tr><td>Observability</td><td>OpenTelemetry + Sentry</td><td>Turn on PHI scrubbing in Sentry before the first production event, not after.</td></tr>
+            <tr><td>Compliance evidence</td><td>Vanta or Drata</td><td>Automates the collection, not the observation window.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ============ STACK ============ -->
+  <section id="stack">
+    <div class="part">
+      <span class="part-n">→</span>
+      <div><h2>The stack in one page</h2><p class="part-sub">Every layer’s picks, collapsed</p></div>
+    </div>
+
+    <p>The tables inside each component are the working detail. This is the same set of choices in one view, for when you are costing the project rather than writing it.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Layer</th><th>Pick</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td>Language &amp; runtime</td><td>TypeScript on Node</td><td>NestJS if you want structure, Fastify if you want speed and less ceremony.</td></tr>
+          <tr><td>Database</td><td>Postgres</td><td><code>JSONB</code> handles raw FHIR comfortably; row-level security handles tenancy.</td></tr>
+          <tr><td>Queue</td><td>Redis + BullMQ</td><td>Enough to start. Move to <strong>Temporal</strong> when pulls get long and retries get complicated.</td></tr>
+          <tr><td>FHIR handling</td><td><code>fhirclient</code> + <code>@types/fhir</code></td><td>Types alone remove a whole category of bug.</td></tr>
+          <tr><td>Dashboard</td><td>Next.js</td><td>Shares types with the backend if you keep one repo.</td></tr>
+          <tr><td>Secrets</td><td>AWS KMS or Vault</td><td>Envelope-encrypt every token. Never log one.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>To move faster, consider building on <strong>Medplum</strong> (an open-source FHIR platform) or <strong>HAPI FHIR</strong> instead of writing your own FHIR storage. Both give you resource validation, search parameters and references for free — which is several months of work you would otherwise reinvent, and reinvent slightly wrong.</p>
+
+    <h3>Build in this order</h3>
+    <p>The components are numbered by dependency, but the fastest route to something real is narrower than building all seven:</p>
+    <ol>
+      <li><strong>One source, end to end.</strong> Seed the catalog with a single sandbox (Epic's is the obvious choice), implement the standalone launch, store one token, pull <code>Patient</code> and <code>Observation</code>. Nothing else.</li>
+      <li><strong>Make it survive.</strong> The state machine, proactive refresh, the pagination loop, backoff, and the pull monitoring table. This is what turns a demo into a system.</li>
+      <li><strong>Make it usable.</strong> Workspaces, API keys, the audit log, a webhook or two.</li>
+      <li><strong>Make it plural.</strong> A second and third source — mostly configuration and waiting on registrations, not new code.</li>
+      <li><strong>Make it mean something.</strong> Normalization and terminology mapping, last, once you have real variety to normalise.</li>
+    </ol>
+
+    <div class="close">
+      <h3>One honest caveat</h3>
+      <p>Everything on this page is buildable, and none of it is the expensive part. The expensive part is <strong>registration</strong>: getting a production app approved by each vendor takes weeks to months, runs on someone else's calendar, and no code shortens it.</p>
+      <p>So start the paperwork on day one, in parallel with component 1 — and keep <code>network</code> access out of version one entirely, because that one is a membership negotiation rather than a feature.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Study notes · part of a set. Companions: <em>openEHR and FHIR</em> (the standards underneath), <em>Medblocks in Five Layers</em> (what the platform does), <em>Anatomy of Medblocks</em> (the full case study), and <em>Medblocks Teardown</em> (how it is actually built).</p>
+    <p>Component descriptions follow the author's own notes, sourced from the Medblocks documentation. Code samples, SQL and the build order are illustrative — written to show the shape of each component, not copied from any Medblocks source.</p>
+  </footer>
+
+</div>
