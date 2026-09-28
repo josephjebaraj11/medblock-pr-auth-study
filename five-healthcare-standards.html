@@ -1,0 +1,1089 @@
+<title>Five Healthcare Standards</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Karla:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --paper:     #EFF2ED;
+    --surface:   #FBFCFA;
+    --sunken:    #E3E8DF;
+    --ink:       #131A14;
+    --ink-soft:  #4B574D;
+    --ink-faint: #7B877D;
+    --rule:      #C9D2C6;
+    --rule-soft: #DFE5DC;
+    --accent:    #2C6242;
+    --accent-ink:#1E4A31;
+    --accent-wash:#DBE8DE;
+    --warn:      #855611;
+    --warn-wash: #F2E7D2;
+
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "Karla", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0E120F;
+      --surface:   #161D18;
+      --sunken:    #1D251F;
+      --ink:       #E1E8E2;
+      --ink-soft:  #97A599;
+      --ink-faint: #6D7B70;
+      --rule:      #2A342C;
+      --rule-soft: #212B23;
+      --accent:    #6BBE8B;
+      --accent-ink:#93D7AD;
+      --accent-wash:#13271A;
+      --warn:      #D3A15C;
+      --warn-wash: #2A2115;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #0E120F;
+    --surface:   #161D18;
+    --sunken:    #1D251F;
+    --ink:       #E1E8E2;
+    --ink-soft:  #97A599;
+    --ink-faint: #6D7B70;
+    --rule:      #2A342C;
+    --rule-soft: #212B23;
+    --accent:    #6BBE8B;
+    --accent-ink:#93D7AD;
+    --accent-wash:#13271A;
+    --warn:      #D3A15C;
+    --warn-wash: #2A2115;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.66;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .page { max-width: 880px; margin: 0 auto; padding: 0 22px 80px; }
+
+  /* ---------- opener ---------- */
+  header.top { padding: 56px 0 36px; border-bottom: 1px solid var(--rule); margin-bottom: 44px; }
+  .kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: .17em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 20px;
+  }
+  h1 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(2.5rem, 7vw, 4rem);
+    line-height: 1.02; letter-spacing: -.022em; margin: 0 0 20px; text-wrap: balance;
+  }
+  h1 em { font-style: italic; font-weight: 400; color: var(--accent-ink); }
+  .standfirst {
+    font-family: var(--serif); font-size: 1.32rem; line-height: 1.5; color: var(--ink-soft);
+    max-width: 44ch; margin: 0;
+  }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 60px; scroll-margin-top: 20px; }
+  .label {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 12px;
+  }
+  h2 {
+    font-family: var(--serif); font-weight: 600; font-size: clamp(1.8rem, 4.2vw, 2.5rem);
+    line-height: 1.12; letter-spacing: -.018em; margin: 0 0 20px; text-wrap: balance;
+  }
+  h3 {
+    font-family: var(--serif); font-weight: 600; font-size: 1.32rem; letter-spacing: -.012em;
+    margin: 38px 0 12px; text-wrap: balance;
+  }
+  h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; margin: 26px 0 10px;
+  }
+  p { max-width: 64ch; margin: 0 0 17px; }
+  .doc ul, .doc ol { max-width: 64ch; margin: 0 0 17px; padding-left: 22px; }
+  .doc li { margin-bottom: 7px; }
+  .doc li::marker { color: var(--accent); }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: .85em; color: var(--accent-ink); }
+
+  /* ---------- definition block ---------- */
+  .define {
+    background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 22px 24px; margin: 0 0 26px;
+  }
+  .define p { margin: 0; font-family: var(--serif); font-size: 1.18rem; line-height: 1.52; max-width: none; }
+  .define p + p { margin-top: 14px; }
+
+  /* ---------- analogy ---------- */
+  .analogy {
+    display: flex; gap: 16px; align-items: flex-start; margin: 24px 0;
+    background: var(--accent-wash); padding: 18px 20px; border: 1px solid var(--rule);
+  }
+  .analogy .tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent-ink); white-space: nowrap; padding-top: 5px; flex-shrink: 0;
+  }
+  .analogy p { margin: 0; max-width: none; }
+
+  /* ---------- problem box ---------- */
+  .problem {
+    background: var(--warn-wash); border: 1px solid var(--rule); padding: 20px 22px; margin: 24px 0;
+  }
+  .problem h4 { margin-top: 0; color: var(--warn); }
+  .problem ul { margin-bottom: 0; }
+  .problem p:last-child { margin-bottom: 0; }
+
+  /* ---------- numbered concepts ---------- */
+  .concept {
+    display: grid; gap: 6px 22px; padding: 28px 0; border-top: 1px solid var(--rule);
+  }
+  @media (min-width: 640px) { .concept { grid-template-columns: 56px minmax(0,1fr); } }
+  .concept-n {
+    font-family: var(--serif); font-size: 2.2rem; font-weight: 400; line-height: 1;
+    color: var(--accent); padding-top: 2px;
+  }
+  .concept h3 { margin: 0 0 10px; }
+  .concept > div > p:last-child, .concept > div > ul:last-child { margin-bottom: 0; }
+
+  /* ---------- lists of examples ---------- */
+  .examples {
+    display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule);
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 18px 0;
+  }
+  .examples span {
+    background: var(--surface); padding: 11px 14px; font-family: var(--mono); font-size: .82rem;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- figures ---------- */
+  figure { margin: 34px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 20px 18px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 600px; height: auto; color: var(--ink); }
+  figcaption {
+    font-size: .93rem; color: var(--ink-soft); margin-top: 11px; padding-left: 13px;
+    border-left: 2px solid var(--accent); max-width: 68ch; line-height: 1.5;
+  }
+  .b-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .b-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .b-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.6; }
+  .b-dash { fill: none; stroke: var(--warn); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .b-t { font-family: var(--sans); font-size: 12.5px; font-weight: 500; fill: currentColor; }
+  .b-sm { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-soft); }
+  .b-m { font-family: var(--mono); font-size: 10.5px; fill: var(--accent-ink); }
+  .b-w { font-family: var(--mono); font-size: 10.5px; fill: var(--warn); }
+  .b-cap { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; fill: var(--ink-faint); }
+  .b-l { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .b-lh { stroke: var(--accent); stroke-width: 1.7; fill: none; }
+  .b-lw { stroke: var(--warn); stroke-width: 1.3; fill: none; }
+  .b-div { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 4 5; }
+  .b-patch { fill: var(--surface); }
+
+  /* ---------- code ---------- */
+  pre {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.62; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 3px solid var(--accent);
+    padding: 17px 19px; overflow-x: auto; margin: 20px 0; color: var(--ink);
+  }
+  pre .s { color: var(--accent-ink); }
+  pre .c { color: var(--ink-faint); }
+  .prelabel {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 24px 0 -12px;
+  }
+  .note {
+    font-size: .92rem; color: var(--ink-soft); border-left: 2px solid var(--rule);
+    padding-left: 13px; margin: -6px 0 20px; max-width: 62ch;
+  }
+
+  /* ---------- good box (mirror of .problem) ---------- */
+  .good {
+    background: var(--accent-wash); border: 1px solid var(--rule); padding: 20px 22px; margin: 24px 0;
+  }
+  .good h4 { margin-top: 0; color: var(--accent-ink); }
+  .good ol, .good ul { margin-bottom: 0; }
+  .good p:last-child { margin-bottom: 0; }
+
+  /* ---------- key/value pair rows ---------- */
+  .pair { display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 24px 0; }
+  .pair > div {
+    background: var(--surface); padding: 15px 18px; display: grid; gap: 4px 18px; align-items: baseline;
+  }
+  @media (min-width: 560px) { .pair > div { grid-template-columns: 132px minmax(0,1fr); } }
+  .pair .k { font-family: var(--mono); font-size: .86rem; color: var(--accent-ink); }
+  .pair .v { color: var(--ink-soft); }
+
+  /* ---------- EHR alert ---------- */
+  .alert {
+    background: var(--surface); border: 1px solid var(--rule); border-left: 3px solid var(--warn);
+    padding: 17px 19px; margin: 20px 0; max-width: 62ch;
+  }
+  .alert .who {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--warn); display: block; margin-bottom: 9px;
+  }
+  .alert p { margin: 0; font-family: var(--serif); font-size: 1.08rem; line-height: 1.5; max-width: none; }
+
+  .alert ul { margin: 11px 0 0; padding-left: 20px; max-width: none; }
+  .alert ul li { margin-bottom: 4px; font-family: var(--sans); font-size: .95rem; }
+  .alert p + p { margin-top: 11px; }
+
+  /* ---------- formula ---------- */
+  .formula {
+    font-family: var(--serif); font-size: 1.5rem; text-align: center; padding: 26px 18px;
+    background: var(--surface); border: 1px solid var(--rule); margin: 24px 0; line-height: 1.4;
+  }
+  .formula b { color: var(--accent-ink); font-weight: 600; }
+
+  /* ---------- table ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 580px; font-size: .95rem; }
+  th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.45; }
+  thead th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 500; background: var(--sunken); border-bottom: 1px solid var(--rule);
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; }
+
+  /* ---------- bridge ---------- */
+  .bridge { background: var(--ink); color: var(--paper); padding: 32px 30px; margin-top: 8px; }
+  .bridge h3 { color: var(--paper); margin: 0 0 16px; font-size: 1.5rem; }
+  .bridge p { color: var(--paper); opacity: .85; margin-bottom: 14px; max-width: 60ch; }
+  .bridge p:last-child { margin-bottom: 0; }
+  .bridge strong { opacity: 1; }
+  .bridge code { color: var(--paper); }
+
+  footer {
+    margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11px; line-height: 1.85; color: var(--ink-faint);
+  }
+  footer p { max-width: 80ch; margin: 0 0 8px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page doc">
+
+  <header class="top">
+    <p class="kicker">Groundwork · read this first</p>
+    <h1>Five Healthcare<br><em>Standards</em></h1>
+    <p class="standfirst">Before we study Medblocks, we need the common terms used in healthcare. These five are the standards everything else rests on — how records are modelled, how they move, and how they get approved and paid.</p>
+  </header>
+
+  <!-- ================= openEHR ================= -->
+  <section id="openehr">
+    <p class="label">Part one</p>
+    <h2>What is openEHR?</h2>
+
+    <div class="define">
+      <p>openEHR is an <strong>open standard for storing, exchanging, and managing electronic health records (EHRs)</strong> in a way that is interoperable, vendor-neutral, and designed for long-term healthcare data management.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">Think of it as</span>
+      <p>A common language and structure for healthcare data — similar to how HTML provides a standard structure for web pages.</p>
+    </div>
+
+    <h3>Why was openEHR created?</h3>
+
+    <p>Traditional healthcare systems often store patient data differently:</p>
+
+    <div class="problem">
+      <h4>The same measurement, three names</h4>
+      <ul>
+        <li>One hospital stores blood pressure as <code>BP</code></li>
+        <li>Another stores it as <code>BloodPressure</code></li>
+        <li>Another stores it in a custom format</li>
+      </ul>
+      <p>This makes sharing and analyzing healthcare data difficult.</p>
+    </div>
+
+    <p>openEHR solves this by defining:</p>
+
+    <ul>
+      <li>How clinical data should be <strong>structured</strong></li>
+      <li>How it should be <strong>stored</strong></li>
+      <li>How different systems can <strong>understand the same data</strong></li>
+    </ul>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 382" role="img" aria-label="Comparison. Without a shared model, three hospitals each name blood pressure differently and combining them requires three custom mappings, growing with every new system. With openEHR, all three conform to one shared Blood Pressure archetype and a new system adds no mappings at all.">
+          <defs>
+            <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="m1w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
+            <marker id="m1g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+          </defs>
+
+          <line class="b-div" x1="450" y1="26" x2="450" y2="352"/>
+          <text class="b-cap" x="30" y="44">Without a shared model</text>
+          <text class="b-cap" x="470" y="44">With openEHR</text>
+
+          <rect class="b-box" x="30" y="64" width="160" height="52"/>
+          <text class="b-t" x="110" y="86" text-anchor="middle">Hospital A</text>
+          <text class="b-w" x="110" y="104" text-anchor="middle">BP</text>
+          <rect class="b-box" x="30" y="128" width="160" height="52"/>
+          <text class="b-t" x="110" y="150" text-anchor="middle">Hospital B</text>
+          <text class="b-w" x="110" y="168" text-anchor="middle">BloodPressure</text>
+          <rect class="b-box" x="30" y="192" width="160" height="52"/>
+          <text class="b-t" x="110" y="214" text-anchor="middle">Hospital C</text>
+          <text class="b-w" x="110" y="232" text-anchor="middle">custom format</text>
+
+          <line class="b-lw" x1="190" y1="90" x2="246" y2="142" marker-end="url(#m1w)"/>
+          <line class="b-lw" x1="190" y1="154" x2="246" y2="156" marker-end="url(#m1w)"/>
+          <line class="b-lw" x1="190" y1="218" x2="246" y2="170" marker-end="url(#m1w)"/>
+
+          <rect class="b-dash" x="250" y="124" width="170" height="64"/>
+          <text class="b-t" x="335" y="150" text-anchor="middle">Combining them</text>
+          <text class="b-w" x="335" y="170" text-anchor="middle">3 custom mappings</text>
+
+          <text class="b-sm" x="30" y="294">Every new system that joins</text>
+          <text class="b-sm" x="30" y="312">adds another mapping.</text>
+
+          <rect class="b-box" x="470" y="64" width="160" height="52"/>
+          <text class="b-t" x="550" y="86" text-anchor="middle">Hospital A</text>
+          <text class="b-m" x="550" y="104" text-anchor="middle">archetype</text>
+          <rect class="b-box" x="470" y="128" width="160" height="52"/>
+          <text class="b-t" x="550" y="150" text-anchor="middle">Hospital B</text>
+          <text class="b-m" x="550" y="168" text-anchor="middle">archetype</text>
+          <rect class="b-box" x="470" y="192" width="160" height="52"/>
+          <text class="b-t" x="550" y="214" text-anchor="middle">Hospital C</text>
+          <text class="b-m" x="550" y="232" text-anchor="middle">archetype</text>
+
+          <line class="b-lh" x1="630" y1="90" x2="686" y2="142" marker-end="url(#m1g)"/>
+          <line class="b-lh" x1="630" y1="154" x2="686" y2="156" marker-end="url(#m1g)"/>
+          <line class="b-lh" x1="630" y1="218" x2="686" y2="170" marker-end="url(#m1g)"/>
+          <rect class="b-patch" x="636" y="106" width="76" height="13"/>
+          <text class="b-m" x="674" y="117" text-anchor="middle">conforms to</text>
+
+          <rect class="b-hot" x="690" y="124" width="180" height="64"/>
+          <text class="b-t" x="780" y="150" text-anchor="middle">Blood Pressure</text>
+          <text class="b-m" x="780" y="170" text-anchor="middle">one archetype</text>
+
+          <text class="b-sm" x="470" y="294">Every new system that joins</text>
+          <text class="b-sm" x="470" y="312">adds nothing.</text>
+        </svg>
+      </div>
+      <figcaption>The difference is not tidiness — it is the number of mappings. On the left that number grows with every system added. On the right it stays at zero, because all of them already agree on the shape of the data.</figcaption>
+    </figure>
+
+    <h3>Key concepts</h3>
+
+    <div class="concept">
+      <div class="concept-n">1</div>
+      <div>
+        <h3>Clinical Data Repository (CDR)</h3>
+        <p>The openEHR repository stores patient information in a structured way.</p>
+        <h4>Examples</h4>
+        <div class="examples">
+          <span>Patient demographics</span>
+          <span>Lab results</span>
+          <span>Diagnoses</span>
+          <span>Medications</span>
+          <span>Vital signs</span>
+          <span>Clinical notes</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-n">2</div>
+      <div>
+        <h3>Archetypes</h3>
+        <p>An <strong>archetype</strong> is a reusable clinical data model.</p>
+        <p>Instead of every hospital creating its own blood pressure structure, everyone uses the same archetype.</p>
+      </div>
+    </div>
+
+    <div class="concept">
+      <div class="concept-n">3</div>
+      <div>
+        <h3>Templates</h3>
+        <p><strong>Templates</strong> combine multiple archetypes for a specific use case.</p>
+        <p>A single clinic visit needs several kinds of measurement at once. The template says which archetypes that visit uses, and in what order.</p>
+      </div>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 396" role="img" aria-label="The Blood Pressure archetype contains Systolic, Diastolic, Measurement Time and Body Position. A Diabetes Visit template combines Patient Info, Blood Pressure, HbA1c Result, Weight, Medications and Doctor Notes — with the Blood Pressure entry being the very same archetype, reused rather than redefined.">
+          <defs><marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+
+          <text class="b-cap" x="30" y="44">One archetype</text>
+          <text class="b-cap" x="520" y="44">One template</text>
+
+          <rect class="b-hot" x="30" y="60" width="210" height="42"/>
+          <text class="b-t" x="135" y="80" text-anchor="middle">Blood Pressure</text>
+          <text class="b-m" x="135" y="95" text-anchor="middle">archetype</text>
+
+          <path class="b-l" d="M50,102 V254"/>
+          <path class="b-l" d="M50,134 H66"/>
+          <path class="b-l" d="M50,174 H66"/>
+          <path class="b-l" d="M50,214 H66"/>
+          <path class="b-l" d="M50,254 H66"/>
+
+          <rect class="b-box" x="70" y="118" width="180" height="32"/>
+          <text class="b-t" x="160" y="139" text-anchor="middle">Systolic</text>
+          <rect class="b-box" x="70" y="158" width="180" height="32"/>
+          <text class="b-t" x="160" y="179" text-anchor="middle">Diastolic</text>
+          <rect class="b-box" x="70" y="198" width="180" height="32"/>
+          <text class="b-t" x="160" y="219" text-anchor="middle">Measurement Time</text>
+          <rect class="b-box" x="70" y="238" width="180" height="32"/>
+          <text class="b-t" x="160" y="259" text-anchor="middle">Body Position</text>
+
+          <path class="b-lh" d="M244,81 H380 V174 H548" marker-end="url(#m2)"/>
+          <rect class="b-patch" x="392" y="158" width="152" height="13"/>
+          <text class="b-m" x="468" y="169" text-anchor="middle">the same model, reused</text>
+
+          <rect class="b-soft" x="520" y="60" width="260" height="42"/>
+          <text class="b-t" x="650" y="80" text-anchor="middle">Diabetes Visit</text>
+          <text class="b-sm" x="650" y="95" text-anchor="middle">template</text>
+
+          <path class="b-l" d="M540,102 V334"/>
+          <path class="b-l" d="M540,134 H556"/>
+          <path class="b-l" d="M540,174 H556"/>
+          <path class="b-l" d="M540,214 H556"/>
+          <path class="b-l" d="M540,254 H556"/>
+          <path class="b-l" d="M540,294 H556"/>
+          <path class="b-l" d="M540,334 H556"/>
+
+          <rect class="b-box" x="560" y="118" width="240" height="32"/>
+          <text class="b-t" x="680" y="139" text-anchor="middle">Patient Info</text>
+          <rect class="b-hot" x="560" y="158" width="240" height="32"/>
+          <text class="b-t" x="680" y="179" text-anchor="middle">Blood Pressure</text>
+          <rect class="b-box" x="560" y="198" width="240" height="32"/>
+          <text class="b-t" x="680" y="219" text-anchor="middle">HbA1c Result</text>
+          <rect class="b-box" x="560" y="238" width="240" height="32"/>
+          <text class="b-t" x="680" y="259" text-anchor="middle">Weight</text>
+          <rect class="b-box" x="560" y="278" width="240" height="32"/>
+          <text class="b-t" x="680" y="299" text-anchor="middle">Medications</text>
+          <rect class="b-box" x="560" y="318" width="240" height="32"/>
+          <text class="b-t" x="680" y="339" text-anchor="middle">Doctor Notes</text>
+
+          <text class="b-cap" x="30" y="378">Archetypes are the vocabulary · templates are the sentence</text>
+        </svg>
+      </div>
+      <figcaption>The Blood Pressure entry in the template is not a copy — it <em>is</em> the archetype. Change the archetype once and every template that uses it stays correct. That reuse is the whole point of separating the two.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= FHIR ================= -->
+  <section id="fhir">
+    <p class="label">Part two</p>
+    <h2>What is FHIR?</h2>
+
+    <div class="define">
+      <p><strong>FHIR</strong> — Fast Healthcare Interoperability Resources — is a healthcare data standard created by <strong>HL7 International</strong> to help different healthcare systems exchange medical information in a consistent way.</p>
+      <p>It is one of the most widely adopted healthcare interoperability standards today.</p>
+    </div>
+
+    <h3>Simple explanation</h3>
+
+    <p>Imagine:</p>
+
+    <ul>
+      <li>Hospital A uses one software system</li>
+      <li>Hospital B uses another</li>
+      <li>The insurance company uses a third</li>
+      <li>The lab uses a fourth</li>
+    </ul>
+
+    <p>FHIR provides a <strong>common API and data format</strong> so they can communicate without custom integrations.</p>
+
+    <div class="formula">
+      Think of FHIR as<br>
+      <b>Healthcare + REST API + JSON</b>
+    </div>
+
+    <p>For developers, it feels very similar to modern web APIs.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 388" role="img" aria-label="Comparison. Without a standard, four parties — two hospitals, an insurer and a lab — need six point-to-point custom integrations, a count that grows quadratically. With FHIR, each party connects once to a shared REST and JSON format, giving four connections, a count that grows linearly.">
+          <line class="b-div" x1="450" y1="26" x2="450" y2="360"/>
+          <text class="b-cap" x="30" y="44">Without a standard</text>
+          <text class="b-cap" x="470" y="44">With FHIR</text>
+
+          <line class="b-lw" x1="100" y1="90" x2="330" y2="90"/>
+          <line class="b-lw" x1="100" y1="90" x2="100" y2="270"/>
+          <line class="b-lw" x1="100" y1="90" x2="330" y2="270"/>
+          <line class="b-lw" x1="330" y1="90" x2="100" y2="270"/>
+          <line class="b-lw" x1="330" y1="90" x2="330" y2="270"/>
+          <line class="b-lw" x1="100" y1="270" x2="330" y2="270"/>
+
+          <rect class="b-box" x="40" y="70" width="120" height="40"/>
+          <text class="b-t" x="100" y="95" text-anchor="middle">Hospital A</text>
+          <rect class="b-box" x="270" y="70" width="120" height="40"/>
+          <text class="b-t" x="330" y="95" text-anchor="middle">Hospital B</text>
+          <rect class="b-box" x="40" y="250" width="120" height="40"/>
+          <text class="b-t" x="100" y="275" text-anchor="middle">Insurer</text>
+          <rect class="b-box" x="270" y="250" width="120" height="40"/>
+          <text class="b-t" x="330" y="275" text-anchor="middle">Lab</text>
+
+          <text class="b-w" x="30" y="326">6 custom integrations</text>
+          <text class="b-sm" x="30" y="346">n(n−1)/2 — grows quadratically</text>
+
+          <line class="b-lh" x1="540" y1="90" x2="640" y2="160"/>
+          <line class="b-lh" x1="770" y1="90" x2="670" y2="160"/>
+          <line class="b-lh" x1="540" y1="270" x2="640" y2="200"/>
+          <line class="b-lh" x1="770" y1="270" x2="670" y2="200"/>
+
+          <rect class="b-box" x="480" y="70" width="120" height="40"/>
+          <text class="b-t" x="540" y="95" text-anchor="middle">Hospital A</text>
+          <rect class="b-box" x="710" y="70" width="120" height="40"/>
+          <text class="b-t" x="770" y="95" text-anchor="middle">Hospital B</text>
+          <rect class="b-box" x="480" y="250" width="120" height="40"/>
+          <text class="b-t" x="540" y="275" text-anchor="middle">Insurer</text>
+          <rect class="b-box" x="710" y="250" width="120" height="40"/>
+          <text class="b-t" x="770" y="275" text-anchor="middle">Lab</text>
+
+          <rect class="b-hot" x="570" y="150" width="170" height="60"/>
+          <text class="b-t" x="655" y="175" text-anchor="middle">FHIR</text>
+          <text class="b-m" x="655" y="195" text-anchor="middle">REST + JSON</text>
+
+          <text class="b-m" x="470" y="326">4 standard connections</text>
+          <text class="b-sm" x="470" y="346">n — grows linearly</text>
+        </svg>
+      </div>
+      <figcaption>Nobody builds the left-hand picture on purpose — it is what you get by default, one integration at a time. FHIR's value is arithmetic: each party learns one format instead of one format per partner.</figcaption>
+    </figure>
+
+    <h3>Example: Patient resource</h3>
+
+    <p>FHIR data is organised into <strong>resources</strong> — self-contained objects like <code>Patient</code>, <code>Observation</code>, <code>Condition</code> or <code>MedicationRequest</code>. Here is the simplest one:</p>
+
+    <pre>{
+  <span class="s">"resourceType"</span>: <span class="s">"Patient"</span>,
+  <span class="s">"id"</span>: <span class="s">"123"</span>,
+  <span class="s">"name"</span>: [{
+    <span class="s">"family"</span>: <span class="s">"Doe"</span>,
+    <span class="s">"given"</span>: [<span class="s">"John"</span>]
+  }],
+  <span class="s">"gender"</span>: <span class="s">"male"</span>,
+  <span class="s">"birthDate"</span>: <span class="s">"1990-01-01"</span>
+}</pre>
+
+    <p class="note">In FHIR, <code>family</code> is the surname and <code>given</code> holds the forenames — <code>given</code> is an array because a person can have several. So this resource describes <strong>John Doe</strong>. It is an easy pair to swap by accident, and worth getting right early, because every other resource points at patients by <code>id</code> and displays them by name.</p>
+
+    <p>Plain JSON, a predictable shape, fetched over ordinary HTTP. That is the entire reason FHIR spread as fast as it did — any developer who has used a REST API already knows how to read it.</p>
+  </section>
+
+  <!-- ================= CRD ================= -->
+  <section id="crd">
+    <p class="label">Part three</p>
+    <h2>What is CRD?</h2>
+
+    <div class="define">
+      <p><strong>CRD</strong> — Coverage Requirements Discovery — is a healthcare standard that helps a doctor know whether an insurance company requires <strong>prior authorization</strong> before a treatment, test, or medication is ordered.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">Simple analogy</span>
+      <p>Imagine you are shopping online. You add a product to your cart, and before checkout the website tells you: <em>this item needs additional approval</em> &middot; <em>please upload a document</em> &middot; <em>you are eligible for a discount</em>.</p>
+      <p>CRD does something similar for healthcare.</p>
+    </div>
+
+    <p>When a doctor orders a treatment, the hospital's EHR system automatically checks with the insurance company and tells the doctor:</p>
+
+    <ul>
+      <li>Does this need <strong>prior authorization</strong>?</li>
+      <li>What <strong>documents</strong> are required?</li>
+      <li>Are there <strong>alternative treatments</strong> that don't need approval?</li>
+    </ul>
+
+    <h3>Example</h3>
+
+    <div class="problem">
+      <h4>Without CRD</h4>
+      <ol>
+        <li>Doctor orders an MRI scan.</li>
+        <li>Staff submits the request to insurance.</li>
+        <li>Insurance replies: <em>prior authorization is required</em>.</li>
+        <li>Staff gathers documents and resubmits.</li>
+        <li><strong>Several days are lost.</strong></li>
+      </ol>
+    </div>
+
+    <div class="good">
+      <h4>With CRD</h4>
+      <ol>
+        <li>Doctor orders an MRI in the EHR.</li>
+        <li>CRD immediately checks the insurance rules.</li>
+        <li>A message appears in the chart.</li>
+      </ol>
+    </div>
+
+    <div class="alert">
+      <span class="who">Message shown to the doctor</span>
+      <p>&ldquo;This MRI requires prior authorization. Please provide recent clinical notes and imaging history.&rdquo;</p>
+    </div>
+
+    <p>The doctor knows the requirements <strong>instantly</strong> and can start the authorization process right away.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 396" role="img" aria-label="Comparison. Without CRD: the doctor orders an MRI, staff submit to insurance, insurance replies days later that prior authorization is required, staff gather documents and resubmit, and several days are lost. With CRD: the doctor orders an MRI in the EHR, CRD checks the insurance rules in milliseconds, the requirements appear immediately, the doctor starts authorization right away, and no days are lost.">
+          <defs>
+            <marker id="m4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="m4w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
+            <marker id="m4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+          </defs>
+
+          <line class="b-div" x1="450" y1="26" x2="450" y2="368"/>
+          <text class="b-cap" x="30" y="42">Without CRD</text>
+          <text class="b-cap" x="470" y="42">With CRD</text>
+
+          <rect class="b-box" x="30" y="56" width="380" height="44"/>
+          <text class="b-t" x="220" y="83" text-anchor="middle">Doctor orders an MRI</text>
+          <line class="b-l" x1="220" y1="100" x2="220" y2="116" marker-end="url(#m4)"/>
+
+          <rect class="b-box" x="30" y="120" width="380" height="44"/>
+          <text class="b-t" x="220" y="147" text-anchor="middle">Staff submits the request to insurance</text>
+          <line class="b-lw" x1="220" y1="164" x2="220" y2="180" marker-end="url(#m4w)"/>
+          <text class="b-w" x="232" y="177">days pass here</text>
+
+          <rect class="b-box" x="30" y="184" width="380" height="44"/>
+          <text class="b-t" x="220" y="211" text-anchor="middle">Insurance replies: prior authorization needed</text>
+          <line class="b-l" x1="220" y1="228" x2="220" y2="244" marker-end="url(#m4)"/>
+
+          <rect class="b-box" x="30" y="248" width="380" height="44"/>
+          <text class="b-t" x="220" y="275" text-anchor="middle">Staff gathers documents and resubmits</text>
+          <line class="b-l" x1="220" y1="292" x2="220" y2="308" marker-end="url(#m4)"/>
+
+          <rect class="b-dash" x="30" y="312" width="380" height="44"/>
+          <text class="b-w" x="220" y="339" text-anchor="middle">Several days lost</text>
+
+          <rect class="b-box" x="470" y="56" width="380" height="44"/>
+          <text class="b-t" x="660" y="83" text-anchor="middle">Doctor orders an MRI in the EHR</text>
+          <line class="b-lh" x1="660" y1="100" x2="660" y2="116" marker-end="url(#m4g)"/>
+          <text class="b-m" x="672" y="113">milliseconds</text>
+
+          <rect class="b-hot" x="470" y="120" width="380" height="44"/>
+          <text class="b-t" x="660" y="147" text-anchor="middle">CRD checks the insurance rules</text>
+          <line class="b-lh" x1="660" y1="164" x2="660" y2="180" marker-end="url(#m4g)"/>
+
+          <rect class="b-box" x="470" y="184" width="380" height="44"/>
+          <text class="b-t" x="660" y="211" text-anchor="middle">Requirements appear in the chart</text>
+          <line class="b-l" x1="660" y1="228" x2="660" y2="244" marker-end="url(#m4)"/>
+
+          <rect class="b-box" x="470" y="248" width="380" height="44"/>
+          <text class="b-t" x="660" y="275" text-anchor="middle">Doctor starts authorization right away</text>
+
+          <text class="b-m" x="470" y="339">No days lost — the answer arrived</text>
+          <text class="b-m" x="470" y="357">before the order was placed.</text>
+
+          <text class="b-cap" x="30" y="388">Same question, asked at a different moment</text>
+        </svg>
+      </div>
+      <figcaption>Both paths ask the insurer the same thing. The only difference is <em>when</em> — after the order has been submitted, or while the doctor is still deciding. That timing is the entire value of the standard.</figcaption>
+    </figure>
+
+    <h3>Where CRD fits</h3>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 324" role="img" aria-label="Flowchart. A doctor orders treatment, which triggers a CRD check. The check branches two ways: if no authorization is needed the order proceeds; if authorization is required, the required documents are shown.">
+          <defs><marker id="m5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="b-box" x="40" y="40" width="280" height="52"/>
+          <text class="b-t" x="180" y="72" text-anchor="middle">Doctor orders treatment</text>
+
+          <line class="b-l" x1="180" y1="92" x2="180" y2="116" marker-end="url(#m5)"/>
+
+          <rect class="b-hot" x="40" y="120" width="280" height="60"/>
+          <text class="b-t" x="180" y="145" text-anchor="middle">CRD check</text>
+          <text class="b-sm" x="180" y="165" text-anchor="middle">asks the payer's rules in real time</text>
+
+          <path class="b-l" d="M320,150 H370"/>
+          <path class="b-l" d="M370,80 V230"/>
+          <line class="b-l" x1="370" y1="80" x2="416" y2="80" marker-end="url(#m5)"/>
+          <line class="b-l" x1="370" y1="230" x2="416" y2="230" marker-end="url(#m5)"/>
+
+          <rect class="b-box" x="420" y="54" width="240" height="52"/>
+          <text class="b-t" x="540" y="86" text-anchor="middle">No authorization needed</text>
+          <line class="b-l" x1="660" y1="80" x2="696" y2="80" marker-end="url(#m5)"/>
+          <rect class="b-hot" x="700" y="54" width="180" height="52"/>
+          <text class="b-t" x="790" y="86" text-anchor="middle">Proceed</text>
+
+          <rect class="b-box" x="420" y="204" width="240" height="52"/>
+          <text class="b-t" x="540" y="236" text-anchor="middle">Authorization required</text>
+          <line class="b-l" x1="660" y1="230" x2="696" y2="230" marker-end="url(#m5)"/>
+          <rect class="b-box" x="700" y="204" width="180" height="52"/>
+          <text class="b-t" x="790" y="228" text-anchor="middle">Show required</text>
+          <text class="b-t" x="790" y="246" text-anchor="middle">documents</text>
+
+          <text class="b-cap" x="40" y="308">One check, two outcomes — and neither of them is a phone call</text>
+        </svg>
+      </div>
+      <figcaption>The branch is the point. Most orders come back clean and the doctor never notices CRD ran at all; the ones that don't arrive with their paperwork already listed, instead of as a rejection days later.</figcaption>
+    </figure>
+
+    <h3>How it actually works</h3>
+    <p>CRD is not a separate system the hospital buys. It is built on the two things you have already met: <strong>FHIR</strong> for the data, and <strong>CDS Hooks</strong> for the moment. When the doctor places the order, the EHR fires a hook — <code>order-select</code> or <code>order-sign</code> — to the payer's service, which answers with a <em>card</em>: a short message rendered right there in the chart.</p>
+
+    <p>It comes from HL7's <strong>Da Vinci</strong> project, a set of FHIR standards aimed squarely at the payer&ndash;provider gap. CRD is the first link in a chain of them &mdash; which is Part four.</p>
+  </section>
+
+  <!-- ================= CDS HOOKS ================= -->
+  <section id="cdshooks">
+    <p class="label">Part four</p>
+    <h2>What are CDS Hooks?</h2>
+
+    <div class="define">
+      <p><strong>CDS Hooks</strong> — Clinical Decision Support Hooks — is a standard that allows an EHR system to <strong>ask another system for advice at specific moments</strong> during a doctor's workflow.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">Think of it as</span>
+      <p>Google Maps suggestions while you're driving. Maps can pop up <em>traffic ahead</em> or <em>take an alternate route</em> — not because you asked, but because you reached a moment where the advice was useful.</p>
+      <p>Similarly, while a doctor is working in the EHR, CDS Hooks can pop up: <em>this medication may interact with another medication</em> &middot; <em>prior authorization is required</em> &middot; <em>this patient may qualify for a specific treatment</em>.</p>
+    </div>
+
+    <h3>Simple example</h3>
+    <p>A doctor orders an MRI. Three things happen, and the doctor experiences them as one.</p>
+
+    <ol>
+      <li><strong>The doctor clicks &ldquo;Order MRI&rdquo;.</strong> The EHR notices a specific event occurred.</li>
+      <li><strong>The EHR asks for guidance.</strong> It sends patient and order information to a CDS service.</li>
+      <li><strong>The CDS service responds</strong> with a <em>card</em> — a short message rendered right there in the chart.</li>
+    </ol>
+
+    <div class="alert">
+      <span class="who">Card returned to the EHR</span>
+      <p>Prior authorization is required for this MRI.</p>
+      <p><strong>Required documents:</strong></p>
+      <ul>
+        <li>Clinical notes</li>
+        <li>Previous imaging reports</li>
+      </ul>
+    </div>
+
+    <p>The doctor sees this information immediately.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 348" role="img" aria-label="The doctor clicks Order MRI and the EHR fires the order-select hook, sending patient and order context to a CDS service. The service returns a card, which the EHR renders in the chart showing that prior authorization is required and which documents are needed.">
+          <defs>
+            <marker id="m6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="m6g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+          </defs>
+
+          <rect class="b-box" x="60" y="86" width="280" height="100"/>
+          <text class="b-t" x="200" y="126" text-anchor="middle">Doctor clicks &ldquo;Order MRI&rdquo;</text>
+          <text class="b-sm" x="200" y="150" text-anchor="middle">the EHR notices the event</text>
+
+          <rect class="b-hot" x="560" y="86" width="280" height="100"/>
+          <text class="b-t" x="700" y="126" text-anchor="middle">CDS service</text>
+          <text class="b-sm" x="700" y="150" text-anchor="middle">someone else's rules engine</text>
+
+          <line class="b-l" x1="340" y1="124" x2="556" y2="124" marker-end="url(#m6)"/>
+          <rect class="b-patch" x="366" y="92" width="168" height="13"/>
+          <text class="b-m" x="450" y="103" text-anchor="middle">order-select fires</text>
+          <rect class="b-patch" x="352" y="107" width="196" height="13"/>
+          <text class="b-mm" x="450" y="118" text-anchor="middle">+ patient and order context</text>
+
+          <line class="b-lh" x1="556" y1="162" x2="344" y2="162" marker-end="url(#m6g)"/>
+          <rect class="b-patch" x="392" y="168" width="116" height="13"/>
+          <text class="b-m" x="450" y="179" text-anchor="middle">a card comes back</text>
+
+          <line class="b-l" x1="200" y1="186" x2="200" y2="216" marker-end="url(#m6)"/>
+
+          <rect class="b-dash" x="60" y="220" width="380" height="88"/>
+          <text class="b-w" x="80" y="246">Prior authorization is required</text>
+          <text class="b-w" x="80" y="266">for this MRI.</text>
+          <text class="b-sm" x="80" y="290">Clinical notes &middot; previous imaging reports</text>
+          <text class="b-cap" x="60" y="332">Rendered inside the chart, not in another tab</text>
+        </svg>
+      </div>
+      <figcaption>The whole round trip happens while the doctor is still looking at the order screen. Nothing is emailed, nothing is faxed, and the doctor never leaves the EHR — which is the only reason advice like this actually gets read.</figcaption>
+    </figure>
+
+    <h3>Why it matters for prior authorization</h3>
+    <p>CDS Hooks is often the mechanism used to trigger <strong>CRD</strong>. The doctor places an order, the hook fires, the CRD service answers, and the prior-authorization requirements appear. The two standards answer different questions:</p>
+
+    <div class="pair">
+      <div><span class="k">CDS Hooks</span><span class="v">&ldquo;When should we ask for advice?&rdquo;</span></div>
+      <div><span class="k">CRD</span><span class="v">&ldquo;What advice should we give about insurance coverage and prior authorization?&rdquo;</span></div>
+    </div>
+
+    <h3>Another real-world example</h3>
+    <p>A doctor prescribes an expensive medication. CDS Hooks displays:</p>
+
+    <div class="alert">
+      <span class="who">Warning &middot; card</span>
+      <p>This medication requires prior authorization.</p>
+      <p><strong>Alternative covered medications:</strong></p>
+      <ul>
+        <li>Drug A</li>
+        <li>Drug B</li>
+      </ul>
+    </div>
+
+    <p>The doctor can decide whether to proceed or choose an alternative — at the moment the decision is being made, rather than a week later when a rejection letter arrives.</p>
+
+    <h3>Common CDS Hooks</h3>
+    <p>A hook is just a named moment. These four cover most of what a payer or decision-support service cares about:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Hook</th><th>When it runs</th></tr></thead>
+        <tbody>
+          <tr><td><code>patient-view</code></td><td>When a patient's chart is opened</td></tr>
+          <tr><td><code>medication-prescribe</code></td><td>When a medication is prescribed</td></tr>
+          <tr><td><code>order-select</code></td><td>When a lab test, imaging study, or procedure is selected</td></tr>
+          <tr><td><code>order-sign</code></td><td>Just before the order is finalized</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>How CDS Hooks, CRD, DTR and PAS fit together</h3>
+    <p>Each one hands off to the next. CDS Hooks provides the moment; the three Da Vinci standards provide the answer, the paperwork, and the submission.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 446" role="img" aria-label="A chain. The doctor places an order, which fires a CDS Hook, which calls the CRD service to ask whether prior authorization is needed, which hands to DTR to gather the required documents, which hands to PAS to submit the request, which produces the insurance response. CRD, DTR and PAS together are the HL7 Da Vinci prior-authorization suite.">
+          <defs><marker id="m7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="b-box" x="210" y="24" width="330" height="52"/>
+          <text class="b-t" x="375" y="55" text-anchor="middle">Doctor places order</text>
+          <text class="b-mm" x="570" y="55">the trigger</text>
+          <line class="b-l" x1="375" y1="76" x2="375" y2="88" marker-end="url(#m7)"/>
+
+          <rect class="b-hot" x="210" y="90" width="330" height="52"/>
+          <text class="b-t" x="375" y="121" text-anchor="middle">CDS Hooks</text>
+          <text class="b-m" x="570" y="121">when to ask</text>
+          <line class="b-l" x1="375" y1="142" x2="375" y2="154" marker-end="url(#m7)"/>
+
+          <rect class="b-box" x="210" y="156" width="330" height="52"/>
+          <text class="b-t" x="375" y="187" text-anchor="middle">CRD</text>
+          <text class="b-mm" x="570" y="187">is prior authorization needed?</text>
+          <line class="b-l" x1="375" y1="208" x2="375" y2="220" marker-end="url(#m7)"/>
+
+          <rect class="b-box" x="210" y="222" width="330" height="52"/>
+          <text class="b-t" x="375" y="253" text-anchor="middle">DTR</text>
+          <text class="b-mm" x="570" y="253">gather the required documents</text>
+          <line class="b-l" x1="375" y1="274" x2="375" y2="286" marker-end="url(#m7)"/>
+
+          <rect class="b-box" x="210" y="288" width="330" height="52"/>
+          <text class="b-t" x="375" y="319" text-anchor="middle">PAS</text>
+          <text class="b-mm" x="570" y="319">submit the request</text>
+          <line class="b-l" x1="375" y1="340" x2="375" y2="352" marker-end="url(#m7)"/>
+
+          <rect class="b-soft" x="210" y="354" width="330" height="52"/>
+          <text class="b-t" x="375" y="385" text-anchor="middle">Insurance response</text>
+          <text class="b-mm" x="570" y="385">approved, denied, or pended</text>
+
+          <path class="b-l" d="M190,156 H176 V340 H190"/>
+          <text class="b-m" x="30" y="240">HL7 Da Vinci</text>
+          <text class="b-mm" x="30" y="258">prior-auth suite</text>
+
+          <text class="b-cap" x="30" y="428">One workflow, four standards, no phone calls</text>
+        </svg>
+      </div>
+      <figcaption>Only the top box is a person. Everything below it is machine-to-machine, which is the point: the chain replaces a sequence of faxes and hold music that used to take days.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ================= X12 ================= -->
+  <section id="x12">
+    <p class="label">Part five</p>
+    <h2>What are X12 transactions?</h2>
+
+    <div class="define">
+      <p><strong>X12 transactions</strong> are standardized electronic message formats used in the U.S. healthcare industry to exchange information between hospitals, clinics, insurance companies, pharmacies, and other healthcare organizations.</p>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">Think of them as</span>
+      <p>Predefined forms that computers use to talk to each other.</p>
+      <p>Imagine sending money through a bank. The bank expects the information in a specific format — <em>account number</em>, <em>amount</em>, <em>recipient</em>, <em>date</em>. If everyone uses the same format, banks can process transactions automatically. Healthcare works the same way: instead of paper forms, organizations send X12 transactions.</p>
+    </div>
+
+    <h3>Real-world example</h3>
+    <p>A doctor performs an MRI for a patient. The hospital sends an X12 transaction to the insurance company, and the insurance company processes it and sends another one back.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 336" role="img" aria-label="ABC Hospital sends an X12 claim to the insurance company listing patient John, procedure MRI, provider ABC Hospital and cost 500 dollars. The insurance company replies with an X12 remittance stating an approved amount of 400 dollars and patient responsibility of 100 dollars.">
+          <defs><marker id="m8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <rect class="b-box" x="30" y="108" width="190" height="110"/>
+          <text class="b-t" x="125" y="152" text-anchor="middle">ABC Hospital</text>
+          <text class="b-sm" x="125" y="174" text-anchor="middle">performed the MRI</text>
+
+          <rect class="b-hot" x="300" y="34" width="300" height="104"/>
+          <text class="b-m" x="316" y="56">the claim &middot; X12 837</text>
+          <text class="b-mm" x="316" y="80">Patient: John</text>
+          <text class="b-mm" x="316" y="98">Procedure: MRI</text>
+          <text class="b-mm" x="316" y="116">Provider: ABC Hospital &middot; Cost: $500</text>
+
+          <rect class="b-soft" x="300" y="190" width="300" height="104"/>
+          <text class="b-m" x="316" y="212">the reply &middot; X12 835</text>
+          <text class="b-mm" x="316" y="240">Approved amount: $400</text>
+          <text class="b-mm" x="316" y="262">Patient responsibility: $100</text>
+
+          <rect class="b-box" x="680" y="108" width="190" height="110"/>
+          <text class="b-t" x="775" y="152" text-anchor="middle">Insurance company</text>
+          <text class="b-sm" x="775" y="174" text-anchor="middle">processes it</text>
+
+          <line class="b-l" x1="220" y1="138" x2="296" y2="92" marker-end="url(#m8)"/>
+          <line class="b-l" x1="600" y1="92" x2="676" y2="138" marker-end="url(#m8)"/>
+          <line class="b-l" x1="680" y1="190" x2="604" y2="236" marker-end="url(#m8)"/>
+          <line class="b-l" x1="300" y1="236" x2="224" y2="190" marker-end="url(#m8)"/>
+
+          <text class="b-cap" x="30" y="318">No human reads either message &mdash; that is the entire point of a fixed format</text>
+        </svg>
+      </div>
+      <figcaption>Both messages carry the same kind of information a paper form would. The difference is that every field sits in a position both computers already agree on, so the insurer's system can process the claim without anyone opening an envelope.</figcaption>
+    </figure>
+
+    <h3>Common healthcare X12 transactions</h3>
+    <p>Most of them come in <strong>request-and-response pairs</strong> — you send one number, you get a different number back.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Transaction</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>270</code></td><td>Ask insurance if a patient is eligible for coverage</td></tr>
+          <tr><td><code>271</code></td><td>Eligibility response</td></tr>
+          <tr><td><code>276</code></td><td>Ask about claim status</td></tr>
+          <tr><td><code>277</code></td><td>Claim status response</td></tr>
+          <tr><td><code>278</code></td><td>Prior authorization request and response</td></tr>
+          <tr><td><code>837</code></td><td>Healthcare claim submission</td></tr>
+          <tr><td><code>835</code></td><td>Payment and remittance details</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Example: prior authorization using X12 278</h3>
+    <p>Before treatment, the hospital sends an <code>X12 278</code> request. In plain language it asks:</p>
+
+    <div class="alert">
+      <span class="who">X12 278 &middot; request</span>
+      <p>&ldquo;Can this patient receive this procedure, and will you cover it?&rdquo;</p>
+    </div>
+
+    <p>The insurance company replies with an <code>X12 278</code> response, which means one of three things:</p>
+
+    <div class="alert">
+      <span class="who">X12 278 &middot; response</span>
+      <p>Approved &nbsp;&middot;&nbsp; Denied &nbsp;&middot;&nbsp; Need more information</p>
+    </div>
+
+    <h3>How it fits with CRD, DTR and PAS</h3>
+    <p>Modern FHIR-based prior authorization workflows still have to interact with older insurance systems. The new standards run all the way up to the point of submission — and then the request is <strong>translated into X12 278</strong>, because that is what most insurers can actually receive.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 310" role="img" aria-label="On the provider side, using FHIR: the doctor places an order, CRD checks whether authorization is needed, DTR collects the required information, and PAS submits the request as a FHIR request. At a translation boundary the request is converted to X12 278, and only then reaches the insurance company on the payer side. The answer returns along the same path, translated back.">
+          <defs><marker id="m9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="m9f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker></defs>
+
+          <text class="b-cap" x="20" y="44">Provider side &mdash; FHIR</text>
+          <text class="b-cap" x="612" y="44">Payer side &mdash; X12</text>
+          <line class="b-div" x1="578" y1="56" x2="578" y2="196"/>
+
+          <rect class="b-box" x="20" y="62" width="124" height="118"/>
+          <text class="b-t" x="82" y="112" text-anchor="middle">Doctor</text>
+          <text class="b-mm" x="82" y="134" text-anchor="middle">places</text>
+          <text class="b-mm" x="82" y="150" text-anchor="middle">the order</text>
+
+          <rect class="b-hot" x="158" y="62" width="124" height="118"/>
+          <text class="b-t" x="220" y="112" text-anchor="middle">CRD</text>
+          <text class="b-mm" x="220" y="134" text-anchor="middle">is auth</text>
+          <text class="b-mm" x="220" y="150" text-anchor="middle">needed?</text>
+
+          <rect class="b-hot" x="296" y="62" width="124" height="118"/>
+          <text class="b-t" x="358" y="112" text-anchor="middle">DTR</text>
+          <text class="b-mm" x="358" y="134" text-anchor="middle">collect the</text>
+          <text class="b-mm" x="358" y="150" text-anchor="middle">information</text>
+
+          <rect class="b-hot" x="434" y="62" width="124" height="118"/>
+          <text class="b-t" x="496" y="112" text-anchor="middle">PAS</text>
+          <text class="b-mm" x="496" y="134" text-anchor="middle">submits a</text>
+          <text class="b-mm" x="496" y="150" text-anchor="middle">FHIR request</text>
+
+          <rect class="b-dash" x="600" y="62" width="140" height="118"/>
+          <text class="b-w" x="670" y="106" text-anchor="middle">Convert to</text>
+          <text class="b-w" x="670" y="124" text-anchor="middle">X12 278</text>
+          <text class="b-mm" x="670" y="150" text-anchor="middle">the translation seam</text>
+
+          <rect class="b-box" x="756" y="62" width="124" height="118"/>
+          <text class="b-t" x="818" y="112" text-anchor="middle">Insurance</text>
+          <text class="b-t" x="818" y="130" text-anchor="middle">company</text>
+
+          <line class="b-l" x1="144" y1="121" x2="154" y2="121" marker-end="url(#m9)"/>
+          <line class="b-l" x1="282" y1="121" x2="292" y2="121" marker-end="url(#m9)"/>
+          <line class="b-l" x1="420" y1="121" x2="430" y2="121" marker-end="url(#m9)"/>
+          <line class="b-lw" x1="558" y1="121" x2="596" y2="121" marker-end="url(#m9)"/>
+          <line class="b-l" x1="740" y1="121" x2="752" y2="121" marker-end="url(#m9)"/>
+
+          <path class="b-ld" d="M818,180 V238 H82 V186" marker-end="url(#m9f)"/>
+          <rect class="b-patch" x="300" y="230" width="308" height="14"/>
+          <text class="b-mm" x="454" y="242" text-anchor="middle">the answer returns the same way, translated back</text>
+
+          <text class="b-cap" x="20" y="292">The new standards stop at the seam &mdash; the old format starts there</text>
+        </svg>
+      </div>
+      <figcaption>Everything left of the dashed line is the modern workflow the doctor experiences. Everything right of it is decades-old infrastructure that has not moved. The amber box is where one becomes the other, and it is the piece nobody puts on a slide.</figcaption>
+    </figure>
+
+    <div class="pair">
+      <div><span class="k">CRD</span><span class="v">Checks if authorization is needed.</span></div>
+      <div><span class="k">DTR</span><span class="v">Collects the required information.</span></div>
+      <div><span class="k">PAS</span><span class="v">Submits the authorization request.</span></div>
+      <div><span class="k">X12 278</span><span class="v">The format many insurers still use to receive that request.</span></div>
+    </div>
+
+    <h3>Why X12 is important</h3>
+    <p>Most U.S. insurance companies have used X12 standards for decades. Even though healthcare is moving toward FHIR, many insurers still process claims (<code>837</code>), payments (<code>835</code>), eligibility checks (<code>270</code>/<code>271</code>) and prior authorizations (<code>278</code>) as X12 transactions.</p>
+
+    <p>That installed base is why X12 will not simply disappear. It is also why the rules are changing around it rather than through it: under the 2027 prior authorization rule, X12 <code>278</code> becomes <em>optional</em> for organisations that have implemented the FHIR route — regulators applying pressure to the old format rather than switching it off.</p>
+  </section>
+
+  <!-- ================= TOGETHER ================= -->
+  <section id="together">
+    <p class="label">Part six</p>
+    <h2>How the two fit together</h2>
+
+    <p>They are often presented as rivals. They are not — they answer different questions, and a serious platform usually uses both.</p>
+
+    <p>CDS Hooks and CRD both sit in the FHIR column: they are built on FHIR resources carried over ordinary HTTP, so they inherit the REST-and-JSON world rather than the archetype one.</p>
+
+    <p>X12 belongs to neither column. It is the older EDI world that both of these standards are gradually growing over — still carrying most of the money and most of the prior authorizations in US healthcare, and still sitting at the far end of every FHIR workflow that touches a payer.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>&nbsp;</th><th>openEHR</th><th>FHIR</th></tr></thead>
+        <tbody>
+          <tr><td>Main question</td><td>How should clinical data be modelled and stored for decades?</td><td>How should two systems exchange clinical data right now?</td></tr>
+          <tr><td>Strength</td><td>Deep, governed clinical models — archetypes and templates</td><td>Simple, developer-friendly API — REST and JSON</td></tr>
+          <tr><td>Unit of data</td><td>Archetype, composed into templates</td><td>Resource, e.g. <code>Patient</code>, <code>Observation</code></td></tr>
+          <tr><td>Typical role</td><td>The record you keep</td><td>The message you send</td></tr>
+          <tr><td>Created by</td><td>The openEHR Foundation</td><td>HL7 International</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="analogy">
+      <span class="tag">One way to hold it</span>
+      <p>openEHR is closer to your <strong>database schema</strong> — careful, clinically governed, built to outlive the software using it. FHIR is closer to your <strong>API layer</strong> — the shape data takes when it travels between systems.</p>
+    </div>
+
+    <div class="bridge">
+      <h3>Why this matters before studying Medblocks</h3>
+      <p>Medblocks’ own documentation makes a claim that only lands once you know both terms: <strong>“FHIR is the transport format, but source data still varies.”</strong></p>
+      <p>Every US hospital now exposes FHIR — that is the left-to-right arrow in the diagram above, and it is solved. What is <em>not</em> solved is that the same clinical fact arrives from five hospitals in five shapes, five code systems and five units. Medblocks’ answer is a layer they call <strong>Clinical Domain Models</strong>, sitting above raw FHIR.</p>
+      <p>That is archetype thinking. Hold both ideas — <code>FHIR</code> for the wire, <code>archetypes</code> for the meaning — and the rest of the Medblocks study reads as one continuous argument instead of a pile of acronyms.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Study notes · part of a six-document set. Companions: <em>Medblocks in Five Layers</em> (what the platform does), <em>Anatomy of Medblocks</em> (the full case study and what replicating it would cost), <em>Medblocks Teardown</em> (how it is actually built, from public evidence), <em>Build Your Own Medblocks</em> (the seven components and per-layer stack), and <em>The 2027 Prior Auth Deadline</em> (the CMS-0057-F rule).</p>
+    <p>Definitions, examples and structures on this page follow the author’s own notes. The FHIR <code>Patient</code> example is shown with <code>family</code> as the surname and <code>given</code> as the forename, per the FHIR specification.</p>
+  </footer>
+
+</div>

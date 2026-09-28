@@ -1,0 +1,898 @@
+<title>The 2027 Prior Auth Deadline</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Inconsolata:wght@400;600&display=swap">
+<style>
+  :root {
+    --paper:     #ECECEF;
+    --surface:   #FBFBFC;
+    --sunken:    #E0E0E5;
+    --ink:       #15151A;
+    --ink-soft:  #4D4D56;
+    --ink-faint: #81818B;
+    --rule:      #C8C8D0;
+    --rule-soft: #DFDFE5;
+    --accent:    #A32E22;
+    --accent-ink:#7F2218;
+    --accent-wash:#F5E1DD;
+    --steel:     #3C566B;
+    --warn:      #855611;
+    --warn-wash: #F2E8D4;
+
+    --head: "Libre Franklin", "Helvetica Neue", Arial, sans-serif;
+    --body: "Lora", Georgia, serif;
+    --mono: "Inconsolata", ui-monospace, Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:     #0F0F12;
+      --surface:   #17171C;
+      --sunken:    #1E1E24;
+      --ink:       #E3E3E9;
+      --ink-soft:  #9999A5;
+      --ink-faint: #6E6E7A;
+      --rule:      #2A2A32;
+      --rule-soft: #212128;
+      --accent:    #E28376;
+      --accent-ink:#F0A89E;
+      --accent-wash:#2A1613;
+      --steel:     #8DA7BB;
+      --warn:      #D3A15C;
+      --warn-wash: #2A2115;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:     #0F0F12;
+    --surface:   #17171C;
+    --sunken:    #1E1E24;
+    --ink:       #E3E3E9;
+    --ink-soft:  #9999A5;
+    --ink-faint: #6E6E7A;
+    --rule:      #2A2A32;
+    --rule-soft: #212128;
+    --accent:    #E28376;
+    --accent-ink:#F0A89E;
+    --accent-wash:#2A1613;
+    --steel:     #8DA7BB;
+    --warn:      #D3A15C;
+    --warn-wash: #2A2115;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.66;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent-ink); text-underline-offset: 3px; }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  .page { max-width: 920px; margin: 0 auto; padding: 0 22px 80px; }
+
+  /* ---------- masthead ---------- */
+  header.top { padding: 50px 0 0; }
+  .docket {
+    font-family: var(--mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--accent-ink); margin: 0 0 20px; display: flex; flex-wrap: wrap; gap: 6px 20px;
+  }
+  .docket b { font-weight: 400; color: var(--ink-faint); }
+  h1 {
+    font-family: var(--head); font-weight: 700; font-size: clamp(2.3rem, 6.2vw, 3.7rem);
+    line-height: 1.02; letter-spacing: -.032em; margin: 0 0 20px; text-wrap: balance;
+  }
+  .standfirst { font-size: 1.24rem; line-height: 1.5; color: var(--ink-soft); max-width: 54ch; margin: 0 0 30px; }
+
+  .deadline {
+    display: grid; gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin: 0 0 20px;
+  }
+  @media (min-width: 720px) { .deadline { grid-template-columns: 1.15fr 1fr 1fr; } }
+  .deadline > div { background: var(--surface); padding: 20px 22px; }
+  .deadline dt {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 0 0 8px;
+  }
+  .deadline dd { margin: 0; font-family: var(--head); font-weight: 700; font-size: 1.5rem; line-height: 1.12; letter-spacing: -.02em; }
+  .deadline dd.big { color: var(--accent); font-size: 1.85rem; }
+  .deadline .sub { font-family: var(--body); font-weight: 400; font-size: .92rem; color: var(--ink-soft); margin-top: 7px; line-height: 1.4; }
+
+  .sourcenote {
+    background: var(--warn-wash); border: 1px solid var(--rule); padding: 15px 18px; margin: 0 0 48px;
+    font-size: .93rem; line-height: 1.5; color: var(--ink-soft);
+  }
+  .sourcenote b { font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--warn); display: block; margin-bottom: 7px; }
+
+  /* ---------- sections ---------- */
+  section { margin-bottom: 58px; scroll-margin-top: 18px; }
+  .sec-h { display: flex; align-items: baseline; gap: 14px; border-bottom: 2px solid var(--ink); padding-bottom: 12px; margin: 0 0 22px; }
+  .sec-n { font-family: var(--mono); font-size: 12px; font-weight: 600; color: var(--accent-ink); white-space: nowrap; }
+  h2 {
+    font-family: var(--head); font-weight: 600; font-size: clamp(1.5rem, 3.6vw, 2.1rem);
+    line-height: 1.12; letter-spacing: -.022em; margin: 0; text-wrap: balance;
+  }
+  h3 { font-family: var(--head); font-weight: 600; font-size: 1.18rem; letter-spacing: -.014em; margin: 34px 0 11px; text-wrap: balance; }
+  h4 {
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; margin: 26px 0 9px;
+  }
+  p { max-width: 66ch; margin: 0 0 16px; }
+  .doc ul, .doc ol { max-width: 66ch; margin: 0 0 16px; padding-left: 21px; }
+  .doc li { margin-bottom: 7px; }
+  .doc li::marker { color: var(--accent); }
+  strong { font-weight: 600; }
+  code { font-family: var(--mono); font-size: .88em; color: var(--accent-ink); word-break: break-word; }
+
+  /* ---------- callouts ---------- */
+  .plain {
+    background: var(--accent-wash); border: 1px solid var(--rule); padding: 18px 20px; margin: 0 0 24px;
+  }
+  .plain .tag {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .15em; text-transform: uppercase;
+    color: var(--accent-ink); display: block; margin-bottom: 9px;
+  }
+  .plain p { margin: 0; max-width: 62ch; }
+  .plain p + p { margin-top: 11px; }
+
+  .warnbox { background: var(--warn-wash); border: 1px solid var(--rule); padding: 18px 20px; margin: 24px 0; }
+  .warnbox h4 { margin-top: 0; color: var(--warn); }
+  .warnbox p:last-child, .warnbox ul:last-child { margin-bottom: 0; }
+
+  .quote {
+    border-left: 3px solid var(--steel); padding: 4px 0 4px 18px; margin: 24px 0;
+    font-style: italic; color: var(--ink-soft); max-width: 62ch;
+  }
+  .quote cite { display: block; font-style: normal; font-family: var(--mono); font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); margin-top: 9px; }
+
+  /* ---------- tables ---------- */
+  .tw { overflow-x: auto; border: 1px solid var(--rule); background: var(--surface); margin: 24px 0; }
+  table { border-collapse: collapse; width: 100%; min-width: 600px; font-size: .94rem; font-family: var(--head); font-weight: 500; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--rule-soft); vertical-align: top; line-height: 1.45; }
+  thead th {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); font-weight: 600; background: var(--sunken); border-bottom: 1px solid var(--rule);
+    white-space: nowrap;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 600; }
+  .pill {
+    display: inline-block; font-family: var(--mono); font-size: 10px; letter-spacing: .08em;
+    padding: 2px 7px; border: 1px solid currentColor; white-space: nowrap;
+  }
+  .p-hi { color: var(--accent-ink); } .p-lo { color: var(--ink-faint); }
+
+  /* ---------- figures ---------- */
+  figure { margin: 30px 0; }
+  .figbox { background: var(--surface); border: 1px solid var(--rule); padding: 20px 18px; overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 620px; height: auto; color: var(--ink); }
+  figcaption {
+    font-size: .93rem; color: var(--ink-soft); margin-top: 11px; padding-left: 13px;
+    border-left: 2px solid var(--accent); max-width: 70ch; line-height: 1.5;
+  }
+  .f-box { fill: var(--surface); stroke: currentColor; stroke-width: 1.2; }
+  .f-soft { fill: var(--sunken); stroke: var(--rule); stroke-width: 1.2; }
+  .f-hot { fill: var(--accent-wash); stroke: var(--accent); stroke-width: 1.7; }
+  .f-dash { fill: none; stroke: var(--warn); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .f-t { font-family: var(--head); font-size: 12.5px; font-weight: 600; fill: currentColor; }
+  .f-sm { font-family: var(--head); font-size: 11px; font-weight: 500; fill: var(--ink-soft); }
+  .f-m { font-family: var(--mono); font-size: 11px; fill: var(--accent-ink); }
+  .f-mm { font-family: var(--mono); font-size: 10.5px; fill: var(--ink-soft); }
+  .f-w { font-family: var(--mono); font-size: 10.5px; fill: var(--warn); }
+  .f-cap { font-family: var(--mono); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; fill: var(--ink-faint); }
+  .f-l { stroke: currentColor; stroke-width: 1.3; fill: none; }
+  .f-lh { stroke: var(--accent); stroke-width: 1.8; fill: none; }
+  .f-lw { stroke: var(--warn); stroke-width: 1.4; fill: none; }
+  .f-ld { stroke: var(--ink-faint); stroke-width: 1.1; fill: none; stroke-dasharray: 5 4; }
+  .f-div { stroke: var(--rule); stroke-width: 1.2; stroke-dasharray: 4 5; }
+  .f-patch { fill: var(--surface); }
+
+  pre {
+    font-family: var(--mono); font-size: 13px; line-height: 1.6; background: var(--surface);
+    border: 1px solid var(--rule); border-left: 3px solid var(--steel);
+    padding: 16px 18px; overflow-x: auto; margin: 20px 0; color: var(--ink);
+  }
+  pre .c { color: var(--ink-faint); }
+  pre .k { color: var(--accent-ink); }
+  pre .s { color: var(--steel); }
+  .prelabel {
+    font-family: var(--mono); font-size: 10px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-faint); margin: 24px 0 -12px;
+  }
+
+  .close { background: var(--ink); color: var(--paper); padding: 30px 28px; margin-top: 8px; }
+  .close h3 { color: var(--paper); margin: 0 0 15px; font-size: 1.36rem; }
+  .close p { color: var(--paper); opacity: .85; margin-bottom: 13px; max-width: 62ch; }
+  .close p:last-child { margin-bottom: 0; }
+  .close strong { opacity: 1; }
+  .close code { color: var(--paper); }
+
+  footer {
+    margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--rule);
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.8; color: var(--ink-faint);
+  }
+  footer p { max-width: 84ch; margin: 0 0 9px; }
+
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<div class="page doc">
+
+  <header class="top">
+    <p class="docket"><span>CMS-0057-F</span><span><b>Interoperability and Prior Authorization Final Rule</b></span></p>
+    <h1>The 2027 Prior<br>Auth Deadline</h1>
+    <p class="standfirst">Health plans have until January 2027 to replace phone calls and faxes with four FHIR APIs. This is what the rule actually requires, and how the pieces fit together.</p>
+
+    <dl class="deadline">
+      <div>
+        <dt>Health plans must comply by</dt>
+        <dd class="big">January 1, 2027</dd>
+        <p class="sub">Prior authorization APIs live, for plans under the covered programs.</p>
+      </div>
+      <div>
+        <dt>Decision turnaround</dt>
+        <dd>72 hours</dd>
+        <p class="sub">Expedited requests. A further cut to 48 hours has been proposed.</p>
+      </div>
+      <div>
+        <dt>Providers pulled in via</dt>
+        <dd>MIPS</dd>
+        <p class="sub">An electronic prior authorization measure, attested in CY 2027.</p>
+      </div>
+    </dl>
+
+    <div class="sourcenote">
+      <b>About this page</b>
+      Summarised from the video <em>&ldquo;CMS-0057-F Explained: The Prior Authorization Rule Health Plans Must Build by 2027&rdquo;</em>. Dates, version numbers and certification criterion numbers are reproduced as stated there. Check them against the final rule text before relying on them for a compliance decision.
+    </div>
+  </header>
+
+  <!-- ============ 1 ============ -->
+  <section id="what">
+    <div class="sec-h"><span class="sec-n">01</span><h2>What the rule is</h2></div>
+
+    <div class="plain">
+      <span class="tag">In plain terms</span>
+      <p>CMS is forcing health plans to expose their data — and their prior authorization process — through standard APIs, so that software can do in seconds what people currently do with a phone and a fax machine.</p>
+    </div>
+
+    <p>CMS-0057-F, the CMS Interoperability and Prior Authorization rule, contains more than prior authorization. It mandates <strong>four APIs</strong>:</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>API</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td>Patient Access</td><td>Lets a patient pull their own claims, encounters and clinical data into an app they choose.</td></tr>
+          <tr><td>Provider Access</td><td>Lets a treating provider pull a patient's data from the plan.</td></tr>
+          <tr><td>Payer-to-Payer</td><td>Moves a member's history when they change plans.</td></tr>
+          <tr><td>Prior Authorization</td><td>The big one, and the subject of this page.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The deadline is <strong>January 1, 2027</strong>, and it is directed at <strong>health plans</strong> — in the video's words, those serving under Medicare Advantage, CHIP, and fee-for-service programs. But the practical scope is wider than the list of regulated entities, because plans rarely build this themselves: they subcontract to vendors and business associates who end up implementing the actual APIs.</p>
+
+    <p>The video's assessment is worth repeating, because it sets the stakes:</p>
+
+    <div class="quote">
+      This is one of the most radical transformations in terms of prior authorization and the clinical workflow since the original HIPAA ruling for portability came on.
+      <cite>CMS-0057-F Explained</cite>
+    </div>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 236" role="img" aria-label="Timeline. Through late 2026, plans and vendors build. On January 1 2027 the payer prior-authorization APIs must be live. During calendar year 2027, MIPS-eligible clinicians must attest to having completed at least one electronic prior authorization.">
+          <defs><marker id="t1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <line class="f-l" x1="50" y1="120" x2="856" y2="120" marker-end="url(#t1)"/>
+
+          <line class="f-l" x1="150" y1="110" x2="150" y2="130"/>
+          <circle cx="150" cy="120" r="5" fill="currentColor"/>
+          <text class="f-cap" x="150" y="86" text-anchor="middle">Now</text>
+          <text class="f-sm" x="150" y="152" text-anchor="middle">Late 2026</text>
+          <text class="f-mm" x="150" y="170" text-anchor="middle">build and test</text>
+
+          <line class="f-lh" x1="430" y1="94" x2="430" y2="146"/>
+          <circle cx="430" cy="120" r="9" fill="var(--accent)"/>
+          <text class="f-m" x="430" y="70" text-anchor="middle">HARD DEADLINE</text>
+          <text class="f-t" x="430" y="172" text-anchor="middle">January 1, 2027</text>
+          <text class="f-sm" x="430" y="192" text-anchor="middle">payer prior-auth APIs must be live</text>
+
+          <line class="f-l" x1="700" y1="110" x2="700" y2="130"/>
+          <circle cx="700" cy="120" r="5" fill="currentColor"/>
+          <text class="f-cap" x="700" y="86" text-anchor="middle">Providers</text>
+          <text class="f-sm" x="700" y="152" text-anchor="middle">Calendar year 2027</text>
+          <text class="f-mm" x="700" y="170" text-anchor="middle">MIPS attestation year</text>
+
+          <text class="f-cap" x="50" y="220">Two dates, two different audiences</text>
+        </svg>
+      </div>
+      <figcaption>The January date binds plans. The MIPS attestation binds clinicians a year later — which is why provider organisations that treat this as &ldquo;a payer problem&rdquo; discover late that they also need a certified product.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 2 ============ -->
+  <section id="who">
+    <div class="sec-h"><span class="sec-n">02</span><h2>Who it actually touches</h2></div>
+
+    <p>CMS regulates plans directly. It reaches providers by a different route: not a mandate, but a <strong>MIPS measure</strong>. Under the <em>Improving Prior Authorization</em> score there is an electronic prior authorization measure, and by <strong>calendar year 2027</strong> a MIPS-eligible clinician must attest that they have completed <strong>at least one</strong> electronic prior authorization — using a <strong>certified health IT product</strong>.</p>
+
+    <p>That certification is where <strong>HTI-4</strong> comes in. It added new criteria sitting just beneath the existing <code>(g)(10)</code> standardized FHIR API criterion — numbered <code>(g)(31)</code>, <code>(g)(32)</code> and <code>(g)(33)</code> — covering provider prior authorization, coverage requirements discovery, documentation templates and rules, and prior authorization support.</p>
+
+    <div class="warnbox">
+      <h4>Check the mapping yourself</h4>
+      <p>The video lists these criterion numbers quickly and the exact criterion-to-standard mapping is easy to garble. Treat <code>(g)(31)</code>–<code>(g)(33)</code> as &ldquo;the new prior-auth certification criteria, immediately below <code>(g)(10)</code>&rdquo; and confirm which is which against the regulation before you scope work against a specific number.</p>
+    </div>
+
+    <p>Context matters here: <code>(g)(10)</code> is the criterion the federal government has already been enforcing against EHRs that block information by failing to expose FHIR APIs. The new criteria sit in that same enforcement neighbourhood.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 396" role="img" aria-label="CMS reaches health plans directly, and those plans subcontract to vendors and business associates who build the APIs. CMS reaches providers indirectly through the MIPS electronic prior authorization measure, which requires a certified health IT product, which in turn obliges EHR vendors to certify to the new criteria.">
+          <defs>
+            <marker id="w1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="w1f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker>
+          </defs>
+
+          <rect class="f-hot" x="340" y="24" width="220" height="56"/>
+          <text class="f-t" x="450" y="58" text-anchor="middle">CMS</text>
+
+          <path class="f-l" d="M450,80 V108 H210 V142" marker-end="url(#w1)"/>
+          <rect class="f-patch" x="272" y="96" width="70" height="14"/>
+          <text class="f-m" x="307" y="108" text-anchor="middle">directly</text>
+
+          <path class="f-ld" d="M450,80 V108 H690 V142" marker-end="url(#w1f)"/>
+          <rect class="f-patch" x="546" y="96" width="106" height="14"/>
+          <text class="f-mm" x="599" y="108" text-anchor="middle">indirectly</text>
+
+          <rect class="f-box" x="60" y="146" width="300" height="102"/>
+          <text class="f-t" x="210" y="172" text-anchor="middle">Health plans</text>
+          <text class="f-sm" x="210" y="194" text-anchor="middle">Medicare Advantage</text>
+          <text class="f-sm" x="210" y="212" text-anchor="middle">CHIP &middot; fee-for-service</text>
+          <text class="f-m" x="210" y="234" text-anchor="middle">must comply by Jan 1, 2027</text>
+
+          <line class="f-l" x1="210" y1="248" x2="210" y2="276" marker-end="url(#w1)"/>
+
+          <rect class="f-soft" x="60" y="280" width="300" height="72"/>
+          <text class="f-t" x="210" y="306" text-anchor="middle">Vendors and business associates</text>
+          <text class="f-sm" x="210" y="328" text-anchor="middle">the ones who actually build it</text>
+
+          <rect class="f-box" x="540" y="146" width="300" height="102"/>
+          <text class="f-t" x="690" y="172" text-anchor="middle">Providers</text>
+          <text class="f-sm" x="690" y="194" text-anchor="middle">not directly mandated</text>
+          <text class="f-sm" x="690" y="212" text-anchor="middle">MIPS ePA measure instead</text>
+          <text class="f-m" x="690" y="234" text-anchor="middle">attest to 1+ ePA in CY 2027</text>
+
+          <line class="f-l" x1="690" y1="248" x2="690" y2="276" marker-end="url(#w1)"/>
+          <rect class="f-patch" x="700" y="256" width="150" height="14"/>
+          <text class="f-mm" x="702" y="268">needs certified IT</text>
+
+          <rect class="f-soft" x="540" y="280" width="300" height="72"/>
+          <text class="f-t" x="690" y="306" text-anchor="middle">EHR vendors</text>
+          <text class="f-sm" x="690" y="328" text-anchor="middle">certify to (g)(31)&ndash;(g)(33) under HTI-4</text>
+
+          <text class="f-cap" x="60" y="382">Four groups, one deadline pushing on all of them</text>
+        </svg>
+      </div>
+      <figcaption>The dashed arrow is the one people miss. No provider is told to build anything — but a measure they are scored on can only be satisfied with software that does not exist yet, which pushes the requirement onto their EHR vendor.</figcaption>
+    </figure>
+  </section>
+
+  <!-- ============ 3 ============ -->
+  <section id="why">
+    <div class="sec-h"><span class="sec-n">03</span><h2>Why this is not just a faster fax</h2></div>
+
+    <p>The old process has a hidden first step that nothing ever standardised: <strong>finding out that prior authorization was needed at all</strong>. In the video's description, someone at the provider carries it in their head — <em>these CPT codes, for this plan, need prior auth</em> — then calls, then faxes, then waits.</p>
+
+    <p>When the payer did not support the X12 transactions, it was worse: the provider logged into that plan's own portal and filled in a form, per patient, hundreds of times a day. Reducing that is precisely what CMS means by <strong>burden reduction</strong>.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 416" role="img" aria-label="Comparison. Before: nobody knows reliably whether prior authorization is needed, then a phone call or payer portal, then a fax, then days or weeks of waiting, then approval, denial or resubmission. After 2027: the doctor starts the order in the EHR, CRD answers within seconds saying whether authorization is needed and which documents, DTR renders the form inside the EHR, PAS submits the packet, and a decision comes back within 72 hours.">
+          <defs>
+            <marker id="c1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="c1w" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--warn)"/></marker>
+            <marker id="c1h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker>
+          </defs>
+
+          <line class="f-div" x1="450" y1="24" x2="450" y2="392"/>
+          <text class="f-cap" x="30" y="40">Before</text>
+          <text class="f-cap" x="470" y="40">From 2027</text>
+
+          <rect class="f-dash" x="30" y="54" width="380" height="48"/>
+          <text class="f-w" x="220" y="76" text-anchor="middle">Does this even need prior auth?</text>
+          <text class="f-mm" x="220" y="93" text-anchor="middle">memory, phone, or a portal &mdash; no standard way</text>
+          <line class="f-lw" x1="220" y1="102" x2="220" y2="120" marker-end="url(#c1w)"/>
+
+          <rect class="f-box" x="30" y="124" width="380" height="44"/>
+          <text class="f-t" x="220" y="151" text-anchor="middle">Phone call, or log in to the payer portal</text>
+          <line class="f-l" x1="220" y1="168" x2="220" y2="186" marker-end="url(#c1)"/>
+
+          <rect class="f-box" x="30" y="190" width="380" height="44"/>
+          <text class="f-t" x="220" y="217" text-anchor="middle">Fax the request and the documents</text>
+          <line class="f-lw" x1="220" y1="234" x2="220" y2="252" marker-end="url(#c1w)"/>
+
+          <rect class="f-dash" x="30" y="256" width="380" height="44"/>
+          <text class="f-w" x="220" y="283" text-anchor="middle">Wait days &mdash; sometimes weeks</text>
+          <line class="f-l" x1="220" y1="300" x2="220" y2="318" marker-end="url(#c1)"/>
+
+          <rect class="f-box" x="30" y="322" width="380" height="44"/>
+          <text class="f-t" x="220" y="349" text-anchor="middle">Approved, denied, or resubmit</text>
+
+          <rect class="f-box" x="470" y="54" width="380" height="48"/>
+          <text class="f-t" x="660" y="84" text-anchor="middle">Doctor starts the order in the EHR</text>
+          <line class="f-lh" x1="660" y1="102" x2="660" y2="120" marker-end="url(#c1h)"/>
+          <text class="f-m" x="672" y="117">seconds</text>
+
+          <rect class="f-hot" x="470" y="124" width="380" height="44"/>
+          <text class="f-t" x="660" y="151" text-anchor="middle">CRD &mdash; needed? which documents?</text>
+          <line class="f-lh" x1="660" y1="168" x2="660" y2="186" marker-end="url(#c1h)"/>
+
+          <rect class="f-box" x="470" y="190" width="380" height="44"/>
+          <text class="f-t" x="660" y="217" text-anchor="middle">DTR &mdash; form filled inside the EHR</text>
+          <line class="f-lh" x1="660" y1="234" x2="660" y2="252" marker-end="url(#c1h)"/>
+
+          <rect class="f-box" x="470" y="256" width="380" height="44"/>
+          <text class="f-t" x="660" y="283" text-anchor="middle">PAS &mdash; packet submitted</text>
+          <line class="f-lh" x1="660" y1="300" x2="660" y2="318" marker-end="url(#c1h)"/>
+
+          <rect class="f-box" x="470" y="322" width="380" height="44"/>
+          <text class="f-t" x="660" y="349" text-anchor="middle">Decision within 72 hours</text>
+
+          <text class="f-cap" x="30" y="404">The top box is the change &mdash; the question finally has an API</text>
+        </svg>
+      </div>
+      <figcaption>Everything below the first row got faster. The first row is the part that did not previously exist at all: a machine-readable way to ask <em>does this need authorization</em> before anyone has committed to anything.</figcaption>
+    </figure>
+
+    <h3>Two other things changed</h3>
+    <ul>
+      <li><strong>The clock.</strong> CMS is cutting decision time to <strong>72 hours</strong> for expedited requests, with proposals to shorten it further to 48.</li>
+      <li><strong>X12 278 became optional.</strong> HIPAA had required covered entities to use the X12 278 transaction for prior authorization. CMS is applying <strong>enforcement discretion</strong>: if you have implemented the newer FHIR standards, they will not pursue you for HIPAA non-compliance merely because you skipped X12.</li>
+    </ul>
+  </section>
+
+  <!-- ============ 4 ============ -->
+  <section id="cdshooks">
+    <div class="sec-h"><span class="sec-n">04</span><h2>The foundation: CDS Hooks</h2></div>
+
+    <div class="plain">
+      <span class="tag">In plain terms</span>
+      <p>Ordinary APIs wait to be called. CDS Hooks runs <em>inside the doctor's workflow</em> — at the moment an order is being placed — and puts an answer on screen before they finish.</p>
+    </div>
+
+    <p>All three prior-auth standards are built on CDS Hooks, and the video is emphatic that this is what makes them different in kind rather than degree. The EHR gets in the way of the practitioner's workflow at a defined moment, calls out to a service, and renders what comes back as <strong>cards</strong> — critical alerts, warnings, or suggestions such as <em>consider a different drug</em>.</p>
+
+    <p>The round trip takes <strong>5 to 10 seconds</strong>, and under a second when the service is well cached. That creates a feedback loop between practitioner and health plan that simply did not exist before, when the same answer took days or weeks.</p>
+
+    <h3>The two phases</h3>
+    <p>CDS Hooks has a setup phase and a runtime phase, and they happen at completely different times.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 428" role="img" aria-label="Two phases. In discovery, which can run hours earlier, the EHR performs an authenticated GET to the service base URL and receives the list of supported hooks with their ids and prefetch templates. In invocation, when the practitioner acts, the EHR POSTs to the service id with a body containing hookInstance, fhirServer, fhirAuthorization, context and the resolved prefetch, and cards come back to be rendered in the chart.">
+          <defs><marker id="h1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+          <marker id="h1h" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>
+
+          <text class="f-cap" x="30" y="30">Phase 1 &mdash; discovery &middot; can run hours earlier</text>
+
+          <rect class="f-box" x="30" y="44" width="200" height="72"/>
+          <text class="f-t" x="130" y="76" text-anchor="middle">EHR</text>
+          <text class="f-sm" x="130" y="96" text-anchor="middle">knows the base URL</text>
+
+          <rect class="f-box" x="650" y="44" width="210" height="72"/>
+          <text class="f-t" x="755" y="76" text-anchor="middle">CDS service</text>
+          <text class="f-mm" x="755" y="96" text-anchor="middle">payer1.com/cds-services</text>
+
+          <line class="f-l" x1="230" y1="64" x2="646" y2="64" marker-end="url(#h1)"/>
+          <rect class="f-patch" x="330" y="46" width="220" height="14"/>
+          <text class="f-m" x="440" y="58" text-anchor="middle">GET /cds-services + JWT bearer</text>
+
+          <line class="f-l" x1="646" y1="100" x2="234" y2="100" marker-end="url(#h1)"/>
+          <rect class="f-patch" x="318" y="104" width="244" height="14"/>
+          <text class="f-mm" x="440" y="116" text-anchor="middle">hooks I support, ids, prefetch templates</text>
+
+          <line class="f-div" x1="30" y1="152" x2="860" y2="152"/>
+          <text class="f-cap" x="30" y="184">Phase 2 &mdash; invocation &middot; the practitioner acts</text>
+
+          <rect class="f-box" x="30" y="222" width="200" height="88"/>
+          <text class="f-t" x="130" y="258" text-anchor="middle">EHR</text>
+          <text class="f-sm" x="130" y="278" text-anchor="middle">order-select fires</text>
+
+          <rect class="f-soft" x="290" y="198" width="300" height="140"/>
+          <text class="f-cap" x="440" y="218" text-anchor="middle">POST body</text>
+          <text class="f-mm" x="306" y="242">hookInstance</text>
+          <text class="f-mm" x="306" y="262">fhirServer</text>
+          <text class="f-mm" x="306" y="282">fhirAuthorization</text>
+          <text class="f-m" x="306" y="302">context</text>
+          <text class="f-m" x="306" y="322">prefetch</text>
+          <text class="f-mm" x="574" y="242" text-anchor="end">a UUID, for tracing</text>
+          <text class="f-mm" x="574" y="262" text-anchor="end">the EHR's FHIR base</text>
+          <text class="f-mm" x="574" y="282" text-anchor="end">a token to call back</text>
+          <text class="f-mm" x="574" y="302" text-anchor="end">hook-specific fields</text>
+          <text class="f-mm" x="574" y="322" text-anchor="end">already resolved</text>
+
+          <line class="f-l" x1="230" y1="256" x2="286" y2="256" marker-end="url(#h1)"/>
+          <line class="f-l" x1="590" y1="256" x2="646" y2="256" marker-end="url(#h1)"/>
+
+          <rect class="f-hot" x="650" y="222" width="210" height="88"/>
+          <text class="f-t" x="755" y="258" text-anchor="middle">CDS service</text>
+          <text class="f-mm" x="755" y="278" text-anchor="middle">POST /{service id}</text>
+
+          <path class="f-lh" d="M755,310 V376 H130 V314" marker-end="url(#h1h)"/>
+          <rect class="f-patch" x="360" y="368" width="180" height="14"/>
+          <text class="f-m" x="450" y="380" text-anchor="middle">cards, rendered in the chart</text>
+
+          <text class="f-cap" x="30" y="414">Discovery is cached. Only phase 2 is on the practitioner's clock.</text>
+        </svg>
+      </div>
+      <figcaption>Discovery can run on a schedule — every couple of hours, say — so none of its cost lands on the practitioner. Only the phase 2 round trip is inside the five-second budget, which is why what you ask for in discovery matters so much.</figcaption>
+    </figure>
+
+    <p class="prelabel">Discovery response — what the service advertises</p>
+<pre><span class="c">GET https://payer1.com/cds-services</span>
+
+{
+  <span class="s">"services"</span>: [
+    {
+      <span class="s">"hook"</span>:        <span class="s">"order-select"</span>,
+      <span class="s">"id"</span>:          <span class="s">"coverage-check"</span>,   <span class="c">// → POST /cds-services/coverage-check</span>
+      <span class="s">"title"</span>:       <span class="s">"Coverage Requirements Discovery"</span>,
+      <span class="s">"prefetch"</span>: {
+        <span class="s">"patient"</span>:  <span class="s">"Patient/{{context.patientId}}"</span>,
+        <span class="s">"coverage"</span>: <span class="s">"Coverage?patient={{context.patientId}}"</span>
+      }
+    },
+    { <span class="s">"hook"</span>: <span class="s">"order-sign"</span>, <span class="s">"id"</span>: <span class="s">"final-check"</span>, ... }
+  ]
+}</pre>
+
+    <p class="prelabel">Invocation — what the EHR then posts</p>
+<pre><span class="c">POST https://payer1.com/cds-services/coverage-check</span>
+
+{
+  <span class="s">"hookInstance"</span>:      <span class="s">"d1577c69-dfbe-44ad-ba6d-3e05e953b2ea"</span>,
+  <span class="s">"hook"</span>:              <span class="s">"order-select"</span>,
+  <span class="s">"fhirServer"</span>:        <span class="s">"https://ehr.example.org/fhir"</span>,
+  <span class="s">"fhirAuthorization"</span>: { <span class="s">"access_token"</span>: <span class="s">"..."</span>, <span class="s">"expires_in"</span>: 300 },
+  <span class="s">"context"</span>: {
+    <span class="s">"userId"</span>:      <span class="s">"Practitioner/abc"</span>,
+    <span class="s">"patientId"</span>:   <span class="s">"1288992"</span>,
+    <span class="s">"encounterId"</span>: <span class="s">"89284"</span>,
+    <span class="s">"selections"</span>:  [<span class="s">"ServiceRequest/103"</span>],
+    <span class="s">"draftOrders"</span>: { <span class="s">"resourceType"</span>: <span class="s">"Bundle"</span>, ... }
+  },
+  <span class="s">"prefetch"</span>: {
+    <span class="s">"patient"</span>:  { <span class="s">"resourceType"</span>: <span class="s">"Patient"</span>, ... },   <span class="c">// already fetched</span>
+    <span class="s">"coverage"</span>: { <span class="s">"resourceType"</span>: <span class="s">"Bundle"</span>, ... }
+  }
+}</pre>
+
+    <h3>Prefetch, and why it exists</h3>
+    <p>The service <em>could</em> use <code>fhirServer</code> and <code>fhirAuthorization</code> to call the EHR back for whatever it needs. <strong>Prefetch is the faster path:</strong> during discovery the service declares which resources it will want, templated against the hook's context, and the EHR resolves them before it posts.</p>
+
+    <p>The video's guidance is direct — avoid calling back if you can prefetch instead, because every callback eats into a budget measured in seconds.</p>
+
+    <div class="warnbox">
+      <h4>You can only template what the hook actually carries</h4>
+      <p>Prefetch templates reference the hook's own context fields. Asking for <code>draftOrders</code> in a <code>patient-view</code> hook is meaningless — that field only exists on <code>order-select</code>. Check the hook definition before writing the template.</p>
+    </div>
+
+    <h3>The hooks that matter</h3>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Hook</th><th>When it fires</th><th>Maturity</th></tr></thead>
+        <tbody>
+          <tr><td><code>order-select</code></td><td>After the clinician selects an order, before signing it.</td><td><span class="pill p-hi">most mature</span></td></tr>
+          <tr><td><code>order-sign</code></td><td>Immediately before the order is finalised.</td><td><span class="pill p-hi">most mature</span></td></tr>
+          <tr><td><code>order-dispatch</code></td><td>When an order is sent on to its performer.</td><td><span class="pill p-lo">useful</span></td></tr>
+          <tr><td><code>appointment-book</code></td><td>When an appointment is being booked.</td><td><span class="pill p-lo">useful</span></td></tr>
+          <tr><td><code>patient-view</code></td><td>When the patient's chart is opened.</td><td><span class="pill p-lo">broad</span></td></tr>
+          <tr><td><code>allergyintolerance-create</code></td><td>When an allergy is recorded.</td><td><span class="pill p-lo">niche</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The video's shortcut: implement <code>order-select</code>, <code>order-sign</code>, <code>order-dispatch</code> and <code>appointment-book</code> and you are &ldquo;pretty much covered&rdquo;.</p>
+  </section>
+
+  <!-- ============ 5 ============ -->
+  <section id="chain">
+    <div class="sec-h"><span class="sec-n">05</span><h2>CRD, DTR and PAS</h2></div>
+
+    <p>Three profiles in the Da Vinci specification, each picking up where the last leaves off. What makes the design work is that <strong>each one happens in a different place</strong>.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 512" role="img" aria-label="A zigzag between two lanes. Inside the EHR the practitioner starts an order. At the health plan, CRD answers whether the service is covered, whether prior authorization is needed and which documents. Back inside the EHR, DTR renders and autofills the questionnaire. At the health plan, PAS receives and adjudicates the submitted packet. Back in the EHR, a FHIR Subscription delivers the decision. Throughout CRD and DTR the payer service can query the EHR's FHIR server.">
+          <defs><marker id="z1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <line class="f-div" x1="450" y1="20" x2="450" y2="404"/>
+          <text class="f-cap" x="30" y="38">Inside the EHR</text>
+          <text class="f-cap" x="470" y="38">At the health plan</text>
+
+          <rect class="f-box" x="30" y="52" width="390" height="56"/>
+          <text class="f-t" x="225" y="78" text-anchor="middle">Practitioner starts an order</text>
+          <text class="f-mm" x="225" y="97" text-anchor="middle">order-select fires</text>
+
+          <line class="f-l" x1="420" y1="86" x2="466" y2="148" marker-end="url(#z1)"/>
+
+          <rect class="f-hot" x="470" y="126" width="390" height="56"/>
+          <text class="f-t" x="665" y="152" text-anchor="middle">CRD</text>
+          <text class="f-mm" x="665" y="171" text-anchor="middle">covered? prior auth needed? which documents?</text>
+
+          <line class="f-l" x1="470" y1="160" x2="424" y2="222" marker-end="url(#z1)"/>
+
+          <rect class="f-box" x="30" y="200" width="390" height="56"/>
+          <text class="f-t" x="225" y="226" text-anchor="middle">DTR</text>
+          <text class="f-mm" x="225" y="245" text-anchor="middle">questionnaire rendered and autofilled, in the EHR</text>
+
+          <line class="f-l" x1="420" y1="234" x2="466" y2="296" marker-end="url(#z1)"/>
+
+          <rect class="f-hot" x="470" y="274" width="390" height="56"/>
+          <text class="f-t" x="665" y="300" text-anchor="middle">PAS</text>
+          <text class="f-mm" x="665" y="319" text-anchor="middle">the EHR's prior-auth packet is submitted</text>
+
+          <line class="f-l" x1="470" y1="308" x2="424" y2="370" marker-end="url(#z1)"/>
+
+          <rect class="f-box" x="30" y="348" width="390" height="56"/>
+          <text class="f-t" x="225" y="374" text-anchor="middle">Decision arrives</text>
+          <text class="f-mm" x="225" y="393" text-anchor="middle">FHIR Subscription &mdash; no polling</text>
+
+          <rect class="f-dash" x="30" y="432" width="830" height="46"/>
+          <text class="f-w" x="445" y="460" text-anchor="middle">Throughout CRD and DTR, the payer's service can query the EHR's FHIR server directly</text>
+
+          <text class="f-cap" x="30" y="500">The practitioner never leaves the EHR at any point</text>
+        </svg>
+      </div>
+      <figcaption>The zigzag is the point. Work bounces between the plan and the EHR four times, and the practitioner experiences none of it as a context switch — no portal, no fax, no second login.</figcaption>
+    </figure>
+
+    <h3>CRD &mdash; Coverage Requirements Discovery</h3>
+    <p>A CDS Hooks service, run by the payer. It answers the questions nobody could previously ask:</p>
+    <ul>
+      <li><strong>Is this covered</strong> by the patient's plan?</li>
+      <li><strong>Is prior authorization required?</strong></li>
+      <li>If so, <strong>which documents</strong> are needed — and a link or questionnaire to start with.</li>
+    </ul>
+    <p>It can also suggest alternative or additional therapy, correct the coverage the EHR holds if it is out of date, and push down a questionnaire the EHR does not yet have.</p>
+
+    <h4>The worked scenario from the implementation guide</h4>
+    <p>Mrs Jones, 35, presents with a new-onset headache. Dr Good is concerned about an intracranial process and wants a head CT. As Dr Good begins filling out the order, the EHR calls the CRD server run by Mrs Jones' payer, passing the patient, her coverage, and the order. Within a few seconds the server replies that a prior authorization is required, lists the additional clinical documents needed — a progress note, prior studies — and provides the form.</p>
+    <p>The video notes that older versions of the guide describe launching a separate app here; newer CRD versions simply return the questionnaire into the EHR and let DTR handle it.</p>
+
+    <h3>DTR &mdash; Documentation Templates and Rules</h3>
+    <p>The payer returns a standardised FHIR questionnaire, and the practitioner fills it in <strong>inside the EHR</strong>. No separate portal, for one form, for one plan, for one patient. Fields are autofilled wherever the EHR already holds the answer, so the practitioner only supplies what the plan genuinely does not know.</p>
+    <p>This is the single largest piece of burden reduction in the whole rule — and, as the video notes, the standard with the worst name.</p>
+
+    <h3>PAS &mdash; Prior Authorization Support</h3>
+    <p>Once the questionnaire is complete, the EHR assembles a <strong>prior authorization packet</strong> and submits it to the plan. The EHR can then query its status, or — better — the plan pushes a notification through a <strong>FHIR Subscription</strong> when a decision is ready, so nobody has to poll.</p>
+  </section>
+
+  <!-- ============ 6 ============ -->
+  <section id="responses">
+    <div class="sec-h"><span class="sec-n">06</span><h2>What a CRD service can return</h2></div>
+
+    <p>The response is not a yes or no. It is a set of possible actions, and a real implementation will use several of them.</p>
+
+    <div class="tw">
+      <table>
+        <thead><tr><th>Response</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Covered?</td><td>Whether the plan covers this procedure or item for this patient at all.</td></tr>
+          <tr><td>Prior auth required?</td><td>The core question. Often the only one the clinician reads.</td></tr>
+          <tr><td>Documentation needed</td><td>Which documents must accompany the request, plus links or the questionnaire itself.</td></tr>
+          <tr><td>Launch DTR</td><td>Hand the EHR a specific questionnaire to open.</td></tr>
+          <tr><td>Suggest an alternative</td><td>A different therapy that is covered, or needs no authorization.</td></tr>
+          <tr><td>Suggest additional therapy</td><td>Something that should accompany the order.</td></tr>
+          <tr><td>Update coverage</td><td>Correct the coverage record the EHR is holding, if it is stale.</td></tr>
+          <tr><td>Inform only</td><td>Context with no action &mdash; for example, that the lab test was already run and here are the results.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>What-if hooks</h3>
+    <p>CRD also supports a <strong>no-op or &ldquo;what-if&rdquo;</strong> scenario: the clinician is not really placing an order, they are checking what <em>would</em> happen if they did. Many EHRs are building this.</p>
+
+    <div class="warnbox">
+      <h4>Treat these differently</h4>
+      <p>On a what-if request, make <strong>no stateful change</strong> and issue <strong>no real authorization number</strong>. Answer the question — covered, authorization needed, documents required — and record nothing. There is a way to detect it in the request; a payer that misses this will hand out authorization numbers for orders that were never placed.</p>
+    </div>
+  </section>
+
+  <!-- ============ 7 ============ -->
+  <section id="vendors">
+    <div class="sec-h"><span class="sec-n">07</span><h2>If you are a plan with vendors</h2></div>
+
+    <div class="plain">
+      <span class="tag">In plain terms</span>
+      <p>Do not invent a private API for each vendor. Have every vendor implement the public spec exactly, and put a thin facade of your own in front of them.</p>
+    </div>
+
+    <p>This is the question the video says comes up most often: a health plan has several vendors handling different plans or different code sets, and nobody knows who implements what. The answer is that these APIs are <strong>composable</strong>.</p>
+
+    <p>Ask each vendor to implement CRD exactly as though they were talking to an EHR directly. Then build a facade in front that presents one endpoint to the EHR and routes behind it. Each vendor can validate itself independently against the <strong>Inferno</strong> testing suite and the CDS Hooks sandbox — the same tests you will be measured by.</p>
+
+    <h3>The token rule that shapes the architecture</h3>
+    <p>CRD's privacy and security section is explicit, and it drives the whole design:</p>
+
+    <div class="quote">
+      Access tokens provided as part of CDS calls should not be forwarded to systems that are not managed by the same organization or have business associate agreements that allow centralized audit of access. Possible alternatives to token sharing include routing all requests for information through the initial endpoint system.
+      <cite>CRD implementation guide, privacy and security</cite>
+    </div>
+
+    <p>In practice: the <code>fhirAuthorization</code> token that arrives with a hook is meant for that EHR, from you. <strong>Do not pass it on.</strong> Instead, host your own FHIR server for your vendors and proxy their reads back to the EHR yourself. There is a practical reason too — the EHR's FHIR server is frequently on an internal network your vendor could not reach anyway.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 446" role="img" aria-label="Architecture. The EHR fires a hook with its authorization token to the health plan's single facade endpoint. The facade routes to vendors A, B and C, each implementing the same CRD spec. The health plan hosts its own FHIR server, which vendors query and which proxies reads back to the EHR. A crossed-out path shows that the EHR's token must never be forwarded directly to a vendor.">
+          <defs>
+            <marker id="v1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker>
+            <marker id="v1f" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="var(--ink-faint)"/></marker>
+          </defs>
+
+          <path class="f-lw" d="M125,148 V56 H660" stroke-dasharray="6 4"/>
+          <line class="f-lw" x1="386" y1="46" x2="414" y2="66"/>
+          <line class="f-lw" x1="414" y1="46" x2="386" y2="66"/>
+          <text class="f-w" x="150" y="38">never forward the EHR's fhirAuthorization to a vendor</text>
+
+          <rect class="f-box" x="30" y="150" width="190" height="100"/>
+          <text class="f-t" x="125" y="192" text-anchor="middle">EHR</text>
+          <text class="f-sm" x="125" y="212" text-anchor="middle">fires the hook</text>
+
+          <line class="f-l" x1="220" y1="180" x2="316" y2="180" marker-end="url(#v1)"/>
+          <rect class="f-patch" x="222" y="162" width="94" height="14"/>
+          <text class="f-m" x="269" y="174" text-anchor="middle">hook + token</text>
+
+          <rect class="f-hot" x="320" y="130" width="250" height="140"/>
+          <text class="f-t" x="445" y="166" text-anchor="middle">Health plan facade</text>
+          <text class="f-sm" x="445" y="188" text-anchor="middle">one /cds-services endpoint</text>
+          <text class="f-sm" x="445" y="208" text-anchor="middle">aggregates vendor discovery</text>
+          <text class="f-sm" x="445" y="228" text-anchor="middle">re-tokenizes every call</text>
+
+          <path class="f-l" d="M570,200 H620 M620,138 V270"/>
+          <rect class="f-patch" x="574" y="182" width="52" height="14"/>
+          <text class="f-m" x="600" y="194" text-anchor="middle">routes</text>
+          <line class="f-l" x1="620" y1="138" x2="666" y2="138" marker-end="url(#v1)"/>
+          <line class="f-l" x1="620" y1="204" x2="666" y2="204" marker-end="url(#v1)"/>
+          <line class="f-l" x1="620" y1="270" x2="666" y2="270" marker-end="url(#v1)"/>
+
+          <rect class="f-box" x="670" y="110" width="200" height="56"/>
+          <text class="f-t" x="770" y="132" text-anchor="middle">Vendor A</text>
+          <text class="f-mm" x="770" y="151" text-anchor="middle">the same CRD spec</text>
+          <rect class="f-box" x="670" y="176" width="200" height="56"/>
+          <text class="f-t" x="770" y="198" text-anchor="middle">Vendor B</text>
+          <text class="f-mm" x="770" y="217" text-anchor="middle">the same CRD spec</text>
+          <rect class="f-box" x="670" y="242" width="200" height="56"/>
+          <text class="f-t" x="770" y="264" text-anchor="middle">Vendor C</text>
+          <text class="f-mm" x="770" y="283" text-anchor="middle">the same CRD spec</text>
+
+          <line class="f-l" x1="445" y1="270" x2="445" y2="316" marker-end="url(#v1)"/>
+
+          <rect class="f-soft" x="320" y="320" width="250" height="60"/>
+          <text class="f-t" x="445" y="346" text-anchor="middle">Plan's own FHIR server</text>
+          <text class="f-mm" x="445" y="365" text-anchor="middle">the only one vendors see</text>
+
+          <path class="f-ld" d="M700,298 V350 H574" marker-end="url(#v1f)"/>
+          <rect class="f-patch" x="592" y="334" width="96" height="14"/>
+          <text class="f-mm" x="640" y="346" text-anchor="middle">vendors query this</text>
+
+          <path class="f-ld" d="M320,350 H125 V254" marker-end="url(#v1f)"/>
+          <rect class="f-patch" x="148" y="334" width="130" height="14"/>
+          <text class="f-mm" x="213" y="346" text-anchor="middle">proxied back to the EHR</text>
+
+          <text class="f-cap" x="30" y="430">One endpoint out, one FHIR server in, no tokens crossing the boundary</text>
+        </svg>
+      </div>
+      <figcaption>The facade earns its keep three times over: it presents a single endpoint to the EHR, it keeps the EHR's token inside your trust boundary, and it means every vendor can be swapped without the EHR noticing.</figcaption>
+    </figure>
+
+    <h3>Aggregate discovery</h3>
+    <p>When an EHR asks what you support, you do not want to advertise ten different <code>order-select</code> services. Call each vendor's discovery endpoint yourself, <strong>unify the result</strong>, and publish one set of CDS services under your own base URL.</p>
+
+    <h3>Namespace the prefetch</h3>
+    <p>Each vendor will declare its own prefetch requirements, and two of them will inevitably want a key called <code>patient</code>. Prefix each vendor's keys before passing them to the EHR, then strip the prefix and route each vendor only its own resolved resources. The prefix style does not matter — an underscore is fine — only that it is consistent.</p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 372" role="img" aria-label="Vendor A and Vendor B each ask for a prefetch key called patient, which would collide. The health plan prefixes each vendor's keys before sending the combined list to the EHR. The EHR resolves all of them and returns them in the hook. The plan then strips each prefix and forwards each vendor only its own resources.">
+          <defs><marker id="n1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+
+          <text class="f-cap" x="20" y="34">Vendors ask</text>
+          <text class="f-cap" x="310" y="34">Plan namespaces</text>
+          <text class="f-cap" x="650" y="34">EHR resolves</text>
+
+          <rect class="f-box" x="20" y="52" width="200" height="66"/>
+          <text class="f-t" x="120" y="78" text-anchor="middle">Vendor A</text>
+          <text class="f-mm" x="120" y="99" text-anchor="middle">patient &middot; coverage</text>
+
+          <rect class="f-box" x="20" y="136" width="200" height="66"/>
+          <text class="f-t" x="120" y="162" text-anchor="middle">Vendor B</text>
+          <text class="f-mm" x="120" y="183" text-anchor="middle">patient &middot; encounter</text>
+
+          <rect class="f-dash" x="20" y="220" width="200" height="44"/>
+          <text class="f-w" x="120" y="240" text-anchor="middle">both want</text>
+          <text class="f-w" x="120" y="256" text-anchor="middle">a key called patient</text>
+
+          <line class="f-l" x1="220" y1="85" x2="296" y2="120" marker-end="url(#n1)"/>
+          <line class="f-l" x1="220" y1="169" x2="296" y2="150" marker-end="url(#n1)"/>
+
+          <rect class="f-hot" x="300" y="52" width="260" height="190"/>
+          <text class="f-mm" x="316" y="82">vendorA_patient</text>
+          <text class="f-mm" x="316" y="110">vendorA_coverage</text>
+          <text class="f-mm" x="316" y="138">vendorB_patient</text>
+          <text class="f-mm" x="316" y="166">vendorB_encounter</text>
+          <text class="f-m" x="316" y="200">plan_coverage</text>
+          <text class="f-mm" x="316" y="224">(your own, unprefixed by you)</text>
+
+          <line class="f-l" x1="560" y1="147" x2="636" y2="147" marker-end="url(#n1)"/>
+          <rect class="f-patch" x="562" y="129" width="72" height="14"/>
+          <text class="f-m" x="598" y="141" text-anchor="middle">discovery</text>
+
+          <rect class="f-box" x="640" y="52" width="240" height="190"/>
+          <text class="f-t" x="760" y="122" text-anchor="middle">EHR resolves</text>
+          <text class="f-t" x="760" y="142" text-anchor="middle">every key</text>
+          <text class="f-mm" x="760" y="168" text-anchor="middle">and returns them all</text>
+          <text class="f-mm" x="760" y="186" text-anchor="middle">in the hook's prefetch</text>
+
+          <path class="f-l" d="M760,242 V292 H300" marker-end="url(#n1)"/>
+          <rect class="f-patch" x="440" y="276" width="190" height="14"/>
+          <text class="f-m" x="535" y="288" text-anchor="middle">strip prefix, route to each vendor</text>
+
+          <text class="f-cap" x="20" y="340">Vendor A receives patient and coverage &mdash; and never knows the others exist</text>
+        </svg>
+      </div>
+      <figcaption>Namespacing costs a string prefix and removes an entire class of problem: vendors never collide, never see each other's data, and never need to coordinate their key names with you or with each other.</figcaption>
+    </figure>
+
+    <p class="prelabel">What you advertise, and what each vendor gets back</p>
+<pre><span class="c">// what the EHR sees in YOUR discovery response</span>
+<span class="s">"prefetch"</span>: {
+  <span class="s">"vendorA_patient"</span>:   <span class="s">"Patient/{{context.patientId}}"</span>,
+  <span class="s">"vendorA_coverage"</span>:  <span class="s">"Coverage?patient={{context.patientId}}"</span>,
+  <span class="s">"vendorB_patient"</span>:   <span class="s">"Patient/{{context.patientId}}"</span>,
+  <span class="s">"vendorB_encounter"</span>: <span class="s">"Encounter/{{context.encounterId}}"</span>
+}
+
+<span class="c">// what you forward to Vendor A — prefix stripped, nothing else included</span>
+<span class="s">"prefetch"</span>: {
+  <span class="s">"patient"</span>:  { <span class="s">"resourceType"</span>: <span class="s">"Patient"</span>, ... },
+  <span class="s">"coverage"</span>: { <span class="s">"resourceType"</span>: <span class="s">"Bundle"</span>, ... }
+}</pre>
+  </section>
+
+  <!-- ============ 8 ============ -->
+  <section id="doing">
+    <div class="sec-h"><span class="sec-n">08</span><h2>Which version, and how to prove it works</h2></div>
+
+    <div class="warnbox">
+      <h4>Two CRD version numbers, and they differ</h4>
+      <p>CMS mandates <strong>CRD 2.0.1</strong>. What EHRs are actually implementing is <strong>2.2.1</strong>. The video's recommendation for anyone building CRD, DTR or PAS is to build against <strong>2.2.1</strong> — it satisfies the mandate and matches what you will be talking to.</p>
+    </div>
+
+    <h3>Testing</h3>
+    <ul>
+      <li><strong>Inferno</strong> — the testing kit you will be measured against. It has dedicated suites for CRD. Point every vendor at it independently.</li>
+      <li><strong>The CDS Hooks sandbox</strong> — quicker for checking discovery responses and card rendering while you are still iterating.</li>
+    </ul>
+
+    <h3>What to do now</h3>
+    <ol>
+      <li><strong>Establish which programs you are covered under</strong>, and therefore whether January 1, 2027 binds you directly or through a client.</li>
+      <li><strong>Build CDS Hooks discovery and one hook</strong> — <code>order-select</code> — end to end before anything else. Everything downstream depends on it.</li>
+      <li><strong>Decide the prefetch set early.</strong> It is the difference between a one-second response and a five-second one, and it is declared in discovery, so changing it later means re-coordinating with every EHR.</li>
+      <li><strong>Draw your trust boundary</strong> before you sign vendor contracts. Who holds the EHR's token, and whose FHIR server do vendors talk to?</li>
+      <li><strong>Make every vendor implement the public spec</strong> and pass Inferno on their own. Compose, do not invent.</li>
+      <li><strong>Handle what-if requests</strong> from day one, so you never issue an authorization number for an order nobody placed.</li>
+    </ol>
+
+    <div class="close">
+      <h3>The one thing to take away</h3>
+      <p>This is not a faster version of the old prior authorization. The old process could not begin until somebody already knew that authorization was needed — and <strong>nothing in the system ever answered that question</strong>. It lived in a person's memory, or a phone call.</p>
+      <p>CRD makes that question an API call that returns in seconds, inside the workflow, before anyone has committed to anything. DTR and PAS are the cleanup. <strong>Discovery is the change.</strong></p>
+    </div>
+  </section>
+
+  <footer>
+    <p>Study notes &middot; summarised from the video transcript <em>&ldquo;CMS-0057-F Explained: The Prior Authorization Rule Health Plans Must Build by 2027&rdquo;</em>. Dates, version numbers, turnaround times and certification criterion numbers are as stated in that video and have not been independently verified against the Federal Register. Confirm them before making a compliance decision.</p>
+    <p>Part of a set. Companions: <em>Five Healthcare Standards</em> (the standards underneath, including CRD and CDS Hooks basics), <em>Medblocks in Five Layers</em>, <em>Anatomy of Medblocks</em>, <em>Medblocks Teardown</em>, and <em>Build Your Own Medblocks</em>.</p>
+  </footer>
+
+</div>
