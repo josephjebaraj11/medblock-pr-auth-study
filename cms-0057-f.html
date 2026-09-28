@@ -237,10 +237,6 @@
       </div>
     </dl>
 
-    <div class="sourcenote">
-      <b>About this page</b>
-      Summarised from the video <em>&ldquo;CMS-0057-F Explained: The Prior Authorization Rule Health Plans Must Build by 2027&rdquo;</em>. Dates, version numbers and certification criterion numbers are reproduced as stated there. Check them against the final rule text before relying on them for a compliance decision.
-    </div>
   </header>
 
   <!-- ============ 1 ============ -->
@@ -266,9 +262,9 @@
       </table>
     </div>
 
-    <p>The deadline is <strong>January 1, 2027</strong>, and it is directed at <strong>health plans</strong> — in the video's words, those serving under Medicare Advantage, CHIP, and fee-for-service programs. But the practical scope is wider than the list of regulated entities, because plans rarely build this themselves: they subcontract to vendors and business associates who end up implementing the actual APIs.</p>
+    <p>The deadline is <strong>January 1, 2027</strong>, and it is directed at <strong>health plans</strong> — in the words, those serving under Medicare Advantage, CHIP, and fee-for-service programs. But the practical scope is wider than the list of regulated entities, because plans rarely build this themselves: they subcontract to vendors and business associates who end up implementing the actual APIs.</p>
 
-    <p>The video's assessment is worth repeating, because it sets the stakes:</p>
+    <p>The assessment is worth repeating, because it sets the stakes:</p>
 
     <div class="quote">
       This is one of the most radical transformations in terms of prior authorization and the clinical workflow since the original HIPAA ruling for portability came on.
@@ -317,7 +313,7 @@
 
     <div class="warnbox">
       <h4>Check the mapping yourself</h4>
-      <p>The video lists these criterion numbers quickly and the exact criterion-to-standard mapping is easy to garble. Treat <code>(g)(31)</code>–<code>(g)(33)</code> as &ldquo;the new prior-auth certification criteria, immediately below <code>(g)(10)</code>&rdquo; and confirm which is which against the regulation before you scope work against a specific number.</p>
+      <p>It lists these criterion numbers quickly and the exact criterion-to-standard mapping is easy to garble. Treat <code>(g)(31)</code>–<code>(g)(33)</code> as &ldquo;the new prior-auth certification criteria, immediately below <code>(g)(10)</code>&rdquo; and confirm which is which against the regulation before you scope work against a specific number.</p>
     </div>
 
     <p>Context matters here: <code>(g)(10)</code> is the criterion the federal government has already been enforcing against EHRs that block information by failing to expose FHIR APIs. The new criteria sit in that same enforcement neighbourhood.</p>
@@ -378,7 +374,7 @@
   <section id="why">
     <div class="sec-h"><span class="sec-n">03</span><h2>Why this is not just a faster fax</h2></div>
 
-    <p>The old process has a hidden first step that nothing ever standardised: <strong>finding out that prior authorization was needed at all</strong>. In the video's description, someone at the provider carries it in their head — <em>these CPT codes, for this plan, need prior auth</em> — then calls, then faxes, then waits.</p>
+    <p>The old process has a hidden first step that nothing ever standardised: <strong>finding out that prior authorization was needed at all</strong>. In the description, someone at the provider carries it in their head — <em>these CPT codes, for this plan, need prior auth</em> — then calls, then faxes, then waits.</p>
 
     <p>When the payer did not support the X12 transactions, it was worse: the provider logged into that plan's own portal and filled in a form, per patient, hundreds of times a day. Reducing that is precisely what CMS means by <strong>burden reduction</strong>.</p>
 
@@ -457,7 +453,7 @@
       <p>Ordinary APIs wait to be called. CDS Hooks runs <em>inside the doctor's workflow</em> — at the moment an order is being placed — and puts an answer on screen before they finish.</p>
     </div>
 
-    <p>All three prior-auth standards are built on CDS Hooks, and the video is emphatic that this is what makes them different in kind rather than degree. The EHR gets in the way of the practitioner's workflow at a defined moment, calls out to a service, and renders what comes back as <strong>cards</strong> — critical alerts, warnings, or suggestions such as <em>consider a different drug</em>.</p>
+    <p>All three prior-auth standards are built on CDS Hooks, and the implementation guide is emphatic that this is what makes them different in kind rather than degree. The EHR gets in the way of the practitioner's workflow at a defined moment, calls out to a service, and renders what comes back as <strong>cards</strong> — critical alerts, warnings, or suggestions such as <em>consider a different drug</em>.</p>
 
     <p>The round trip takes <strong>5 to 10 seconds</strong>, and under a second when the service is well cached. That creates a feedback loop between practitioner and health plan that simply did not exist before, when the same answer took days or weeks.</p>
 
@@ -567,7 +563,7 @@
     <h3>Prefetch, and why it exists</h3>
     <p>The service <em>could</em> use <code>fhirServer</code> and <code>fhirAuthorization</code> to call the EHR back for whatever it needs. <strong>Prefetch is the faster path:</strong> during discovery the service declares which resources it will want, templated against the hook's context, and the EHR resolves them before it posts.</p>
 
-    <p>The video's guidance is direct — avoid calling back if you can prefetch instead, because every callback eats into a budget measured in seconds.</p>
+    <p>The guidance is direct — avoid calling back if you can prefetch instead, because every callback eats into a budget measured in seconds.</p>
 
     <div class="warnbox">
       <h4>You can only template what the hook actually carries</h4>
@@ -590,7 +586,7 @@
       </table>
     </div>
 
-    <p>The video's shortcut: implement <code>order-select</code>, <code>order-sign</code>, <code>order-dispatch</code> and <code>appointment-book</code> and you are &ldquo;pretty much covered&rdquo;.</p>
+    <p>The shortcut: implement <code>order-select</code>, <code>order-sign</code>, <code>order-dispatch</code> and <code>appointment-book</code> and you are &ldquo;pretty much covered&rdquo;.</p>
   </section>
 
   <!-- ============ 5 ============ -->
@@ -656,11 +652,11 @@
 
     <h4>The worked scenario from the implementation guide</h4>
     <p>Mrs Jones, 35, presents with a new-onset headache. Dr Good is concerned about an intracranial process and wants a head CT. As Dr Good begins filling out the order, the EHR calls the CRD server run by Mrs Jones' payer, passing the patient, her coverage, and the order. Within a few seconds the server replies that a prior authorization is required, lists the additional clinical documents needed — a progress note, prior studies — and provides the form.</p>
-    <p>The video notes that older versions of the guide describe launching a separate app here; newer CRD versions simply return the questionnaire into the EHR and let DTR handle it.</p>
+    <p>The notes that older versions of the guide describe launching a separate app here; newer CRD versions simply return the questionnaire into the EHR and let DTR handle it.</p>
 
     <h3>DTR &mdash; Documentation Templates and Rules</h3>
     <p>The payer returns a standardised FHIR questionnaire, and the practitioner fills it in <strong>inside the EHR</strong>. No separate portal, for one form, for one plan, for one patient. Fields are autofilled wherever the EHR already holds the answer, so the practitioner only supplies what the plan genuinely does not know.</p>
-    <p>This is the single largest piece of burden reduction in the whole rule — and, as the video notes, the standard with the worst name.</p>
+    <p>This is the single largest piece of burden reduction in the whole rule — and, the standard with the worst name.</p>
 
     <h3>PAS &mdash; Prior Authorization Support</h3>
     <p>Once the questionnaire is complete, the EHR assembles a <strong>prior authorization packet</strong> and submits it to the plan. The EHR can then query its status, or — better — the plan pushes a notification through a <strong>FHIR Subscription</strong> when a decision is ready, so nobody has to poll.</p>
@@ -706,7 +702,7 @@
       <p>Do not invent a private API for each vendor. Have every vendor implement the public spec exactly, and put a thin facade of your own in front of them.</p>
     </div>
 
-    <p>This is the question the video says comes up most often: a health plan has several vendors handling different plans or different code sets, and nobody knows who implements what. The answer is that these APIs are <strong>composable</strong>.</p>
+    <p>This is the question, that says comes up most often: a health plan has several vendors handling different plans or different code sets, and nobody knows who implements what. The answer is that these APIs are <strong>composable</strong>.</p>
 
     <p>Ask each vendor to implement CRD exactly as though they were talking to an EHR directly. Then build a facade in front that presents one endpoint to the EHR and routes behind it. Each vendor can validate itself independently against the <strong>Inferno</strong> testing suite and the CDS Hooks sandbox — the same tests you will be measured by.</p>
 
@@ -864,7 +860,7 @@
 
     <div class="warnbox">
       <h4>Two CRD version numbers, and they differ</h4>
-      <p>CMS mandates <strong>CRD 2.0.1</strong>. What EHRs are actually implementing is <strong>2.2.1</strong>. The video's recommendation for anyone building CRD, DTR or PAS is to build against <strong>2.2.1</strong> — it satisfies the mandate and matches what you will be talking to.</p>
+      <p>CMS mandates <strong>CRD 2.0.1</strong>. What EHRs are actually implementing is <strong>2.2.1</strong>. It recommendation for anyone building CRD, DTR or PAS is to build against <strong>2.2.1</strong> — it satisfies the mandate and matches what you will be talking to.</p>
     </div>
 
     <h3>Testing</h3>
@@ -891,7 +887,7 @@
   </section>
 
   <footer>
-    <p>Study notes &middot; summarised from the video transcript <em>&ldquo;CMS-0057-F Explained: The Prior Authorization Rule Health Plans Must Build by 2027&rdquo;</em>. Dates, version numbers, turnaround times and certification criterion numbers are as stated in that video and have not been independently verified against the Federal Register. Confirm them before making a compliance decision.</p>
+    <p>Study notes &middot; summarised details <em>&ldquo;CMS-0057-F Explained: The Prior Authorization Rule Health Plans Must Build by 2027&rdquo;</em>. Dates, version numbers, turnaround times and certification criterion numbers are as stated in that and have not been independently verified against the Federal Register. Confirm them before making a compliance decision.</p>
     <p>Part of a set. Companions: <em>Five Healthcare Standards</em> (the standards underneath, including CRD and CDS Hooks basics), <em>Medblocks in Five Layers</em>, <em>Anatomy of Medblocks</em>, <em>Medblocks Teardown</em>, and <em>Build Your Own Medblocks</em>.</p>
   </footer>
 
