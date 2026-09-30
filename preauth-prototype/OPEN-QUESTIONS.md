@@ -80,6 +80,46 @@ change the architecture, not just the roadmap.
     Any evidence gathering at hook time has to be prefetched or asynchronous. The
     prototype elides this by starting the run after the hook.
 
+## C2. Multi-tenancy and access
+
+26. **Is the administrator genuinely barred from approving?** *(blocking)*
+    The prototype enforces separation of duties: the person who configures thresholds cannot clear a
+    packet. Small practices will push back hard — in a four-person office the administrator *is* the
+    coordinator. Do we ship a single-user override, and if so what does the audit record look like?
+27. **What is the tenancy boundary — organisation, or contracting entity?** An RCM company working
+    for thirty practices is one customer and thirty tenants, or one tenant with thirty sub-scopes.
+    The answer determines how patient identity, consent and agent memory are partitioned, and it is
+    much cheaper to decide before the first customer than after.
+28. **Where does agent memory stop?** Cross-case learning within a tenant is clearly fine and is the
+    compounding asset. Across tenants it is the sharpest governance risk in the product. Is there a
+    consented, aggregated tier — "these three payers accept this phrasing" — and who owns the uplift
+    it produces?
+29. **Does a clinician's signature need to be a real signature?** The prototype records role plus
+    identity. An appeal is a legal-adjacent document; some payers and some states may want more than
+    an application-level assertion.
+30. **How does a SMART launch map to a tenant?** In the launch path the EHR is the tenant, which is
+    clean — until a physician practises at two organisations that both use us, and the same human
+    needs two identities with different queues.
+
+## C3. Building the platform core
+
+31. **Do we build the core at all, or sit on Medblocks / Medplum / Aidbox?** *(blocking)*
+    This build assumes we build it — twelve components, forty weeks, five of them genuinely
+    ours. The alternative is to adopt a platform and own only the workflow, which ships
+    faster and makes the second workflow someone else's roadmap item. The answer determines
+    whether layer 03 is an asset or a dependency.
+32. **Where does the derived clinical model layer stop?** Every derived model is a mapping
+    decision that is expensive to change once determinations have been made against it.
+    Model the whole record, or only what the first two workflows actually query?
+33. **What is the QA process for LLM-extracted policy criteria?** A human review queue is
+    assumed. Who staffs it, what is the sampling rate once it is trusted, and what happens
+    to determinations already made against a criterion later found wrong?
+34. **Portal automation: build, buy or refuse the segment?** Both defensible answers change
+    the addressable market. Drifting into it is the answer that is not.
+35. **How many sources before the connector registry earns its keep?** Registry-and-quirk-table
+    is the right shape at ten connectors and over-engineering at two. The prototype shows
+    twelve; the first customer needs three.
+
 ## D. Compliance, safety and commercial
 
 21. **Is any part of this a regulated medical device?** The agents do not diagnose or
@@ -116,6 +156,17 @@ Stated so they can be argued with.
 - Appeal outcomes are out of scope. The denial scenario deliberately stops at "appeal
   filed, peer-to-peer scheduled" — no honest demo should simulate a conversation between
   two physicians.
+- Permission checks run in the browser. In production none of these gates would be enforceable
+  client-side; the UI check is a convenience and the server is the control.
+- The platform operator is a separate organisation rather than a fourth tenant, and holds no
+  `case.view` permission. In production that separation is a different credential set and a
+  different database role, not a role string on a user row.
+- The forty-week plan assumes vendor registrations start in week one and clear roughly on time.
+  They are the critical path and they are not under our control.
+- One user belongs to exactly one tenant. Clinicians who practise at two organisations are not
+  modelled, and they are common.
+- Tenant capability flags (network exchange, portal automation) are configuration. In reality they
+  are contracts, integrations and money, and they take months rather than a toggle.
 - Outcome targets on the Overview screen are illustrative. Real baselines would come from
   the customer's own last twelve months of determinations; the variance between
   organisations on every one of those metrics is larger than the improvement claimed.

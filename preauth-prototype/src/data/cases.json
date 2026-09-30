@@ -1,0 +1,227 @@
+[
+  {
+    "id": "PA-2026-0418",
+    "patientId": "pt-5",
+    "payerId": "pay-meridian",
+    "policyId": null,
+    "service": {
+      "code": "CPT 27447",
+      "desc": "Total knee arthroplasty, right",
+      "icd": "M17.11"
+    },
+    "ordering": "Dr. Sigrid Halvorsen, MD",
+    "status": "approved",
+    "priority": "Standard",
+    "created": "2026-09-22T09:12",
+    "updated": "2026-09-23T14:40",
+    "sla": null,
+    "confidence": 0.94,
+    "owner": "K. Mbeki (coordinator)",
+    "authNo": "MRD-AUTH-88412-C",
+    "note": "Clean packet. Meridian auto-adjudicated on submission; decision returned in 26 minutes via PAS."
+  },
+  {
+    "id": "PA-2026-0431",
+    "patientId": "pt-4",
+    "payerId": "pay-meridian",
+    "policyId": null,
+    "service": {
+      "code": "CPT 95810",
+      "desc": "Polysomnography, attended, pediatric",
+      "icd": "G47.33"
+    },
+    "ordering": "Dr. Priya Raghunathan, MD",
+    "status": "approved",
+    "priority": "Standard",
+    "created": "2026-09-24T11:03",
+    "updated": "2026-09-24T11:49",
+    "sla": null,
+    "confidence": 0.91,
+    "owner": "Auto — no human edit required",
+    "authNo": "MRD-AUTH-88507-C",
+    "note": "CRD returned 'no prior authorisation required' for the site of service, but the facility required one for scheduling. Submitted anyway; approved same hour."
+  },
+  {
+    "id": "PA-2026-0447",
+    "patientId": "pt-6",
+    "payerId": "pay-northstar",
+    "policyId": null,
+    "service": {
+      "code": "CPT 78815",
+      "desc": "PET/CT skull base to mid-thigh",
+      "icd": "C34.31"
+    },
+    "ordering": "Dr. Thomas Ibarra, MD",
+    "status": "submitted",
+    "priority": "Expedited",
+    "created": "2026-09-28T08:40",
+    "updated": "2026-09-28T09:15",
+    "sla": "2026-10-01T09:15",
+    "confidence": 0.88,
+    "owner": "K. Mbeki (coordinator)",
+    "note": "Oncology staging study. Northstar has no PAS endpoint — submitted as X12 278 through the clearinghouse; 277 status polling every 4 hours."
+  },
+  {
+    "id": "PA-2026-0452",
+    "patientId": "pt-7",
+    "payerId": "pay-northstar",
+    "policyId": null,
+    "service": {
+      "code": "HCPCS J3357",
+      "desc": "Ustekinumab, subcutaneous, 1 mg",
+      "icd": "K50.10"
+    },
+    "ordering": "Dr. Camille Ferreira, MD",
+    "status": "pended",
+    "priority": "Standard",
+    "created": "2026-09-25T15:22",
+    "updated": "2026-09-27T10:08",
+    "sla": "2026-10-02T15:22",
+    "confidence": 0.72,
+    "owner": "R. Osei (pharmacy tech)",
+    "note": "Payer requested documentation of the anti-TNF trial. The Submission Agent has drafted a response; a human has not yet approved it."
+  },
+  {
+    "id": "PA-2026-0455",
+    "patientId": "pt-8",
+    "payerId": "pay-cascade",
+    "policyId": null,
+    "service": {
+      "code": "CPT 75574",
+      "desc": "CT angiography, coronary, with contrast",
+      "icd": "I25.10"
+    },
+    "ordering": "Dr. Marisol Vance, MD",
+    "status": "review",
+    "priority": "Standard",
+    "created": "2026-09-28T13:55",
+    "updated": "2026-09-29T08:20",
+    "sla": "2026-10-12T13:55",
+    "confidence": 0.81,
+    "owner": "Unassigned",
+    "note": "Cascade has no FHIR surface. Packet is assembled and waiting for a human before the portal automation is allowed to type it in."
+  },
+  {
+    "id": "PA-2026-0458",
+    "patientId": "pt-1",
+    "payerId": "pay-meridian",
+    "policyId": "pol-mri-lumbar",
+    "service": {
+      "code": "CPT 72148",
+      "desc": "MRI lumbar spine without contrast",
+      "icd": "M54.16"
+    },
+    "ordering": "Dr. Sigrid Halvorsen, MD",
+    "status": "draft",
+    "priority": "Standard",
+    "created": "2026-09-29T08:05",
+    "updated": "2026-09-29T08:05",
+    "sla": "2026-10-06T08:05",
+    "confidence": null,
+    "owner": "Unassigned",
+    "seed": "approved",
+    "note": "Created by the Intake Agent from an order-select CDS Hook this morning. Not yet worked — this is the case the live demo runs."
+  },
+  {
+    "id": "PA-2026-0459",
+    "patientId": "pt-2",
+    "payerId": "pay-northstar",
+    "policyId": "pol-infliximab",
+    "service": {
+      "code": "HCPCS J1745",
+      "desc": "Infliximab, 10 mg (3 mg/kg induction)",
+      "icd": "M05.79"
+    },
+    "ordering": "Dr. Camille Ferreira, MD",
+    "status": "draft",
+    "priority": "Standard",
+    "created": "2026-09-29T08:31",
+    "updated": "2026-09-29T08:31",
+    "sla": "2026-10-06T08:31",
+    "confidence": null,
+    "owner": "Unassigned",
+    "seed": "pended",
+    "note": "Medical-benefit specialty drug. Created from an order-sign hook. Not yet worked."
+  },
+  {
+    "id": "PA-2026-0460",
+    "patientId": "pt-3",
+    "payerId": "pay-cascade",
+    "policyId": "pol-fusion",
+    "service": {
+      "code": "CPT 22633",
+      "desc": "Lumbar interbody fusion, L4-L5, single level",
+      "icd": "M43.16"
+    },
+    "ordering": "Dr. Noor Abbasi, MD",
+    "status": "draft",
+    "priority": "Standard",
+    "created": "2026-09-29T09:02",
+    "updated": "2026-09-29T09:02",
+    "sla": "2026-10-13T09:02",
+    "confidence": null,
+    "owner": "Unassigned",
+    "seed": "denied",
+    "note": "Elective spine surgery against a legacy payer. Not yet worked."
+  },
+  {
+    "id": "PA-2026-0402",
+    "patientId": "pt-3",
+    "payerId": "pay-cascade",
+    "policyId": null,
+    "service": {
+      "code": "CPT 62323",
+      "desc": "Epidural steroid injection, lumbar, with imaging",
+      "icd": "M48.061"
+    },
+    "ordering": "Dr. Noor Abbasi, MD",
+    "status": "denied",
+    "priority": "Standard",
+    "created": "2026-09-08T10:15",
+    "updated": "2026-09-19T16:30",
+    "sla": null,
+    "confidence": 0.64,
+    "owner": "K. Mbeki (coordinator)",
+    "note": "Denied for insufficient documentation of conservative care. Appeal window closes 2026-10-19."
+  },
+  {
+    "id": "PA-2026-0389",
+    "patientId": "pt-6",
+    "payerId": "pay-northstar",
+    "policyId": null,
+    "service": {
+      "code": "CPT 32663",
+      "desc": "Thoracoscopy with lobectomy",
+      "icd": "C34.31"
+    },
+    "ordering": "Dr. Thomas Ibarra, MD",
+    "status": "appeal",
+    "priority": "Expedited",
+    "created": "2026-09-02T07:44",
+    "updated": "2026-09-26T12:11",
+    "sla": "2026-10-03T12:11",
+    "confidence": 0.79,
+    "owner": "Dr. Ibarra (peer-to-peer scheduled)",
+    "note": "Denied on site-of-service. Appeal letter drafted by the agent, edited and signed by the ordering physician; peer-to-peer review scheduled 2026-10-01."
+  },
+  {
+    "id": "PA-2026-0461",
+    "patientId": "pt-5",
+    "payerId": "pay-meridian",
+    "policyId": null,
+    "service": {
+      "code": "HCPCS E0601",
+      "desc": "Continuous positive airway pressure device",
+      "icd": "G47.33"
+    },
+    "ordering": "Dr. Priya Raghunathan, MD",
+    "status": "gathering",
+    "priority": "Standard",
+    "created": "2026-09-29T07:20",
+    "updated": "2026-09-29T09:41",
+    "sla": "2026-10-06T07:20",
+    "confidence": null,
+    "owner": "Auto — agents working",
+    "note": "Clinical Evidence Agent is waiting on a sleep study report from a source whose connection needs re-authorisation."
+  }
+]

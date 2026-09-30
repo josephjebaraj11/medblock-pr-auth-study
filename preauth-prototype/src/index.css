@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --paper:#EEF1F4; --surface:#FBFCFD; --sunken:#E2E7ED; --raise:#FFFFFF;
+  --ink:#10151C; --ink-soft:#4A5766; --ink-faint:#7C8896;
+  --rule:#C9D2DC; --rule-soft:#E0E6EC;
+  --accent:#125F7A; --accent-ink:#0D4A60; --accent-wash:#DBEAF0;
+  --ok:#15693F; --ok-wash:#D9EDE2;
+  --warn:#8A5A0B; --warn-wash:#F5E9D2;
+  --bad:#9B2C22; --bad-wash:#F6DFDC;
+  --human:#6A3E86; --human-wash:#EAE0F2;
+  --agent:#1D4E8F; --agent-wash:#DDE6F5;
+  color-scheme: light;
+}
+@media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
+  --paper:#0B0F14; --surface:#131A22; --sunken:#182029; --raise:#1B242E;
+  --ink:#DEE6EE; --ink-soft:#97A5B4; --ink-faint:#6C7A89;
+  --rule:#26313D; --rule-soft:#1D2630;
+  --accent:#4FA8C6; --accent-ink:#79C3DC; --accent-wash:#102A35;
+  --ok:#4EC08A; --ok-wash:#102A1E;
+  --warn:#D6A25B; --warn-wash:#2C2314;
+  --bad:#E38176; --bad-wash:#2E1715;
+  --human:#B396CC; --human-wash:#231A2C;
+  --agent:#7FA8E4; --agent-wash:#141F31;
+  color-scheme: dark;
+}}
+:root[data-theme="dark"]{
+  --paper:#0B0F14; --surface:#131A22; --sunken:#182029; --raise:#1B242E;
+  --ink:#DEE6EE; --ink-soft:#97A5B4; --ink-faint:#6C7A89;
+  --rule:#26313D; --rule-soft:#1D2630;
+  --accent:#4FA8C6; --accent-ink:#79C3DC; --accent-wash:#102A35;
+  --ok:#4EC08A; --ok-wash:#102A1E;
+  --warn:#D6A25B; --warn-wash:#2C2314;
+  --bad:#E38176; --bad-wash:#2E1715;
+  --human:#B396CC; --human-wash:#231A2C;
+  --agent:#7FA8E4; --agent-wash:#141F31;
+  color-scheme: dark;
+}
+
+@layer base{
+  html,body,#root{ height:100%; }
+  body{ @apply bg-paper text-ink font-sans antialiased; margin:0; font-size:14.5px; line-height:1.55; }
+  h1,h2,h3,h4{ margin:0; letter-spacing:-.018em; text-wrap:balance; }
+  ::selection{ background:var(--accent-wash); }
+  *{ box-sizing:border-box; }
+}
+
+@layer components{
+  .kick{ @apply font-mono text-[9.5px] tracking-[.15em] uppercase text-ink-faint; }
+  .card{ @apply bg-surface border border-rule rounded-lg p-[18px_20px]; }
+  .card-h{ @apply text-[14.5px] font-semibold mb-2; }
+  .chip{ @apply inline-block font-mono text-[9.5px] tracking-[.08em] uppercase px-[7px] py-[2px] border border-current rounded-[3px] whitespace-nowrap; }
+  .chip-fill{ @apply inline-block font-mono text-[9.5px] tracking-[.08em] uppercase px-2 py-[3px] rounded-[3px] whitespace-nowrap border-0; }
+  .btn{ @apply bg-accent text-white border-0 rounded-md px-4 py-[9px] text-[13px] font-semibold cursor-pointer shadow-card; }
+  .btn:hover:not(:disabled){ filter:brightness(1.1); }
+  .btn:disabled{ @apply opacity-40 cursor-not-allowed shadow-none; }
+  .btn-ghost{ @apply bg-surface text-ink border border-rule shadow-none; }
+  .btn-ghost:hover:not(:disabled){ @apply border-accent text-accent-ink; filter:none; }
+  .btn-sm{ @apply px-[11px] py-[6px] text-xs; }
+  .sech{ @apply flex items-baseline gap-3 border-b border-rule pb-[9px] mb-4; }
+  .sech h2{ @apply text-[15.5px] font-semibold; }
+  .sn{ @apply font-mono text-[10px] text-accent-ink tracking-[.08em]; }
+  .note{ @apply border-l-2 border-accent pl-[13px] py-[2px] text-ink-soft text-[12.8px] max-w-[76ch]; }
+  .warnbox{ @apply bg-warn-wash border border-rule rounded-lg p-[14px_16px] text-[12.8px] text-ink-soft; }
+  .warnbox b.t{ @apply text-warn font-mono text-[9.5px] tracking-[.14em] uppercase block mb-[6px]; }
+  .tbl{ @apply w-full border-collapse text-[12.8px]; min-width:640px; }
+  .tbl th{ @apply text-left px-[13px] py-[9px] font-mono text-[9.5px] tracking-[.13em] uppercase text-ink-faint font-normal bg-sunken border-b border-rule whitespace-nowrap; }
+  .tbl td{ @apply text-left px-[13px] py-[9px] border-b border-rule-soft align-top leading-[1.45]; }
+  .tbl tbody tr:last-child td{ @apply border-b-0; }
+  .tbl tbody tr:hover{ @apply bg-sunken; }
+  .dt{ @apply font-mono text-[9.5px] tracking-[.13em] uppercase text-ink-faint mb-[5px]; }
+  .dd{ @apply mb-[14px] text-[12.8px] text-ink-soft leading-[1.5]; }
+  .bar{ @apply h-[6px] bg-sunken rounded-[3px] overflow-hidden mt-2; }
+  .bar > i{ @apply block h-full rounded-[3px]; }
+  .field{ @apply w-full bg-raise border border-rule rounded-md px-3 py-2 text-[13px] text-ink; }
+  .field:focus{ @apply outline-none border-accent; box-shadow:0 0 0 3px var(--accent-wash); }
+}
+@media (prefers-reduced-motion:reduce){ *{ animation:none!important; transition:none!important; } }
+
+@keyframes pop{ from{ opacity:0; transform:translateY(5px); } to{ opacity:1; transform:none; } }

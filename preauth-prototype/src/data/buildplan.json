@@ -1,0 +1,147 @@
+{
+  "phases": [
+    {
+      "id": "P0", "name": "Paperwork", "when": "Day one, in parallel with everything",
+      "band": "platform", "weeks": [0, 40],
+      "goal": "Start the clocks you do not control.",
+      "work": [
+        "Production app registration with Epic, Oracle Health and athenahealth",
+        "NLM UMLS licence (covers SNOMED CT in the US); AMA licence for CPT/HCPCS",
+        "BAAs with every subprocessor that touches PHI — hosting, model API, voice if used",
+        "HIPAA control baseline and the evidence-collection tooling behind it"
+      ],
+      "exit": "Nothing. This phase never exits — it only has to have started.",
+      "note": "Everything on the build sheet is buildable and none of it is the expensive part. The expensive part is registration: it takes weeks to months per vendor, runs on someone else's calendar, and no code shortens it."
+    },
+    {
+      "id": "P1", "name": "One source, end to end", "when": "Weeks 1–4",
+      "band": "platform", "weeks": [1, 4],
+      "goal": "A real Bundle from a real server, in your own Postgres.",
+      "work": [
+        "Source catalog seeded with one sandbox — Epic's is the obvious choice",
+        "SMART backend services launch, one token stored encrypted",
+        "Pull Patient, Condition and Observation. Nothing else",
+        "raw_resources table with the idempotent unique key"
+      ],
+      "exit": "You can point at a row and say where it came from and when.",
+      "note": "Resist breadth here. A second source before the state machine exists buys nothing and costs a refactor."
+    },
+    {
+      "id": "P2", "name": "Make it survive", "when": "Weeks 5–8",
+      "band": "platform", "weeks": [5, 8],
+      "goal": "Turn the demo into a system.",
+      "work": [
+        "Connection state machine, transactional outbox, append-only auth_events",
+        "Proactive token refresh at T-10 minutes, rotated tokens persisted in-transaction",
+        "Pagination to the end of link[next]; per-source rate limiting; backoff honouring Retry-After",
+        "pull_runs monitoring table and the first OpenTelemetry traces"
+      ],
+      "exit": "A pull survives a token rotation and a 429 storm without human intervention.",
+      "note": "This phase is invisible in a demo and is the whole difference between a prototype and a product."
+    },
+    {
+      "id": "P3", "name": "Make it usable", "when": "Weeks 9–12",
+      "band": "platform", "weeks": [9, 12],
+      "goal": "A second engineer can onboard a source without you.",
+      "work": [
+        "Workspaces with row-level security on every table",
+        "Environment-prefixed API keys, hashed at rest",
+        "The read API with keyset pagination, and two signed webhooks",
+        "The operations dashboard — connection states, pull history, export runs"
+      ],
+      "exit": "Support can answer \"is it broken or is it empty?\" without a database client.",
+      "note": "Put workspace_id on every table from the first one. Retrofitting it is the most tedious migration you will ever run."
+    },
+    {
+      "id": "P4", "name": "Make it plural", "when": "Weeks 13–16",
+      "band": "platform", "weeks": [13, 16],
+      "goal": "Sources two and three.",
+      "work": [
+        "Per-vendor quirk table for scope strings and discovery deviations",
+        "Resource lists driven by CapabilityStatement rather than constants",
+        "Bulk $export for the backend pattern",
+        "Whatever the registrations from P0 have actually cleared"
+      ],
+      "exit": "Adding a source is configuration and waiting, not new code.",
+      "note": "Mostly calendar, not engineering. If P0 was not started on day one, this is where the schedule slips."
+    },
+    {
+      "id": "P5", "name": "Make it mean something", "when": "Weeks 13–20",
+      "band": "platform", "weeks": [13, 20],
+      "goal": "Data you can ask clinical questions of.",
+      "work": [
+        "Terminology: LOINC and RxNorm loaded; SNOMED server standing up",
+        "Derived clinical domain models with provenance back to raw",
+        "Negative-finding queries — \"this does not exist anywhere\" as a first-class answer",
+        "Deterministic patient matching, with a human review queue behind the probabilistic tier"
+      ],
+      "exit": "\"Six weeks of documented conservative therapy\" answers as a query, not a search.",
+      "note": "Deliberately last of the platform phases. Normalise once you have real variety to normalise against, not before."
+    },
+    {
+      "id": "W1", "name": "Pre-auth vertical slice", "when": "Weeks 17–24",
+      "band": "workflow", "weeks": [17, 24],
+      "goal": "One payer, one service line, a human gate, a real approval.",
+      "work": [
+        "CRD check at order-select, inside the five-second hook budget",
+        "Policy pack: the top five policies of one payer, curated by hand",
+        "Form engine and CQL prefill; unanswerable items left visibly blank",
+        "Packet assembly, the coordinator review screen, and the approval gate",
+        "Tier-1 payer only — PAS submit and Subscription decision push"
+      ],
+      "exit": "A named coordinator approves a packet and a payer returns an authorisation number.",
+      "note": "This is the demo in this prototype, made real. Nothing about it requires the second or third payer tier to exist."
+    },
+    {
+      "id": "W2", "name": "The other two payer tiers", "when": "Weeks 25–32",
+      "band": "workflow", "weeks": [25, 32],
+      "goal": "One workflow, three transports, identical agents.",
+      "work": [
+        "X12 278/275/277 through a clearinghouse, with per-payer enrollment",
+        "Supervised portal automation for the tier-3 payers worth serving",
+        "EHR write-back of authorisation number, validity window and reference",
+        "Document and OCR ingestion for outside records"
+      ],
+      "exit": "Switching a payer from tier 3 to tier 1 changes one catalog row and no agent code.",
+      "note": "If this is not true at the end of the phase, the integration layer leaked into the workflow."
+    },
+    {
+      "id": "W3", "name": "Appeals, memory, tenant two", "when": "Weeks 33–40",
+      "band": "workflow", "weeks": [33, 40],
+      "goal": "Compounding, and proof it compounds for someone else.",
+      "work": [
+        "Denial classification, appeal packet assembly, clinician signature gate",
+        "Agent memory scoped hard to the tenant, with the governance boundary written down",
+        "Second tenant onboarded through the dashboard rather than by an engineer",
+        "Confidence calibrated against the first tenant's historical determinations"
+      ],
+      "exit": "The second tenant's onboarding is measured in days and does not touch a code branch.",
+      "note": "The first customer is also the first calibration partner. That is contractually messy and worth negotiating before signing, not after."
+    }
+  ],
+  "decisions": [
+    { "item": "FHIR storage, validation and search", "call": "adopt", "pick": "Medplum or HAPI FHIR", "why": "Resource validation, search parameters and reference resolution are several months you would otherwise reinvent slightly wrong." },
+    { "item": "openEHR CDR alongside FHIR", "call": "defer", "pick": "archetype discipline now, CDR when a second workflow needs it", "why": "openEHR buys a genuinely longitudinal, archetype-governed record. It also buys a second modelling discipline, a smaller hiring pool and a mapping layer. Take the modelling discipline into the derived layer first; the CDR is a decision you can still make in month nine, and a rewrite you cannot undo in month three." },
+    { "item": "Terminology server", "call": "adopt", "pick": "HAPI terminology server or Ontoserver", "why": "Never hand-roll SNOMED subsumption. Own the value-set versioning on top of it, not the subsumption itself." },
+    { "item": "Job queue", "call": "adopt", "pick": "BullMQ now, Temporal later", "why": "BullMQ gives retries, backoff and concurrency in an afternoon. Move when a single pull spans hours and must survive a deploy mid-crawl." },
+    { "item": "OAuth client", "call": "adopt", "pick": "openid-client + a per-vendor override table", "why": "Several EHR vendors deviate from strict OIDC discovery. Override in a table; never patch the library." },
+    { "item": "Webhook delivery", "call": "buy", "pick": "Svix", "why": "Retries, dead-lettering and signature rotation are a solved commodity and cheaper to rent than to own." },
+    { "item": "X12 278 stack", "call": "buy", "pick": "A clearinghouse — TriZetto, Availity or Optum", "why": "There is no version of building an X12 278 stack that ends well. Enrollment per payer still takes days to weeks; price that in." },
+    { "item": "Portal automation", "call": "decide", "pick": "build narrowly, or refuse the segment", "why": "Brittle, breaks on every payer UI change, and the only route to a large share of payers today. Both answers are defensible; drifting into it is not." },
+    { "item": "Enterprise identity", "call": "buy", "pick": "WorkOS", "why": "SSO will be asked for in the first enterprise conversation, not the fifth." },
+    { "item": "Token vault and key custody", "call": "build on KMS", "pick": "AWS KMS or Vault, one key per environment", "why": "Envelope-encrypt every token with a per-workspace data key. One key for the whole platform is a finding waiting for an auditor." },
+    { "item": "Source catalog, state machine, pull engine, derived models, policy store", "call": "build", "pick": "yours", "why": "These five are the product. Everything else on this list is plumbing you should rent." }
+  ],
+  "risks": [
+    { "r": "Vendor registration calendar", "sev": "high", "who": "P0", "note": "Weeks to months per EHR vendor, entirely outside your control. The single most common cause of a slipped healthcare integration date." },
+    { "r": "Policy ingestion at scale", "sev": "high", "who": "cc-rules", "note": "Payer policies arrive as PDFs and change without notice. Curation is an operations function with a permanent headcount, not a project with an end date." },
+    { "r": "Confidence calibration needs real determinations", "sev": "high", "who": "W3", "note": "Hand-authored constants are not calibration. Real numbers need a customer's labelled history, which makes the first customer the first training partner." },
+    { "r": "Portal automation brittleness", "sev": "medium", "who": "cc-payeredge", "note": "Breaks on every payer UI change. Needs change detection, an on-call owner, and a human on every submission." },
+    { "r": "Token trust boundary", "sev": "medium", "who": "cc-authz", "note": "An EHR's token must never be forwarded outside the boundary that issued it. Cheap to design for, expensive to retrofit." },
+    { "r": "Terminology licensing cost", "sev": "medium", "who": "cc-term", "note": "CPT is AMA-licensed with a real per-seat cost. Discovering it during procurement is worse than budgeting for it now." },
+    { "r": "Patient matching false merges", "sev": "medium", "who": "cc-store", "note": "A duplicate is a data-quality problem; a false merge is a clinical safety incident. Probabilistic matching needs a human adjudication queue from day one." },
+    { "r": "openEHR reversal", "sev": "medium", "who": "cc-store", "note": "Deferring the CDR is recoverable. Adopting it and reversing is not — it propagates into every derived model and every query." },
+    { "r": "CMS-0057-F endpoint quality in 2027", "sev": "medium", "who": "cc-payeredge", "note": "Plans that expose these APIs only because they are compelled to will expose them unevenly. The legacy tier stays load-bearing for years; plan for a 2028 where half the surface is still portal and fax." },
+    { "r": "Agent memory crossing tenants", "sev": "high", "who": "cc-shell", "note": "The compounding asset and the sharpest governance risk in the product. Enforce it at the storage boundary, not in application code." }
+  ]
+}

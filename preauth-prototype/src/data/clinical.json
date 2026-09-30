@@ -1,0 +1,286 @@
+[
+  {
+    "id": "ev-1",
+    "patientId": "pt-1",
+    "type": "note",
+    "date": "2026-09-12",
+    "title": "Orthopedics office visit",
+    "author": "Dr. Sigrid Halvorsen, MD",
+    "source": "Springfield Orthopaedic Group · Epic · FHIR R4",
+    "ref": "DocumentReference/dr-88213",
+    "snippet": "14 weeks of low back pain radiating into the left posterior thigh and lateral calf. Exam: diminished sensation over the left L5 dermatome, 4/5 extensor hallucis longus weakness on the left, positive straight-leg raise at 40 degrees. Reflexes symmetric. Symptoms unchanged despite therapy.",
+    "codes": [
+      "SNOMED 279039007 Low back pain",
+      "SNOMED 202794005 Lumbar radiculopathy"
+    ]
+  },
+  {
+    "id": "ev-2",
+    "patientId": "pt-1",
+    "type": "note",
+    "date": "2026-08-28",
+    "title": "Physical therapy discharge summary",
+    "author": "Renata Vogel, DPT",
+    "source": "Cedar Ridge Rehab · HL7 v2 MDM feed, normalised to openEHR",
+    "ref": "Composition/8f31a2c4::careflow",
+    "snippet": "14 visits over 8 weeks of lumbar stabilisation and McKenzie-based therapy beginning 2026-07-01. Oswestry Disability Index 44 at intake, 41 at discharge. No meaningful functional gain. Patient discharged to physician for further evaluation.",
+    "codes": [
+      "SNOMED 91251008 Physical therapy procedure"
+    ]
+  },
+  {
+    "id": "ev-3",
+    "patientId": "pt-1",
+    "type": "med",
+    "date": "2026-06-05",
+    "title": "Medication trial — naproxen 500 mg BID",
+    "author": "Dispense history",
+    "source": "Pharmacy benefit · NCPDP claims feed",
+    "ref": "MedicationRequest/mr-4412",
+    "snippet": "Continuous fills 2026-06-05 through 2026-09-10 (4 fills, 30-day supply each). Cyclobenzaprine 10 mg nightly added 2026-07-14.",
+    "codes": [
+      "RxNorm 849437 naproxen 500 MG oral tablet"
+    ]
+  },
+  {
+    "id": "ev-4",
+    "patientId": "pt-1",
+    "type": "admin",
+    "date": "2026-09-29",
+    "title": "Imaging history query — lumbar MRI, 12 months",
+    "author": "Clinical data repository",
+    "source": "Platform CDR · aggregated across 3 connected sources",
+    "ref": "$everything?_type=ImagingStudy&date=ge2025-09-29",
+    "snippet": "0 lumbar MRI studies returned for this patient across all connected sources in the preceding 12 months. Most recent lumbar imaging: radiograph dated 2026-06-20.",
+    "codes": []
+  },
+  {
+    "id": "ev-5",
+    "patientId": "pt-1",
+    "type": "imaging",
+    "date": "2026-06-20",
+    "title": "Radiograph, lumbar spine, 2 views",
+    "author": "Dr. Paul Anand, MD (radiology)",
+    "source": "Springfield Orthopaedic Group · Epic · FHIR R4",
+    "ref": "DiagnosticReport/dxr-7701",
+    "snippet": "Moderate disc space narrowing at L4-L5 with endplate sclerosis. No acute fracture. No listhesis on neutral views. Impression: degenerative change, L4-L5.",
+    "codes": [
+      "LOINC 24531-6 XR Lumbar spine 2 views"
+    ]
+  },
+  {
+    "id": "ev-6",
+    "patientId": "pt-2",
+    "type": "note",
+    "date": "2026-09-05",
+    "title": "Rheumatology consultation",
+    "author": "Dr. Camille Ferreira, MD",
+    "source": "Lakeside Rheumatology · athenahealth · FHIR R4",
+    "ref": "DocumentReference/dr-91180",
+    "snippet": "Seropositive rheumatoid arthritis, diagnosed 2024. DAS28-CRP 5.8, consistent with high disease activity. Seven months of methotrexate at 20 mg weekly with folate has not produced an adequate response; morning stiffness persists beyond 90 minutes and three joints remain swollen. Recommend escalation to a TNF inhibitor.",
+    "codes": [
+      "SNOMED 69896004 Rheumatoid arthritis",
+      "ICD-10 M05.79"
+    ]
+  },
+  {
+    "id": "ev-7",
+    "patientId": "pt-2",
+    "type": "lab",
+    "date": "2026-08-30",
+    "title": "Rheumatology panel",
+    "author": "Meridian Reference Laboratory",
+    "source": "Lab network · FHIR R4 Observation",
+    "ref": "Observation/obs-33021 (bundle of 4)",
+    "snippet": "Anti-CCP 142 U/mL (H, ref <20). Rheumatoid factor 88 IU/mL (H, ref <14). CRP 2.4 mg/dL (H, ref <0.5). ESR 54 mm/hr (H, ref <20).",
+    "codes": [
+      "LOINC 33935-8 anti-CCP",
+      "LOINC 1988-5 CRP",
+      "LOINC 4537-7 ESR"
+    ]
+  },
+  {
+    "id": "ev-8",
+    "patientId": "pt-2",
+    "type": "med",
+    "date": "2026-02-10",
+    "title": "Methotrexate therapy record",
+    "author": "Dispense history",
+    "source": "Pharmacy benefit · NCPDP claims feed",
+    "ref": "MedicationStatement/ms-5560",
+    "snippet": "Methotrexate 20 mg weekly, continuous fills 2026-02-10 to 2026-09-08 (7 months, 8 fills, no gaps > 6 days). Folic acid 1 mg daily concurrent.",
+    "codes": [
+      "RxNorm 1441406 methotrexate 2.5 MG oral tablet"
+    ]
+  },
+  {
+    "id": "ev-9",
+    "patientId": "pt-2",
+    "type": "lab",
+    "date": "2026-08-30",
+    "title": "Hepatitis B surface antigen",
+    "author": "Meridian Reference Laboratory",
+    "source": "Lab network · FHIR R4 Observation",
+    "ref": "Observation/obs-33044",
+    "snippet": "HBsAg: non-reactive. Hepatitis B core antibody, total: non-reactive.",
+    "codes": [
+      "LOINC 5196-1 Hepatitis B virus surface Ag"
+    ]
+  },
+  {
+    "id": "ev-10",
+    "patientId": "pt-2",
+    "type": "admin",
+    "date": "2026-09-29",
+    "title": "Tuberculosis screening query — 12 months",
+    "author": "Clinical data repository",
+    "source": "Platform CDR · 2 connected sources searched",
+    "ref": "Observation?code=71773-9,7799-4&date=ge2025-09-29",
+    "snippet": "No interferon-gamma release assay or tuberculin skin test result found for this patient in the preceding 12 months across connected sources. Most recent related result: none on file.",
+    "codes": []
+  },
+  {
+    "id": "ev-11",
+    "patientId": "pt-2",
+    "type": "lab",
+    "date": "2026-09-20",
+    "title": "QuantiFERON-TB Gold Plus",
+    "author": "Harborview Occupational Health",
+    "source": "Retrieved via network exchange (TEFCA/QHIN) after coordinator prompt",
+    "ref": "Observation/obs-91188 (external)",
+    "snippet": "QuantiFERON-TB Gold Plus: NEGATIVE. Mitogen control valid. Collected 2026-09-20 as part of an employer occupational health screening — an encounter outside the ordering health system.",
+    "codes": [
+      "LOINC 71773-9 QuantiFERON-TB Gold Plus"
+    ],
+    "lateArrival": true
+  },
+  {
+    "id": "ev-12",
+    "patientId": "pt-2",
+    "type": "admin",
+    "date": "2026-09-29",
+    "title": "Dose calculation against label",
+    "author": "Packet Assembly Agent",
+    "source": "Platform rules engine · weight from latest Observation",
+    "ref": "Observation/obs-33090 (body weight 78.2 kg)",
+    "snippet": "Ordered: infliximab 3 mg/kg at weeks 0, 2, 6 then every 8 weeks. Patient weight 78.2 kg (2026-09-05) → 234.6 mg → 3 vials of 100 mg. Within FDA labelling for rheumatoid arthritis in combination with methotrexate.",
+    "codes": [
+      "HCPCS J1745 (per 10 mg)"
+    ]
+  },
+  {
+    "id": "ev-13",
+    "patientId": "pt-3",
+    "type": "note",
+    "date": "2026-09-18",
+    "title": "Spine surgery evaluation",
+    "author": "Dr. Noor Abbasi, MD",
+    "source": "Cascade Valley Spine Institute · Oracle Health · FHIR R4",
+    "ref": "DocumentReference/dr-77412",
+    "snippet": "Progressive neurogenic claudication limiting ambulation to under 100 metres. Conservative care since April 2026 — approximately 5 months — including gabapentin, activity modification and a course of physical therapy. Recommend L4-L5 transforaminal interbody fusion.",
+    "codes": [
+      "SNOMED 240202008 Spondylolisthesis",
+      "ICD-10 M43.16"
+    ]
+  },
+  {
+    "id": "ev-14",
+    "patientId": "pt-3",
+    "type": "note",
+    "date": "2026-08-11",
+    "title": "Physical therapy course summary",
+    "author": "Gus Lindqvist, DPT",
+    "source": "Cascade Valley Rehab · HL7 v2, normalised",
+    "ref": "Composition/b2c9d771::careflow",
+    "snippet": "12 visits between 2026-05-04 and 2026-08-11 (14 weeks). Lumbar stabilisation and gait training. Ambulation tolerance improved from 60 m to 110 m, then plateaued.",
+    "codes": [
+      "SNOMED 91251008 Physical therapy procedure"
+    ]
+  },
+  {
+    "id": "ev-15",
+    "patientId": "pt-3",
+    "type": "imaging",
+    "date": "2026-07-02",
+    "title": "MRI lumbar spine without contrast",
+    "author": "Dr. Elena Sørensen, MD (radiology)",
+    "source": "Cascade Valley Imaging · FHIR R4",
+    "ref": "DiagnosticReport/dxr-8890",
+    "snippet": "Grade I anterolisthesis of L4 on L5 with severe central canal stenosis and bilateral facet arthropathy. Static supine study; dynamic instability cannot be assessed on this examination.",
+    "codes": [
+      "LOINC 24531-6",
+      "SNOMED 240202008"
+    ]
+  },
+  {
+    "id": "ev-16",
+    "patientId": "pt-3",
+    "type": "admin",
+    "date": "2026-09-18",
+    "title": "Social history — tobacco",
+    "author": "Clinical data repository",
+    "source": "Platform CDR · structured social history",
+    "ref": "Observation/obs-44120 (smoking status)",
+    "snippet": "Current every-day smoker, approximately 0.5 packs per day, recorded 2026-09-18. No cessation programme documented at time of submission.",
+    "codes": [
+      "LOINC 72166-2 Tobacco smoking status"
+    ]
+  },
+  {
+    "id": "ev-17",
+    "patientId": "pt-3",
+    "type": "admin",
+    "date": "2026-09-29",
+    "title": "Behavioural health screening query",
+    "author": "Clinical data repository",
+    "source": "Platform CDR · 4 connected sources searched",
+    "ref": "Observation?code=44249-1,89204-2",
+    "snippet": "No PHQ-9, GAD-7 or equivalent behavioural health screening instrument found in the preceding 12 months.",
+    "codes": []
+  },
+  {
+    "id": "ev-18",
+    "patientId": "pt-3",
+    "type": "imaging",
+    "date": "2026-09-25",
+    "title": "Flexion-extension radiographs, lumbar spine",
+    "author": "Dr. Elena Sørensen, MD (radiology)",
+    "source": "Cascade Valley Imaging · FHIR R4",
+    "ref": "DiagnosticReport/dxr-9014",
+    "lateArrival": true,
+    "snippet": "Dynamic study. 6 mm of anterior translation of L4 on L5 between flexion and extension, meeting radiographic criteria for segmental instability at the symptomatic level.",
+    "codes": [
+      "LOINC 69126-3 XR Lumbar spine flexion and extension"
+    ]
+  },
+  {
+    "id": "ev-19",
+    "patientId": "pt-3",
+    "type": "note",
+    "date": "2026-08-14",
+    "title": "Tobacco cessation programme enrolment",
+    "author": "Cascade Valley Health Coaching",
+    "source": "Retrieved from a second connected source after denial",
+    "ref": "Composition/cc4419::careflow",
+    "lateArrival": true,
+    "snippet": "Enrolled in structured cessation programme 2026-08-14 with nicotine replacement therapy. Self-reported abstinence since 2026-08-16; carbon monoxide breath test 4 ppm on 2026-09-22, consistent with abstinence.",
+    "codes": [
+      "SNOMED 710081004 Smoking cessation therapy"
+    ]
+  },
+  {
+    "id": "ev-20",
+    "patientId": "pt-3",
+    "type": "lab",
+    "date": "2026-09-26",
+    "title": "PHQ-9 depression screening",
+    "author": "Cascade Valley Spine Institute",
+    "source": "Completed after denial, at the appeal agent's prompt",
+    "ref": "Observation/obs-44877",
+    "lateArrival": true,
+    "snippet": "PHQ-9 total score 4 — minimal depressive symptoms. No active untreated behavioural health condition identified.",
+    "codes": [
+      "LOINC 44249-1 PHQ-9 total score"
+    ]
+  }
+]

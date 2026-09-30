@@ -1,0 +1,57 @@
+[
+  {
+    "id": "pay-meridian",
+    "name": "Meridian Health Plan",
+    "short": "Meridian",
+    "line": "Medicare Advantage · 2.1M lives (mock)",
+    "tier": "Full Da Vinci",
+    "tierNote": "CRD 2.2.1 + DTR + PAS + FHIR Subscription. The target state CMS-0057-F describes.",
+    "channels": [
+      "Da Vinci CRD 2.2.1",
+      "Da Vinci DTR",
+      "Da Vinci PAS",
+      "FHIR Subscription"
+    ],
+    "fallback": "—",
+    "slaExpedited": "72 h",
+    "slaStandard": "7 calendar days",
+    "autoAdjudicate": "Yes — rules engine returns a decision on submit for clean packets",
+    "color": "ok"
+  },
+  {
+    "id": "pay-northstar",
+    "name": "Northstar Benefit Alliance",
+    "short": "Northstar",
+    "line": "Commercial PPO/HMO · 840k lives (mock)",
+    "tier": "Partial",
+    "tierNote": "CRD live for discovery, but no PAS endpoint yet — submission still drops to X12 278 through a clearinghouse.",
+    "channels": [
+      "Da Vinci CRD 2.0.1",
+      "X12 278 via clearinghouse",
+      "277 status polling"
+    ],
+    "fallback": "X12 278",
+    "slaExpedited": "72 h",
+    "slaStandard": "5 business days",
+    "autoAdjudicate": "Partial — pharmacy/medical-benefit drugs route to a human reviewer",
+    "color": "warn"
+  },
+  {
+    "id": "pay-cascade",
+    "name": "Cascade Mutual Assurance",
+    "short": "Cascade",
+    "line": "Regional commercial · 310k lives (mock)",
+    "tier": "Legacy",
+    "tierNote": "No FHIR surface at all. Provider portal and fax only — the case the rule is meant to eliminate, and the one you still have to support in 2026.",
+    "channels": [
+      "Payer portal (browser automation)",
+      "Fax / document upload",
+      "Phone follow-up"
+    ],
+    "fallback": "Portal + fax",
+    "slaExpedited": "5 business days",
+    "slaStandard": "10–14 calendar days",
+    "autoAdjudicate": "No — manual medical review on every request",
+    "color": "bad"
+  }
+]

@@ -17,13 +17,22 @@ different transports. If the platform carries pre-auth, it carries most of what 
 |---|---|---|
 | **01 Channels** | EHR-embedded app (SMART launch), provider portal, payer reviewer view, patient notifications | where a human meets the system |
 | **02 Agent orchestration** | Orchestrator, seven specialist agents, human-in-the-loop checkpoints, agent memory | *this workflow* |
-| **03 Platform** | Clinical data repository (openEHR + FHIR), terminology, form/template engine, rules & policy store, identity & consent, audit log, event bus | **the Medblocks-equivalent layer — build first, workflow-agnostic** |
+| **03 Platform** | Clinical data repository (openEHR + FHIR), terminology, form/template engine, rules & policy store, identity & consent, audit log, event bus | **the Medblocks-equivalent layer — built in-house, first, and workflow-agnostic** |
 | **04 Integration** | FHIR gateway, EHR connectors, payer/clearinghouse connectors, document & OCR ingestion | absorbing vendor and payer dialects |
 | **05 External** | Provider EHRs, payers, clearinghouses, TEFCA/QHIN networks | not yours |
 
 **The test for layer placement:** could you delete the entire agent layer and still have
 something a customer would pay for? If a capability in layer 02 turns out to be useful to
 a second workflow, it was misplaced and belongs in layer 03.
+
+**Layer 03 is built, not bought.** Twelve components: the seven a clinical data platform is made of
+(source catalog, authorization, connection state, retrieval, store, data out, tenancy), the three
+prior authorisation forces into the core (terminology, form/CQL engine, policy store), and two that
+must stay at the edge (payer connectors, EHR write-back). Five of them are genuinely ours — source
+catalog, connection state, retrieval, derived clinical models, policy store — and the rest is
+assembly over bought parts. Forty weeks to a second tenant onboarding without a code branch. Full
+argument and the seam contract in `ARCHITECTURE.md`; clickable on the Platform Core and Build Plan
+screens.
 
 ## The seven agents
 
@@ -40,6 +49,28 @@ touching storage directly, so its reads are audited by construction.
 
 Confidence controls how much arrives pre-filled, how loudly gaps are flagged, and queue
 ordering. It never controls whether a person is involved.
+
+## Multi-tenancy and identity
+
+One platform, many provider organisations. A tenant owns its connections, payer contracts, policy
+pack, case queue, audit trail and — most importantly — its agent memory. Nothing crosses.
+
+Five roles enforce the gates above rather than merely describing them. The fifth is the vendor's
+own, and it belongs to a separate organisation rather than a fourth tenant:
+
+| Role | Approve & submit | Sign an appeal | Manage connections | Read audit |
+|---|:--:|:--:|:--:|:--:|
+| Pre-auth coordinator | yes | — | — | — |
+| Clinician | yes | yes | — | — |
+| Platform administrator | **no** | — | yes | yes |
+| Observer | — | — | — | yes |
+| Platform operator (vendor) | **no** | — | registry only, cross-tenant | platform events only |
+
+The platform operator holds no `case.view` permission in any tenant — not a filtered view of PHI,
+an absent permission. The administrator's inability to approve is deliberate: the person who configures the confidence
+thresholds is not the person who clears the packet. In production, identity is OIDC against each
+tenant's own provider, or a SMART on FHIR launch where the launching EHR *is* the tenant, with SMART
+scopes gating every platform read and every agent authenticating as its own principal.
 
 ## Protocols
 
@@ -86,11 +117,18 @@ than to retrofit.
 | Consent | Displayed, not evaluated | FHIR Consent evaluated per access, permitted purpose recorded |
 | Audit | The activity timeline *is* the audit trail, rendered | Append-only FHIR AuditEvent, including model and prompt version per agent step |
 | Network exchange (TEFCA) | Scripted "found it" in scenario 2 | Real query; requires treatment relationship and permitted purpose, and does not always match |
-| Auth / sessions / persistence | None | OIDC sign-in, role-based access, signed approvals |
+| Authentication | No credentials checked, no token, no backend. Session is a user id in `localStorage` | OIDC per tenant, or SMART on FHIR launch; short-lived tokens; agents authenticate as their own principals |
+| Authorisation | Role checks in React — trivially bypassable, as all client-side checks are | Enforced server-side on every call; the UI check is a convenience, never the control |
+| Tenant isolation | Data partitioned by a `tenantId` field in one JSON bundle loaded into one browser | Separate credentials, separate token vaults, row-level isolation, and a hard boundary around agent memory |
+| Agent memory | Static per-tenant counters on the Tenant screen | A real store, and the sharpest governance risk in the system — see open question 23 |
+| Platform core | Twelve components described, none implemented. The build sheet is a plan, not a status report | Built over ~40 weeks; see `ARCHITECTURE.md` §7 |
+| Operator console | Fabricated registry rows, connection states and pull runs | Real telemetry from the pull engine and state machine, with PHI excluded at the query layer rather than at the view |
+| Auth / sessions / persistence | None beyond `localStorage` | OIDC sign-in, role-based access, signed approvals |
 | Payer decisions | Simulated after a fixed delay | Pushed by FHIR Subscription, or polled via 277, or scraped from a portal |
 
 **What the prototype legitimately demonstrates:** the shape of the workflow, where the
-human gates sit, how evidence maps to criteria, how the three payer tiers differ, and
-what a reviewer sees before approving. **What it cannot demonstrate:** whether the
+human gates sit and what they refuse, how evidence maps to criteria, how the three payer tiers
+differ, how a tenant's capabilities change what the system can do for it, and what a reviewer sees
+before approving. **What it cannot demonstrate:** whether the
 matching is accurate, whether the confidence scores are calibrated, or whether any of
 the outcome targets are achievable. Those need real determinations to measure against.

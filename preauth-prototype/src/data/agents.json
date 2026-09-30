@@ -1,0 +1,208 @@
+[
+  {
+    "id": "ag-intake",
+    "ab": "IN",
+    "name": "Intake Agent",
+    "role": "Detects that an order needs prior authorisation and opens a case before anyone has committed to anything.",
+    "trigger": "CDS Hooks order-select / order-sign fired by the EHR, or an HL7 v2 ORM message on the legacy feed.",
+    "tools": [
+      "CDS Hooks listener",
+      "Payer CRD service (Da Vinci)",
+      "Terminology service — CPT/HCPCS/ICD-10 normalisation",
+      "Rules & policy store",
+      "Case service (event bus)"
+    ],
+    "inputs": [
+      "Draft order (ServiceRequest / MedicationRequest)",
+      "Patient and encounter context",
+      "Coverage on file"
+    ],
+    "outputs": [
+      "A pre-auth case, or an explicit 'not required' answer with the payer's reason attached",
+      "A CDS card rendered in the chart within the 5-second budget"
+    ],
+    "escalate": "If CRD is unreachable or the coverage record is stale, it posts a card saying so and opens a case flagged for a human to check eligibility manually — it never guesses that authorisation is not required.",
+    "platform": [
+      "Event bus",
+      "Terminology",
+      "Rules & policy store",
+      "Identity & consent"
+    ]
+  },
+  {
+    "id": "ag-elig",
+    "ab": "EB",
+    "name": "Eligibility & Benefits Agent",
+    "role": "Confirms the coverage is active on the date of service and establishes whether this payer actually requires authorisation for this code.",
+    "trigger": "Case created, or coverage record older than 24 hours.",
+    "tools": [
+      "Da Vinci CRD",
+      "X12 270/271 eligibility (legacy payers)",
+      "Payer Patient/Provider Access API",
+      "Coverage cache"
+    ],
+    "inputs": [
+      "Member ID, group, plan",
+      "Service code and place of service",
+      "Date of service"
+    ],
+    "outputs": [
+      "Coverage status, benefit tier, member cost share",
+      "Prior-auth requirement: required / not required / conditional",
+      "Which documents the payer wants, straight from CRD"
+    ],
+    "escalate": "Coverage terminated, member not found, or two sources disagree about the active plan. These go to the coordinator immediately, because everything downstream is wasted work if the coverage is wrong.",
+    "platform": [
+      "Integration layer",
+      "Rules & policy store",
+      "Audit log"
+    ]
+  },
+  {
+    "id": "ag-evidence",
+    "ab": "CE",
+    "name": "Clinical Evidence Agent",
+    "role": "Finds the notes, labs, imaging and medication history that the payer's criteria will actually be judged against.",
+    "trigger": "Eligibility confirms authorisation is required.",
+    "tools": [
+      "Clinical data repository (openEHR AQL + FHIR search)",
+      "Document/OCR ingestion for scanned outside records",
+      "Network exchange (TEFCA/QHIN) for outside encounters",
+      "Terminology expansion — code set to value set",
+      "Retrieval + summarisation model"
+    ],
+    "inputs": [
+      "The payer's criteria list",
+      "Patient identifier resolved across every connected source"
+    ],
+    "outputs": [
+      "A ranked evidence set, each item with a resource reference, a date and the source it came from",
+      "An explicit list of what it looked for and did not find"
+    ],
+    "escalate": "It never silently substitutes a weaker document for a missing one. A criterion with no supporting evidence is reported as a gap, with the exact query it ran, so a human can judge whether the record simply is not there.",
+    "platform": [
+      "Clinical data repository",
+      "Terminology",
+      "Integration layer",
+      "Identity & consent"
+    ]
+  },
+  {
+    "id": "ag-policy",
+    "ab": "PM",
+    "name": "Policy Matching Agent",
+    "role": "Compares the evidence against the payer's medical-necessity criteria, one criterion at a time, and says where the packet is short.",
+    "trigger": "Evidence set returned.",
+    "tools": [
+      "Rules & policy store (structured criteria)",
+      "Terminology service",
+      "Reasoning model with citation enforcement",
+      "Confidence scoring"
+    ],
+    "inputs": [
+      "Structured payer criteria",
+      "The evidence set with source references"
+    ],
+    "outputs": [
+      "Per-criterion verdict: met / partially met / gap",
+      "The specific sentence in the specific document that supports each verdict",
+      "A confidence score per criterion and for the packet as a whole"
+    ],
+    "escalate": "Any criterion below the confidence threshold, any criterion met only by inference rather than by a quotable line, and every partial match. A packet that is not unambiguously complete goes to a human with the ambiguity named.",
+    "platform": [
+      "Rules & policy store",
+      "Terminology",
+      "Audit log"
+    ]
+  },
+  {
+    "id": "ag-packet",
+    "ab": "PA",
+    "name": "Packet Assembly Agent",
+    "role": "Fills the payer's questionnaire and builds the submission bundle, autofilling every answer the platform already knows.",
+    "trigger": "Policy match completed.",
+    "tools": [
+      "Form & template engine (FHIR Questionnaire / DTR)",
+      "CQL execution for autofill expressions",
+      "Da Vinci PAS bundle builder",
+      "X12 278 mapper for legacy payers",
+      "Document assembly / PDF"
+    ],
+    "inputs": [
+      "Questionnaire from DTR, or the payer's own form",
+      "Evidence set and criteria verdicts"
+    ],
+    "outputs": [
+      "A completed QuestionnaireResponse with provenance on every autofilled answer",
+      "A PAS Claim bundle, or an X12 278 transaction, or a filled portal form",
+      "The human-readable packet a reviewer reads on screen"
+    ],
+    "escalate": "Any field it could not autofill, any answer whose provenance is a model inference rather than a stored value. Those fields are shown empty and marked, never filled with a guess.",
+    "platform": [
+      "Form & template engine",
+      "Clinical data repository",
+      "Terminology",
+      "Audit log"
+    ]
+  },
+  {
+    "id": "ag-submit",
+    "ab": "ST",
+    "name": "Submission & Tracking Agent",
+    "role": "Submits only after a human approves, then watches the request until a decision lands.",
+    "trigger": "A named human clicks Approve & Submit. Nothing else starts this agent.",
+    "tools": [
+      "Da Vinci PAS $submit",
+      "X12 278 via clearinghouse + 277 status",
+      "FHIR Subscription listener",
+      "Payer portal automation for legacy payers",
+      "Retry and backoff queue"
+    ],
+    "inputs": [
+      "Approved packet",
+      "Payer channel configuration"
+    ],
+    "outputs": [
+      "Payer tracking number",
+      "Status transitions written to the case and the audit log",
+      "Requests for additional information, parsed and turned into concrete evidence tasks"
+    ],
+    "escalate": "Transport failure after retry, a payer response it cannot parse, or an SLA about to be breached. Escalates on the clock, not only on error.",
+    "platform": [
+      "Integration layer",
+      "Event bus",
+      "Audit log",
+      "Identity & consent"
+    ]
+  },
+  {
+    "id": "ag-appeal",
+    "ab": "DA",
+    "name": "Denial & Appeal Agent",
+    "role": "Reads the denial reason, finds what would have answered it, and drafts the appeal for a clinician to sign.",
+    "trigger": "An adverse determination is received.",
+    "tools": [
+      "Denial reason-code taxonomy",
+      "Clinical data repository re-query, including sources not searched the first time",
+      "Policy store — the exact criterion cited",
+      "Letter generation with citation enforcement",
+      "Appeal deadline tracker"
+    ],
+    "inputs": [
+      "Denial reason and the criterion the payer cited",
+      "The original packet and everything filed since"
+    ],
+    "outputs": [
+      "A gap analysis: what the payer said was missing and whether it now exists",
+      "A drafted appeal letter citing policy section and evidence by date and source",
+      "A peer-to-peer briefing sheet for the ordering physician"
+    ],
+    "escalate": "Always. The appeal letter is a draft. A clinician reads, edits and signs it — the agent never files an appeal on its own authority.",
+    "platform": [
+      "Clinical data repository",
+      "Rules & policy store",
+      "Form & template engine",
+      "Audit log"
+    ]
+  }
+]
