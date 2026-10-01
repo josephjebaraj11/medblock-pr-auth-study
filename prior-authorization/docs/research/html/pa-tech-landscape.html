@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Tech Landscape — Vendor Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{
+    --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64;
+    --line:#e2e2e0; --accent:#3457d5; --accent2:#0f766e; --warn:#b45309; --bad:#b91c1c;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; --accent2:#2dd4bf; --warn:#f0b429; --bad:#f87171; }
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:2.5rem 1.5rem 1.5rem; max-width:960px; margin:0 auto;}
+  h1{font-size:1.7rem; margin:0 0 .3rem;}
+  .sub{color:var(--muted); font-size:.95rem;}
+  main{max-width:960px; margin:0 auto; padding:0 1.5rem;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;}
+  h2{font-size:1.15rem; margin-top:0; display:flex; align-items:center; gap:.5rem;}
+  .badge{font-size:.7rem; font-weight:600; padding:.15rem .5rem; border-radius:999px; background:var(--accent); color:#fff;}
+  .mermaid{background:transparent; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.5rem;}
+  th,td{border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top;}
+  th{background:rgba(52,87,213,.08); font-weight:600;}
+  code{background:rgba(52,87,213,.1); padding:.1rem .3rem; border-radius:4px; font-size:.85em;}
+  .tag-oss{color:var(--accent2); font-weight:600;}
+  .tag-risk{color:var(--bad); font-weight:600;}
+  .diagram-note{font-size:.8rem; color:var(--muted); margin-top:.5rem;}
+  .matrix{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.75rem; table-layout:fixed;}
+  .matrix th,.matrix td{border:1px solid var(--line); padding:.7rem; vertical-align:top;}
+  .matrix thead th{background:rgba(52,87,213,.08); text-align:center;}
+  .matrix .rowhead{background:rgba(52,87,213,.04); font-weight:600; width:9rem;}
+  .matrix ul{margin:0; padding-left:1.1rem;}
+  .matrix li{margin:.2rem 0;}
+  .matrix .empty{color:var(--muted); font-style:italic;}
+  .corner{background:transparent !important; border:none !important;}
+  a{color:var(--accent);}
+  nav.crumbs{max-width:960px; margin:1rem auto 0; padding:0 1.5rem; font-size:.85rem;}
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">&larr; All research</a></nav>
+<header>
+  <h1>How Vendors Are Automating Prior Authorization</h1>
+  <div class="sub">Visual companion to <a href="../pa-tech-landscape.md">pa-tech-landscape.md</a> — diagrams of vendor architectures, orchestration patterns, and where each solution sits in the PA workflow.</div>
+</header>
+<main>
+
+<section>
+  <h2>1. The PA workflow — who covers what stage</h2>
+  <p>Every vendor solution maps onto some subset of five stages, from intake to appeals.</p>
+  <div class="mermaid">
+flowchart LR
+  A[Intake] --> B[Eligibility] --> C[Clinical criteria] --> D[Submission] --> E[Appeals]
+</div>
+  <table>
+    <tr><th>Vendor</th><th>Intake</th><th>Eligibility</th><th>Clinical criteria</th><th>Submission</th><th>Appeals</th></tr>
+    <tr><td>Microsoft Accelerator</td><td></td><td></td><td>&#10003;</td><td></td><td></td></tr>
+    <tr><td>Google Claims Suite</td><td>&#10003;</td><td>&#10003;</td><td></td><td>&#10003;</td><td></td></tr>
+    <tr><td>AWS Bedrock AgentCore</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td></td></tr>
+    <tr><td>n8n community template</td><td>&#10003;</td><td></td><td>&#10003;</td><td></td><td></td></tr>
+    <tr><td>Epic CRD</td><td></td><td>&#10003;</td><td></td><td></td><td></td></tr>
+    <tr><td>Cohere Health</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+  </table>
+  <div class="diagram-note">A checkmark means the vendor's product actually touches that stage today, per <code>pa-tech-landscape.md</code>.</div>
+</section>
+
+<section>
+  <h2>2. Microsoft's multi-agent architecture</h2>
+  <p>A FastAPI dispatcher hands each case to four agents — two run in parallel, then two run sequentially — before a human reviewer sees the result in a Next.js UI.</p>
+  <div class="mermaid">
+flowchart TD
+  Case[PA case submitted] --> Dispatch[Dispatcher]
+  Dispatch --> Compliance[Compliance Agent]
+  Dispatch --> Clinical[Clinical Agent]
+  Compliance --> Coverage[Coverage Agent]
+  Clinical --> Coverage
+  Coverage --> Synth[Synthesis Agent]
+  Synth --> Out[Recommendation and<br/>confidence score]
+  Out --> Human((Human reviewer))
+  style Human fill:#b4530920,stroke:#b45309
+</div>
+  <div class="diagram-note">Stack: Azure OpenAI GPT-5.4, Microsoft Agent Framework, Azure Container Apps, 5 MCP healthcare-data servers (NPI, ICD-10, CMS coverage, clinical trials, PubMed). Microsoft calls this a <strong>proof-of-concept</strong>, not a compliant product.</div>
+</section>
+
+<section>
+  <h2>3. AWS reference architecture (Bedrock AgentCore)</h2>
+  <p>AWS's most complete pipeline: an orchestrator detects that a PA is needed, then three specialist agents handle eligibility, documents, and submission — with a mandatory human-approval gate before any decision executes.</p>
+  <div class="mermaid">
+flowchart TD
+  Trigger[Order or scheduling call] --> Orchestrator[Orchestrator Agent]
+  Orchestrator --> Elig[Eligibility Agent]
+  Orchestrator --> Doc[Document Agent]
+  Elig --> PAAgent[Prior Authorization Agent]
+  Doc --> PAAgent
+  PAAgent --> Gate{Human approval}
+  Gate -->|approved| Submit[Submit to payer]
+  Gate -->|edited| PAAgent
+  style Gate fill:#b4530920,stroke:#b45309
+</div>
+  <div class="diagram-note">Security layer (separate AWS post): 4 trust zones — app, API boundary, agent platform (Cedar policies, KMS, PrivateLink), audit layer — the most detailed public HIPAA-agent design of the three hyperscalers.</div>
+</section>
+
+<section>
+  <h2>4. n8n community template — the cautionary flow</h2>
+  <p>A generic no-code automation, not a healthcare-purpose-built system. The emergency fast-track path had no documented human check before the reported incident.</p>
+  <div class="mermaid">
+flowchart TD
+  Gmail[Gmail trigger:<br/>incoming PA email] --> Extract[AI PDF extraction]
+  Extract --> Triage{Emergency case?}
+  Triage -->|yes| Fast[Fast-track auto-approval:<br/>no human check]
+  Triage -->|no| Standard[Coverage and<br/>documentation check]
+  Standard --> Review{Needs review?}
+  Review -->|yes| SlackHuman[Route to human via Slack]
+  Review -->|no| Auto[Auto-processed]
+  Fast --> Log[(Sheets log and<br/>Slack post)]
+  Auto --> Log
+  SlackHuman --> Log
+  style Fast fill:#b91c1c25,stroke:#b91c1c,stroke-width:2px
+</div>
+  <div class="diagram-note tag-risk">This template's Gmail/Slack/Sheets integrations have no BAA by default, and n8n itself has no built-in HIPAA certification. This is the path a real incident (unverified in detail) was reportedly linked to.</div>
+</section>
+
+<section>
+  <h2>5. Maturity vs. openness — where each vendor sits</h2>
+  <p>The split that matters most: is it something you <strong>buy and run</strong>, or a starting point you <strong>build and harden yourself</strong>?</p>
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th class="corner"></th>
+        <th>Reference architecture<br/><span style="font-weight:400">you deploy and operate it</span></th>
+        <th>Production SaaS<br/><span style="font-weight:400">you buy it, vendor runs it</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="rowhead">Open source</td>
+        <td>
+          <ul>
+            <li>Microsoft Accelerator</li>
+            <li>AWS reference architectures</li>
+            <li>n8n template <span class="tag-risk">(unvetted, risky)</span></li>
+          </ul>
+        </td>
+        <td class="empty">Nothing here — no open-source, production-grade PA product found.</td>
+      </tr>
+      <tr>
+        <td class="rowhead">Closed / proprietary</td>
+        <td>
+          <ul>
+            <li>Olive AI <span class="tag-risk">(defunct 2023)</span></li>
+          </ul>
+        </td>
+        <td>
+          <ul>
+            <li>Cohere Health</li>
+            <li>Epic CRD</li>
+            <li>Availity AuthAI</li>
+            <li>athenahealth</li>
+            <li>Notable Health</li>
+            <li>Google Claims Suite <span style="color:var(--muted)">(partner-dependent)</span></li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="diagram-note">Placement is this document's qualitative synthesis (see <code>pa-tech-landscape.md</code> §Synthesis), not a vendor-provided metric. <strong>The takeaway:</strong> if you want open source, you are building and hardening it yourself — nobody ships a production-grade open-source PA product.</div>
+</section>
+
+<section>
+  <h2>Key takeaways</h2>
+  <table>
+    <tr><th>Pattern</th><th>What it means for a CTO</th></tr>
+    <tr><td>LLM + rigid rules layer, everywhere</td><td>No credible vendor trusts an LLM to know payer rules from memory — all pair it with a lookup/rules engine (CMS policy, CPT/ICD tables).</td></tr>
+    <tr><td>FHIR as the common data language</td><td>Microsoft, Google, and AWS all build on FHIR-formatted data — see <a href="pa-integrations.html">pa-integrations.html</a> for the standards themselves.</td></tr>
+    <tr><td>Human-in-the-loop is universal among credible players</td><td>Microsoft, AWS, Cohere Health, and Availity all block autonomous denials.</td></tr>
+    <tr><td class="tag-risk">No-code ≠ compliant</td><td>The n8n case is the clearest warning: flexibility without platform-level compliance guardrails is a real patient-safety risk.</td></tr>
+  </table>
+  <p><a href="../pa-tech-landscape.md">Read the full markdown report &rarr;</a></p>
+</section>
+
+</main>
+<script src="diagrams.js"></script>
+</body>
+</html>

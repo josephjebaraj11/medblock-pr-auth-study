@@ -1,0 +1,1172 @@
+<title>VICE &amp; ClearAuth AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f6f4ee;
+    --surface:#ffffff;
+    --surface-2:#ece6d6;
+    --ink:#16211f;
+    --ink-soft:#3d453f;
+    --muted:#6b6b5c;
+    --muted-2:#8b8a78;
+    --line:#ddd5bf;
+    --line-strong:#c7bc9d;
+    --accent:#2f6b62;
+    --accent-strong:#1d4a44;
+    --accent-soft:rgba(47,107,98,0.09);
+    --auto:#3d6f8c;
+    --auto-soft:rgba(61,111,140,0.10);
+    --attention:#a9692a;
+    --attention-soft:rgba(169,105,42,0.12);
+    --good:#3f7d54;
+    --good-soft:rgba(63,125,84,0.12);
+    --bad:#a1483c;
+    --bad-soft:rgba(161,72,60,0.10);
+
+    --serif:'Fraunces', ui-serif, Georgia, 'Iowan Old Style', serif;
+    --sans:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --mono:'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --shadow:0 20px 44px -28px rgba(22,33,31,0.28);
+  }
+
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#101614;
+      --surface:#161e1c;
+      --surface-2:#1b2422;
+      --ink:#ece8dc;
+      --ink-soft:#cbc6b7;
+      --muted:#93998f;
+      --muted-2:#75796f;
+      --line:#2b3532;
+      --line-strong:#3a4642;
+      --accent:#69b8a9;
+      --accent-strong:#8fd0c2;
+      --accent-soft:rgba(105,184,169,0.12);
+      --auto:#7fb0cc;
+      --auto-soft:rgba(127,176,204,0.13);
+      --attention:#d99a52;
+      --attention-soft:rgba(217,154,82,0.13);
+      --good:#72c98d;
+      --good-soft:rgba(114,201,141,0.13);
+      --bad:#d98d80;
+      --bad-soft:rgba(217,141,128,0.12);
+      --shadow:0 20px 44px -24px rgba(0,0,0,0.55);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#101614;
+    --surface:#161e1c;
+    --surface-2:#1b2422;
+    --ink:#ece8dc;
+    --ink-soft:#cbc6b7;
+    --muted:#93998f;
+    --muted-2:#75796f;
+    --line:#2b3532;
+    --line-strong:#3a4642;
+    --accent:#69b8a9;
+    --accent-strong:#8fd0c2;
+    --accent-soft:rgba(105,184,169,0.12);
+    --auto:#7fb0cc;
+    --auto-soft:rgba(127,176,204,0.13);
+    --attention:#d99a52;
+    --attention-soft:rgba(217,154,82,0.13);
+    --good:#72c98d;
+    --good-soft:rgba(114,201,141,0.13);
+    --bad:#d98d80;
+    --bad-soft:rgba(217,141,128,0.12);
+    --shadow:0 20px 44px -24px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{ font-family:var(--serif); text-wrap:balance; margin:0; color:var(--ink); }
+  p{ margin:0; }
+  ::selection{ background:var(--accent-soft); }
+
+  a{ color:inherit; }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:.6em;
+    font-family:var(--mono); font-size:11px; letter-spacing:.13em; text-transform:uppercase;
+    color:var(--accent-strong);
+  }
+  .eyebrow::before{ content:""; width:16px; height:1px; background:var(--accent-strong); }
+
+  /* ---- Shell / nav rail ---- */
+  .shell{ display:grid; grid-template-columns:216px 1fr; }
+  @media (max-width:900px){ .shell{ grid-template-columns:1fr; } }
+
+  .rail{
+    position:fixed; top:0; left:0; bottom:0; width:216px;
+    border-right:1px solid var(--line);
+    padding:28px 22px;
+    display:flex; flex-direction:column;
+    background:var(--paper);
+    z-index:5;
+  }
+  @media (max-width:900px){ .rail{ display:none; } }
+  .rail-brand{ font-family:var(--serif); font-size:16px; font-weight:600; color:var(--ink); margin-bottom:4px; }
+  .rail-sub{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; color:var(--muted-2); text-transform:uppercase; margin-bottom:30px; }
+  .rail-list{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .rail-item{
+    display:flex; align-items:baseline; gap:10px;
+    padding:9px 0; text-decoration:none;
+    border-left:2px solid transparent; padding-left:12px; margin-left:-12px;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .rail-item .rn{ font-family:var(--mono); font-size:10.5px; color:var(--muted-2); }
+  .rail-item .rt{ font-size:12.3px; color:var(--muted); line-height:1.3; }
+  .rail-item.active{ border-left-color:var(--accent); }
+  .rail-item.active .rt{ color:var(--ink); font-weight:500; }
+  .rail-item.active .rn{ color:var(--accent-strong); }
+  .rail-item:hover .rt{ color:var(--ink); }
+
+  .theme-toggle{
+    margin-top:20px; align-self:flex-start;
+    display:flex; align-items:center; gap:8px;
+    font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--muted); background:none; border:1px solid var(--line); border-radius:20px;
+    padding:7px 12px; cursor:pointer;
+  }
+  .theme-toggle:hover{ border-color:var(--accent); color:var(--accent-strong); }
+
+  main{ grid-column:2; }
+  @media (max-width:900px){ main{ grid-column:1; } }
+
+  .topbar{
+    display:none;
+    position:sticky; top:0; z-index:6;
+    background:var(--paper); border-bottom:1px solid var(--line);
+    padding:14px 20px; align-items:center; justify-content:space-between;
+  }
+  @media (max-width:900px){ .topbar{ display:flex; } }
+  .topbar .rail-brand{ margin:0; font-size:14px; }
+
+  section.sec{
+    padding:88px 64px 96px;
+    max-width:900px;
+    border-bottom:1px solid var(--line);
+    scroll-margin-top:24px;
+  }
+  @media (max-width:720px){ section.sec{ padding:64px 22px 72px; } }
+  section.sec:last-child{ border-bottom:none; }
+
+  .sec-num{ font-family:var(--mono); font-size:11.5px; color:var(--muted-2); letter-spacing:.08em; margin-bottom:18px; }
+
+  h2.headline{ font-size:clamp(28px,3.1vw,42px); line-height:1.12; font-weight:600; margin:14px 0 20px; letter-spacing:-.01em; }
+  h2.headline em{ font-style:italic; color:var(--accent-strong); }
+  .lede{ font-size:16.5px; line-height:1.68; color:var(--ink-soft); max-width:64ch; }
+  .lede + .lede{ margin-top:14px; }
+
+  /* ---- Cover ---- */
+  .cover{ padding-top:120px; }
+  .cover h1{ font-size:clamp(38px,5.4vw,64px); line-height:1.05; margin:20px 0 22px; letter-spacing:-.015em; }
+  .cover h1 em{ font-style:italic; color:var(--accent-strong); }
+  .cover-meta{ display:flex; gap:22px; flex-wrap:wrap; margin-top:30px; font-family:var(--mono); font-size:11.5px; color:var(--muted); }
+  .cover-meta b{ color:var(--ink-soft); font-weight:500; }
+
+  .stat-row{ display:grid; grid-template-columns:repeat(6,1fr); gap:1px; background:var(--line); margin-top:44px; border:1px solid var(--line); border-radius:8px; overflow:hidden; }
+  @media (max-width:760px){ .stat-row{ grid-template-columns:repeat(3,1fr); } }
+  .stat{ background:var(--surface); padding:18px 16px; }
+  .stat .n{ font-family:var(--mono); font-size:19px; font-variant-numeric:tabular-nums; color:var(--ink); font-weight:600; }
+  .stat .l{ font-size:10.5px; color:var(--muted); margin-top:6px; line-height:1.35; letter-spacing:.01em; }
+  .stat.hi .n{ color:var(--accent-strong); }
+  .stat.warn .n{ color:var(--attention); }
+
+  .caption-note{ margin-top:12px; font-size:12px; color:var(--muted-2); font-style:italic; }
+
+  /* ---- generic content blocks ---- */
+  .grid-2{ display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:34px; }
+  @media (max-width:700px){ .grid-2{ grid-template-columns:1fr; } }
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-top:34px; }
+  @media (max-width:760px){ .grid-3{ grid-template-columns:1fr; } }
+
+  .card{ border:1px solid var(--line); border-radius:10px; padding:20px 22px; background:var(--surface); }
+  .card h3{ font-family:var(--sans); font-size:14.5px; font-weight:600; color:var(--ink); }
+  .card p{ font-size:13px; color:var(--muted); line-height:1.55; margin-top:8px; }
+  .card .tag{ display:inline-block; font-family:var(--mono); font-size:9.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); margin-bottom:8px; }
+
+  .ref-row{ display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line); }
+  .ref-row:last-child{ border-bottom:none; }
+  .ref-row .who{ font-family:var(--sans); font-weight:600; font-size:13.5px; min-width:150px; flex:none; }
+  .ref-row .what{ font-size:13px; color:var(--muted); line-height:1.55; }
+
+  /* ---- integration diagram legend cards ---- */
+  .int-grid{ display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-top:20px; }
+  @media (max-width:760px){ .int-grid{ grid-template-columns:repeat(2,1fr); } }
+  .int-card{ border:1px solid var(--line); border-radius:8px; padding:14px 15px; background:var(--surface); }
+  .int-card .idx{ font-family:var(--mono); font-size:10px; color:var(--accent-strong); }
+  .int-card h4{ font-family:var(--sans); font-size:12.8px; font-weight:600; margin-top:5px; color:var(--ink); }
+  .int-card p{ font-size:11.5px; color:var(--muted); line-height:1.45; margin-top:5px; }
+
+  /* ---- reference table ---- */
+  .ref-table{ margin-top:32px; border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .ref-group-head{ background:var(--surface-2); padding:10px 20px; font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--line); }
+  .ref-item{ display:grid; grid-template-columns:220px 1fr; gap:20px; padding:16px 20px; border-bottom:1px solid var(--line); background:var(--surface); }
+  @media (max-width:640px){ .ref-item{ grid-template-columns:1fr; gap:6px; } }
+  .ref-item:last-child{ border-bottom:none; }
+  .ref-item .rn{ font-size:13.3px; font-weight:600; color:var(--ink); }
+  .ref-item .rd{ font-size:12.8px; color:var(--muted); line-height:1.55; }
+  .ref-item .rd b{ color:var(--ink-soft); font-weight:600; }
+
+  /* ---- walkthrough steps ---- */
+  .walk{ margin-top:26px; border:1px solid var(--line); border-radius:10px; background:var(--surface); overflow:hidden; }
+  .walk-head{ padding:14px 20px; background:var(--surface-2); border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px; }
+  .walk-head .tag{ font-family:var(--mono); font-size:10px; letter-spacing:.07em; text-transform:uppercase; padding:3px 8px; border-radius:3px; }
+  .walk-head .tag.vice{ background:var(--accent-soft); color:var(--accent-strong); }
+  .walk-head .tag.clearauth{ background:var(--auto-soft); color:var(--auto); }
+  .walk-head b{ font-size:13.5px; }
+  .walk-body{ padding:6px 20px 8px; }
+  .wstep{ display:grid; grid-template-columns:26px 1fr; gap:14px; padding:13px 0; border-bottom:1px solid var(--line); }
+  .wstep:last-child{ border-bottom:none; }
+  .wstep .num{ font-family:var(--mono); font-size:12px; color:var(--muted-2); }
+  .wstep .body{ font-size:13.3px; color:var(--ink-soft); line-height:1.6; }
+  .wstep .body .say{ font-style:italic; color:var(--muted); }
+  .wstep .body b{ color:var(--ink); }
+  .wstep.branch .body{ padding-left:2px; border-left:2px solid var(--attention); padding-left:12px; }
+
+  /* ---- discovery question bank ---- */
+  .qbank{ margin-top:30px; display:flex; flex-direction:column; gap:0; }
+  .q-group{ margin-bottom:28px; }
+  .q-group-t{ font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent-strong); margin-bottom:10px; }
+  .q-row{ display:grid; grid-template-columns:26px 1fr; gap:12px; padding:11px 0; border-bottom:1px solid var(--line); }
+  .q-row:last-child{ border-bottom:none; }
+  .q-num{ font-family:var(--mono); font-size:11.5px; color:var(--muted-2); padding-top:1px; }
+  .q-row .q{ font-size:13.6px; color:var(--ink); font-weight:500; line-height:1.5; }
+  .q-row .why{ font-size:12.3px; color:var(--muted); margin-top:4px; line-height:1.5; }
+  .q-row .why b{ color:var(--ink-soft); font-weight:600; }
+
+  /* ---- checklist ---- */
+  .checklist{ margin-top:30px; display:flex; flex-direction:column; gap:0; }
+  .cl-group{ margin-bottom:26px; }
+  .cl-group-t{ font-family:var(--mono); font-size:10.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--accent-strong); margin-bottom:10px; }
+  .cl-row{ display:grid; grid-template-columns:20px 1fr; gap:12px; padding:10px 0; border-bottom:1px solid var(--line); }
+  .cl-row:last-child{ border-bottom:none; }
+  .cl-box{ width:14px; height:14px; border:1.5px solid var(--line-strong); border-radius:3px; margin-top:2px; }
+  .cl-row .t{ font-size:13.5px; color:var(--ink); font-weight:500; }
+  .cl-row .d{ font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.5; }
+
+  /* ---- compliance ---- */
+  .comp-grid{ display:flex; flex-direction:column; gap:14px; margin-top:30px; }
+  .comp-row{ display:grid; grid-template-columns:150px 1fr; gap:22px; padding:18px 0; border-bottom:1px solid var(--line); }
+  @media (max-width:640px){ .comp-row{ grid-template-columns:1fr; gap:6px; } }
+  .comp-row:last-child{ border-bottom:none; }
+  .comp-row .k{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; color:var(--bad); text-transform:uppercase; }
+  .comp-row .v{ font-size:13.5px; color:var(--ink-soft); line-height:1.6; }
+  .comp-row .v b{ color:var(--ink); }
+
+  /* ---- engagement stages ---- */
+  .stage{ border:1px solid var(--line); border-radius:12px; background:var(--surface); padding:24px 26px; margin-top:20px; }
+  .stage-head{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; margin-bottom:12px; }
+  .stage-head .tag{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; padding:3px 9px; border-radius:3px; background:var(--accent-soft); color:var(--accent-strong); }
+  .stage-head h3{ font-family:var(--sans); font-size:16.5px; font-weight:600; color:var(--ink); }
+  .stage .stage-desc{ font-size:13.5px; color:var(--muted); line-height:1.6; margin-bottom:18px; max-width:66ch; }
+  .stage-cols{ display:grid; grid-template-columns:1fr 1fr; gap:26px; }
+  @media (max-width:700px){ .stage-cols{ grid-template-columns:1fr; gap:16px; } }
+  .stage-col-t{ font-family:var(--mono); font-size:10px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); margin-bottom:9px; }
+  .stage-col ul{ margin:0; padding-left:18px; }
+  .stage-col li{ font-size:12.8px; color:var(--ink-soft); line-height:1.55; margin-bottom:7px; }
+  .stage-col li::marker{ color:var(--line-strong); }
+
+  /* ---- diagrams ---- */
+  figure.diagram{ margin:34px 0 0; }
+  figure.diagram svg{ width:100%; height:auto; display:block; overflow:visible; }
+  figure.diagram figcaption{ font-size:12px; color:var(--muted-2); margin-top:12px; font-style:italic; }
+  .dnode rect{ fill:var(--surface); stroke:var(--line-strong); }
+  .dnode text{ fill:var(--ink); }
+  .dnode .sub{ fill:var(--muted); }
+  .dline{ stroke:var(--line-strong); stroke-width:1.3; }
+  .dhub rect, .dhub circle{ fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.5; }
+  .dhub text{ fill:var(--accent-strong); font-weight:600; }
+
+  /* ---- swimlane diagrams ---- */
+  .legend{ display:flex; gap:18px; flex-wrap:wrap; margin-top:16px; }
+  .legend-item{ display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--muted); }
+  .legend-dot{ width:9px; height:9px; border-radius:50%; flex:none; }
+  .sldia polygon{ fill:var(--accent-soft); stroke:var(--accent); stroke-width:1.4; }
+  .sldia text{ fill:var(--accent-strong); font-weight:600; }
+  .slcolhead rect{ fill:var(--surface-2); stroke:var(--line); }
+  .slcolhead text{ font-weight:600; fill:var(--ink-soft); }
+  .slnum{ font-family:'IBM Plex Mono', monospace; font-size:9px; fill:var(--muted-2); }
+  .slbranch{ font-size:9.5px; fill:var(--muted); }
+  .slbandbg{ fill:var(--surface-2); opacity:.35; }
+
+  /* ---- closing ---- */
+  .closing-box{ margin-top:30px; padding:26px 28px; border:1px solid var(--line); border-radius:12px; background:var(--surface); }
+  .closing-box .k{ font-family:var(--mono); font-size:10.5px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted-2); }
+  .closing-box p{ margin-top:10px; font-size:14.5px; color:var(--ink-soft); line-height:1.65; }
+
+  .foot{ padding:36px 64px 60px; font-family:var(--mono); font-size:11px; color:var(--muted-2); }
+  @media (max-width:720px){ .foot{ padding:28px 22px 48px; } }
+
+  a.jumpto{ text-decoration:none; }
+</style>
+
+<div class="shell">
+  <nav class="rail" id="rail">
+    <div class="rail-brand">VICE &amp; ClearAuth</div>
+    <div class="rail-sub">Solution walkthrough</div>
+    <div class="rail-list" id="railList">
+      <a class="rail-item" data-target="s0" href="#s0"><span class="rn">00</span><span class="rt">Overview</span></a>
+      <a class="rail-item" data-target="s1" href="#s1"><span class="rn">01</span><span class="rt">The problem</span></a>
+      <a class="rail-item" data-target="s2" href="#s2"><span class="rn">02</span><span class="rt">Integration points</span></a>
+      <a class="rail-item" data-target="s3" href="#s3"><span class="rn">03</span><span class="rt">What we manage</span></a>
+      <a class="rail-item" data-target="s4" href="#s4"><span class="rn">04</span><span class="rt">How it works</span></a>
+      <a class="rail-item" data-target="s5" href="#s5"><span class="rn">05</span><span class="rt">Architecture</span></a>
+      <a class="rail-item" data-target="s6" href="#s6"><span class="rn">06</span><span class="rt">Platform strategy</span></a>
+      <a class="rail-item" data-target="s7" href="#s7"><span class="rn">07</span><span class="rt">Product roadmap</span></a>
+      <a class="rail-item" data-target="s8" href="#s8"><span class="rn">08</span><span class="rt">Onboarding</span></a>
+      <a class="rail-item" data-target="s9" href="#s9"><span class="rn">09</span><span class="rt">Tenancy &amp; admin</span></a>
+      <a class="rail-item" data-target="s10" href="#s10"><span class="rn">10</span><span class="rt">Discovery</span></a>
+      <a class="rail-item" data-target="s11" href="#s11"><span class="rn">11</span><span class="rt">Needed from you</span></a>
+      <a class="rail-item" data-target="s12" href="#s12"><span class="rn">12</span><span class="rt">Engagement model</span></a>
+      <a class="rail-item" data-target="s13" href="#s13"><span class="rn">13</span><span class="rt">Compliance</span></a>
+      <a class="rail-item" data-target="s14" href="#s14"><span class="rn">14</span><span class="rt">Next steps</span></a>
+    </div>
+    <button class="theme-toggle" id="themeToggle">Dark mode</button>
+  </nav>
+
+  <div class="topbar">
+    <div class="rail-brand">VICE &amp; ClearAuth</div>
+    <button class="theme-toggle" id="themeToggleMobile">Dark</button>
+  </div>
+
+  <main>
+
+    <section class="sec cover" id="s0">
+      <span class="eyebrow">Solution walkthrough · payer operations AI</span>
+      <h1>A virtual employee that <em>collects the money</em> and <em>gets the authorization</em> — so staff only see what's actually stuck.</h1>
+      <p class="lede">This walkthrough covers two connected agents built for physician practices and outpatient rehab centers: <b>VICE</b>, which chases unpaid insurance claims, and <b>ClearAuth AI</b>, which secures prior authorization before a procedure is ever scheduled. Both follow the same principle — electronic first, portal second, a phone call only when nothing else resolves it, and a human for anything that isn't administrative.</p>
+      <div class="cover-meta">
+        <span><b>Scope</b> — claims collection + prior authorization</span>
+        <span><b>Channel</b> — EDI, payer portals, voice, human queue</span>
+        <span><b>Prepared for</b> — client architecture review</span>
+      </div>
+
+      <div class="stat-row">
+        <div class="stat hi"><div class="n">$1,284,620</div><div class="l">Outstanding A/R</div></div>
+        <div class="stat"><div class="n">327</div><div class="l">Claims AI is working</div></div>
+        <div class="stat"><div class="n">86</div><div class="l">Payers called today</div></div>
+        <div class="stat"><div class="n">21</div><div class="l">Claims reprocessed</div></div>
+        <div class="stat hi"><div class="n">$37,450</div><div class="l">Payments recovered</div></div>
+        <div class="stat warn"><div class="n">9</div><div class="l">Needs human attention</div></div>
+      </div>
+      <p class="caption-note">Illustrative daily snapshot of the kind of dashboard a practice would see — most of the queue resolves without a person touching it.</p>
+    </section>
+
+    <section class="sec" id="s1">
+      <div class="sec-num">01 / The problem we're solving</div>
+      <h2 class="headline">Two kinds of money get stuck for the <em>same reason</em> — nobody is chasing them fast enough.</h2>
+      <p class="lede">A claim sits at "pending" for 47 days because no one called to ask why. A procedure waits because prior authorization takes a staff member 20–40 minutes of hold music per case. Neither problem is hard to solve — it's just repetitive, phone-heavy, and easy to fall behind on when it competes with patient care.</p>
+      <p class="lede">Point solutions already exist for pieces of this, but each covers only part of the loop:</p>
+
+      <div class="ref-table">
+        <div class="ref-group-head">Market reference points</div>
+        <div class="ref-item"><div class="rn">Gateway EDI / TriZetto</div><div class="rd">The clearinghouse layer most practices already run on — claims, ERA/remittance, real-time eligibility, claim status, authorizations. Electronic only; it does not call anyone.</div></div>
+        <div class="ref-item"><div class="rn">Infinx</div><div class="rd">Closest existing example of an end-to-end agent — claim-status follow-up, prior auth, eligibility, payment posting, denials — connected through payer portals, APIs and clearinghouses.</div></div>
+        <div class="ref-item"><div class="rn">Operator Labs</div><div class="rd">Focused specifically on the phone-call piece: AI agents that navigate IVRs, hold, and talk to payer reps to get claim status and denial reasons.</div></div>
+        <div class="ref-item"><div class="rn">Waystar (AltitudeAI)</div><div class="rd">A much larger enterprise revenue-cycle platform moving toward autonomous claims, denials, appeals and prior auth — built for scale, not a small practice's day-to-day queue.</div></div>
+      </div>
+
+      <p class="lede" style="margin-top:28px;">None of them are built as a single agent that a small practice just hands its outstanding A/R and its physician orders to, and says: <b style="color:var(--ink)">handle it, and only bring me what actually needs a decision.</b> That's the gap VICE and ClearAuth AI are built to close — sitting above the clearinghouse the practice already has, not replacing it.</p>
+    </section>
+
+    <section class="sec" id="s2">
+      <div class="sec-num">02 / Integration points</div>
+      <h2 class="headline">One agent, <em>eight</em> systems it has to move between.</h2>
+      <p class="lede">Every claim or authorization the agent touches passes through some combination of these eight integration points. None of them are optional — the agent is only as good as its weakest connection, so each one gets its own credentials, its own failure handling, and its own place in the audit log.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 640" role="img" aria-label="Hub and spoke diagram showing the orchestration agent at the center connected to eight integration points: practice management and EHR, clearinghouse, payer portals and APIs, voice and telephone, appeals and denials workflow, document and fax, staff exception dashboard, and audit and compliance log.">
+          <g class="dline">
+            <line x1="450" y1="320" x2="450" y2="100"/>
+            <line x1="450" y1="320" x2="620" y2="168"/>
+            <line x1="450" y1="320" x2="690" y2="320"/>
+            <line x1="450" y1="320" x2="620" y2="472"/>
+            <line x1="450" y1="320" x2="450" y2="540"/>
+            <line x1="450" y1="320" x2="280" y2="472"/>
+            <line x1="450" y1="320" x2="210" y2="320"/>
+            <line x1="450" y1="320" x2="280" y2="168"/>
+          </g>
+
+          <g class="dhub">
+            <circle cx="450" cy="320" r="66"/>
+            <text x="450" y="315" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12">ORCHESTRATION</text>
+            <text x="450" y="332" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12">AGENT</text>
+          </g>
+
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(370,58)"><rect width="160" height="52" rx="7"/><text x="80" y="21" text-anchor="middle" font-size="12" font-weight="600">1 · EHR / PM system</text><text class="sub" x="80" y="38" text-anchor="middle" font-size="10">patient, CPT, orders, docs</text></g>
+            <g transform="translate(540,142)"><rect width="168" height="52" rx="7"/><text x="84" y="21" text-anchor="middle" font-size="12" font-weight="600">2 · Clearinghouse</text><text class="sub" x="84" y="38" text-anchor="middle" font-size="10">EDI 270/271/276/277/278</text></g>
+            <g transform="translate(700,294)"><rect width="176" height="52" rx="7"/><text x="88" y="21" text-anchor="middle" font-size="12" font-weight="600">3 · Payer portals &amp; APIs</text><text class="sub" x="88" y="38" text-anchor="middle" font-size="10">Availity, Optum, UHC, direct</text></g>
+            <g transform="translate(536,446)"><rect width="176" height="52" rx="7"/><text x="88" y="21" text-anchor="middle" font-size="12" font-weight="600">4 · Voice / telephone</text><text class="sub" x="88" y="38" text-anchor="middle" font-size="10">IVR, hold, payer reps</text></g>
+            <g transform="translate(360,540)"><rect width="180" height="52" rx="7"/><text x="90" y="21" text-anchor="middle" font-size="12" font-weight="600">5 · Appeals &amp; denials</text><text class="sub" x="90" y="38" text-anchor="middle" font-size="10">timely-filing, approval gate</text></g>
+            <g transform="translate(178,446)"><rect width="174" height="52" rx="7"/><text x="87" y="21" text-anchor="middle" font-size="12" font-weight="600">6 · Document &amp; fax</text><text class="sub" x="87" y="38" text-anchor="middle" font-size="10">op reports, clinical packets</text></g>
+            <g transform="translate(30,294)"><rect width="182" height="52" rx="7"/><text x="91" y="21" text-anchor="middle" font-size="12" font-weight="600">7 · Exception dashboard</text><text class="sub" x="91" y="38" text-anchor="middle" font-size="10">staff review queue</text></g>
+            <g transform="translate(178,142)"><rect width="180" height="52" rx="7"/><text x="90" y="21" text-anchor="middle" font-size="12" font-weight="600">8 · Audit &amp; compliance log</text><text class="sub" x="90" y="38" text-anchor="middle" font-size="10">refs, timestamps, recordings</text></g>
+          </g>
+        </svg>
+        <figcaption>Every claim or authorization moves outward from the orchestration agent across some subset of these eight connections — never all eight at once.</figcaption>
+      </figure>
+      <p class="lede" style="margin-top:28px;">These eight are what ClearAuth AI and VICE need. A different client will have a different EHR, a different clearinghouse, maybe no clearinghouse at all — Section 06 covers how the platform treats each of these as a swappable connector rather than a fixed integration.</p>
+    </section>
+
+    <section class="sec" id="s3">
+      <div class="sec-num">03 / What we have to reference &amp; manage</div>
+      <h2 class="headline">Owning this loop means owning the <em>operational knowledge</em> behind it, not just the code.</h2>
+      <p class="lede">The integrations above are the pipes. What actually keeps the agent accurate day to day is a set of living references that someone has to own, update, and audit — otherwise the agent starts making calls with stale information.</p>
+
+      <div class="checklist">
+        <div class="cl-group">
+          <div class="cl-group-t">Static knowledge — changes slowly, must be reviewed on a schedule</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Payer requirement matrix</div><div class="d">Which payers require prior authorization for which CPT codes. This shifts by payer and by plan, and is the single biggest source of stale-data errors if left unreviewed.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">IVR call maps &amp; rep scripts per payer</div><div class="d">The "press 2 for claim status" trees, typical hold patterns, and the phrasing that gets a straight answer from a payer rep — captured once, reused every call.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Auto-action policy thresholds</div><div class="d">The practice's own rules for what the agent may submit or appeal automatically versus what always needs a signature — set by the client, not assumed by us.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">Living operational state — changes every day</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Credential &amp; access vault</div><div class="d">Clearinghouse, payer portal, and EHR credentials — scoped per payer, rotated on schedule, never shared across integrations.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Escalation runbook</div><div class="d">Which staff member handles clinical-necessity questions, peer-to-peer review calls, and denials that don't fit the standard decision tree.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">Audit trail — write-once, kept for dispute resolution</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Reference/transaction number ledger</div><div class="d">Every claim or auth reference number the agent is given, tied back to the exact call, portal submission, or EDI transaction that produced it.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Call recordings &amp; transcripts</div><div class="d">Kept against the practice's retention policy — the only way to resolve a dispute over what a payer rep actually said.</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="s4">
+      <div class="sec-num">04 / How we solve it</div>
+      <h2 class="headline">Cheapest channel first. A phone call is the <em>last resort</em>, not the first move.</h2>
+      <p class="lede">Every claim and every authorization request runs down the same waterfall. Electronic checks are near-instant and cost nothing; a phone call is slow and only happens when nothing electronic could resolve it. Humans only ever see what's left over at the bottom.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 260" role="img" aria-label="Waterfall diagram: electronic check first, then payer portal or API, then a voice call, then human review, with volume decreasing at each stage and 327 claims entering, 86 escalating to a call, and 9 reaching a human.">
+          <defs>
+            <marker id="arrowend" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+            </marker>
+          </defs>
+          <g class="dline" style="color:var(--line-strong)">
+            <line x1="196" y1="130" x2="238" y2="130" marker-end="url(#arrowend)"/>
+            <line x1="436" y1="130" x2="478" y2="130" marker-end="url(#arrowend)"/>
+            <line x1="676" y1="130" x2="718" y2="130" marker-end="url(#arrowend)"/>
+          </g>
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(16,60)">
+              <rect width="180" height="140" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+              <text x="90" y="30" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--accent-strong)">1 · Electronic</text>
+              <text class="sub" x="90" y="48" text-anchor="middle" font-size="10">EDI 270/271/276/277/278</text>
+              <text x="90" y="90" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="600" style="fill:var(--accent-strong)">327</text>
+              <text class="sub" x="90" y="108" text-anchor="middle" font-size="10">claims checked each morning</text>
+            </g>
+            <g transform="translate(256,70)">
+              <rect width="180" height="120" rx="8"/>
+              <text x="90" y="28" text-anchor="middle" font-size="12" font-weight="600">2 · Portal / API</text>
+              <text class="sub" x="90" y="46" text-anchor="middle" font-size="10">Availity, payer-specific</text>
+              <text class="sub" x="90" y="88" text-anchor="middle" font-size="10.5">attempted only when</text>
+              <text class="sub" x="90" y="102" text-anchor="middle" font-size="10.5">electronic status is unclear</text>
+            </g>
+            <g transform="translate(496,60)">
+              <rect width="180" height="140" rx="8" style="fill:var(--auto-soft);stroke:var(--auto)"/>
+              <text x="90" y="30" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--auto)">3 · Voice call</text>
+              <text class="sub" x="90" y="48" text-anchor="middle" font-size="10">IVR, hold, payer rep</text>
+              <text x="90" y="90" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="600" style="fill:var(--auto)">86</text>
+              <text class="sub" x="90" y="108" text-anchor="middle" font-size="10">payers called today</text>
+            </g>
+            <g transform="translate(736,70)">
+              <rect width="148" height="120" rx="8" style="fill:var(--attention-soft);stroke:var(--attention)"/>
+              <text x="74" y="28" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--attention)">4 · Human</text>
+              <text class="sub" x="74" y="46" text-anchor="middle" font-size="10">clinical / policy calls</text>
+              <text x="74" y="86" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="22" font-weight="600" style="fill:var(--attention)">9</text>
+              <text class="sub" x="74" y="104" text-anchor="middle" font-size="10">needs a decision</text>
+            </g>
+          </g>
+        </svg>
+        <figcaption>The same illustrative day as the cover snapshot: 327 claims enter the waterfall, 86 need a phone call, and only 9 ever reach a person.</figcaption>
+      </figure>
+
+      <p class="lede" style="margin-top:40px;"><b style="color:var(--ink)">VICE — full swimlane.</b> The same waterfall, now traced across every participant so it's clear who — or what system — is active at each step, and exactly where a human has to step in.</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Electronic / agent decision</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--auto)"></span>Voice channel</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--attention)"></span>Staff / exception</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--good)"></span>Resolved outcome</span>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 1280" role="img" aria-label="Swimlane diagram of the VICE claims-collection workflow across six lanes: Billing Staff, EHR/PM System, VICE Agent, Clearinghouse, Voice Channel, and Payer Rep. The claim moves from a morning pull through an electronic status check; if unresolved, the agent calls the payer, learns the reason for non-payment, and either retrieves and submits a missing document with a scheduled follow-up, or checks the filing date and routes a valid appeal to a staff member for approval before submission, with an exception path if no valid appeal exists.">
+          <g><rect class="slbandbg" x="6" y="0" width="140" height="1280"/><rect class="slbandbg" x="298" y="0" width="140" height="1280"/><rect class="slbandbg" x="590" y="0" width="140" height="1280"/></g>
+
+          <g class="slcolhead" font-family="IBM Plex Sans, sans-serif" font-size="11">
+            <g transform="translate(6,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Billing</text><text x="70" y="36" text-anchor="middle">Staff</text></g>
+            <g transform="translate(152,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">EHR / PM</text><text x="70" y="36" text-anchor="middle">System</text></g>
+            <g transform="translate(298,10)"><rect width="140" height="50" rx="6"/><text x="70" y="29" text-anchor="middle">VICE Agent</text></g>
+            <g transform="translate(444,10)"><rect width="140" height="50" rx="6"/><text x="70" y="29" text-anchor="middle">Clearinghouse</text></g>
+            <g transform="translate(590,10)"><rect width="140" height="50" rx="6"/><text x="70" y="29" text-anchor="middle">Voice Channel</text></g>
+            <g transform="translate(736,10)"><rect width="140" height="50" rx="6"/><text x="70" y="29" text-anchor="middle">Payer Rep</text></g>
+          </g>
+
+          <g class="dline" style="color:var(--line-strong)">
+            <line x1="222" y1="160" x2="368" y2="190" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="260" x2="514" y2="290" marker-end="url(#arrowend)"/>
+            <line x1="514" y1="360" x2="368" y2="390" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="480" x2="368" y2="520" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="480" x2="660" y2="520" marker-end="url(#arrowend)"/>
+            <line x1="660" y1="590" x2="806" y2="620" marker-end="url(#arrowend)"/>
+            <line x1="806" y1="690" x2="368" y2="720" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="810" x2="222" y2="850" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="810" x2="514" y2="850" marker-end="url(#arrowend)"/>
+            <line x1="222" y1="920" x2="514" y2="950" marker-end="url(#arrowend)"/>
+            <line x1="514" y1="920" x2="368" y2="950" marker-end="url(#arrowend)"/>
+            <line x1="514" y1="1020" x2="368" y2="1060" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="1040" x2="39" y2="1080" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="1040" x2="110" y2="1080" marker-end="url(#arrowend)"/>
+            <line x1="39" y1="1160" x2="514" y2="1200" marker-end="url(#arrowend)"/>
+          </g>
+          <g class="slbranch" font-family="IBM Plex Sans, sans-serif">
+            <text x="330" y="507">yes</text>
+            <text x="418" y="492">no</text>
+            <text x="238" y="836">needs document</text>
+            <text x="392" y="836">timely-filing denial</text>
+            <text x="128" y="1067">yes</text>
+            <text x="198" y="1067">no</text>
+          </g>
+
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(152,90)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">1</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600">Claim outstanding</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">$4,850 · 47 days unpaid</text></g>
+            <g transform="translate(298,190)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">2</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600">Morning pull</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">Queries all unpaid claims</text></g>
+            <g transform="translate(444,290)"><rect width="140" height="70" rx="7" style="fill:var(--accent-soft);stroke:var(--accent)"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">3</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600" style="fill:var(--accent-strong)">Electronic check</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">EDI 276/277 status request</text></g>
+            <g class="sldia" transform="translate(298,390)"><polygon points="70,0 140,45 70,90 0,45"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">4</text><text x="70" y="49" text-anchor="middle" font-size="11">Resolved?</text></g>
+            <g transform="translate(298,520)"><rect width="140" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="70" y="26" text-anchor="middle" font-size="10.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">RESOLVED</text><text class="sub" x="70" y="44" text-anchor="middle" font-size="9">Logged &amp; closed — no call needed</text></g>
+            <g transform="translate(590,520)"><rect width="140" height="70" rx="7" style="fill:var(--auto-soft);stroke:var(--auto)"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">5</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600" style="fill:var(--auto)">Call payer</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">Navigate IVR, hold for a rep</text></g>
+            <g transform="translate(736,620)"><rect width="140" height="70" rx="7" style="fill:var(--auto-soft);stroke:var(--auto)"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">6</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600" style="fill:var(--auto)">Rep responds</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">Gives reason for non-payment</text></g>
+            <g class="sldia" transform="translate(298,720)"><polygon points="70,0 140,45 70,90 0,45"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">7</text><text x="70" y="49" text-anchor="middle" font-size="11">Reason?</text></g>
+            <g transform="translate(152,850)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">8a</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600">Retrieve document</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">e.g. the operative report</text></g>
+            <g transform="translate(444,850)"><rect width="140" height="70" rx="7" style="fill:var(--accent-soft);stroke:var(--accent)"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">8b</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--accent-strong)">Check filing date</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Original submission date</text></g>
+            <g transform="translate(444,950)"><rect width="140" height="70" rx="7" style="fill:var(--accent-soft);stroke:var(--accent)"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">9a</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--accent-strong)">Submit document</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Via electronic workflow</text></g>
+            <g class="sldia" transform="translate(298,950)"><polygon points="70,0 140,45 70,90 0,45"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">9b</text><text x="70" y="49" text-anchor="middle" font-size="10.5">Filed on time?</text></g>
+            <g transform="translate(298,1060)"><rect width="140" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="70" y="26" text-anchor="middle" font-size="10" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">FOLLOW-UP SET</text><text class="sub" x="70" y="44" text-anchor="middle" font-size="9">Recheck payer in 10 days</text></g>
+            <g transform="translate(6,1080)"><rect width="65" height="80" rx="7" style="fill:var(--attention-soft);stroke:var(--attention)"/><text class="slnum" x="6" y="14" style="fill:var(--muted-2)">10b</text><text x="32.5" y="38" text-anchor="middle" font-size="9.5" font-weight="600" style="fill:var(--attention)">Approves</text><text x="32.5" y="52" text-anchor="middle" font-size="9.5" font-weight="600" style="fill:var(--attention)">appeal</text></g>
+            <g transform="translate(77,1080)"><rect width="65" height="80" rx="7" style="fill:var(--attention-soft);stroke:var(--attention)"/><text class="sub" x="32.5" y="28" text-anchor="middle" font-size="8.5">No valid</text><text class="sub" x="32.5" y="39" text-anchor="middle" font-size="8.5">appeal —</text><text x="32.5" y="56" text-anchor="middle" font-size="8.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--attention)">EXCEPTION</text></g>
+            <g transform="translate(444,1200)"><rect width="140" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="70" y="26" text-anchor="middle" font-size="10" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">APPEAL SUBMITTED</text><text class="sub" x="70" y="44" text-anchor="middle" font-size="9">Logged with reference number</text></g>
+          </g>
+        </svg>
+        <figcaption>The same claim as the walkthrough below, traced across all six participants — electronic check, phone call, and the two ways it can resolve: a scheduled follow-up or a submitted appeal, with a staff exception when no valid appeal exists.</figcaption>
+      </figure>
+
+      <div class="walk">
+        <div class="walk-head"><span class="tag vice">VICE</span><b>Claim $4,850 — 47 days outstanding</b></div>
+        <div class="walk-body">
+          <div class="wstep"><div class="num">1</div><div class="body">Agent checks Gateway electronically first. Result: <b>claim received, status pending, no payment issued.</b></div></div>
+          <div class="wstep"><div class="num">2</div><div class="body">Instead of dropping into a work queue, the agent calls the payer, navigates the IVR (<span class="say">"For claim status, press 2…"</span>), waits on hold, and identifies itself as an automated representative of the provider where permitted.</div></div>
+          <div class="wstep"><div class="num">3</div><div class="body">It asks: <span class="say">"What is preventing payment on claim XXXXX?"</span> The rep replies: <span class="say">"We need the operative report."</span></div></div>
+          <div class="wstep branch"><div class="num">4a</div><div class="body">Agent logs the reason and the reference number, retrieves the permitted document from the EHR, submits it through the correct electronic workflow, and schedules a follow-up call in 10 days if still unpaid.</div></div>
+          <div class="wstep branch"><div class="num">4b</div><div class="body"><b>Alternate branch —</b> if the rep instead says <span class="say">"denied for timely filing,"</span> the agent checks the clearinghouse submission date. If the record shows it was filed on time, it prepares the appeal and proof <b>for human approval</b> — or submits automatically only where the practice's own policy allows it.</div></div>
+        </div>
+      </div>
+
+      <p class="lede" style="margin-top:40px;"><b style="color:var(--ink)">ClearAuth AI — full swimlane.</b> Seven participants, from the physician's order to the outcome the front desk actually sees.</p>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Electronic / agent decision</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--auto)"></span>Voice channel</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--attention)"></span>Staff / exception</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--good)"></span>Resolved outcome</span>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 1100" role="img" aria-label="Swimlane diagram of the ClearAuth AI prior-authorization workflow across seven lanes: Physician, EHR/PM System, ClearAuth Agent, Payer Portal, Voice Channel, Payer Rep, and Staff. The order moves from the physician through the EHR to an electronic authorization check; if no authorization is required the result is logged immediately, otherwise the agent submits through the payer portal, escalates to a phone call if the portal doesn't resolve it, and the outcome is either an approval logged with a reference number or a clinical-review flag routed to staff.">
+          <g><rect class="slbandbg" x="6" y="0" width="118" height="1100"/><rect class="slbandbg" x="254" y="0" width="118" height="1100"/><rect class="slbandbg" x="502" y="0" width="118" height="1100"/><rect class="slbandbg" x="750" y="0" width="118" height="1100"/></g>
+
+          <g class="slcolhead" font-family="IBM Plex Sans, sans-serif" font-size="10.5">
+            <g transform="translate(6,10)"><rect width="118" height="50" rx="6"/><text x="59" y="29" text-anchor="middle">Physician</text></g>
+            <g transform="translate(130,10)"><rect width="118" height="50" rx="6"/><text x="59" y="21" text-anchor="middle">EHR / PM</text><text x="59" y="36" text-anchor="middle">System</text></g>
+            <g transform="translate(254,10)"><rect width="118" height="50" rx="6"/><text x="59" y="21" text-anchor="middle">ClearAuth</text><text x="59" y="36" text-anchor="middle">Agent</text></g>
+            <g transform="translate(378,10)"><rect width="118" height="50" rx="6"/><text x="59" y="21" text-anchor="middle">Payer</text><text x="59" y="36" text-anchor="middle">Portal</text></g>
+            <g transform="translate(502,10)"><rect width="118" height="50" rx="6"/><text x="59" y="29" text-anchor="middle">Voice</text></g>
+            <g transform="translate(626,10)"><rect width="118" height="50" rx="6"/><text x="59" y="21" text-anchor="middle">Payer</text><text x="59" y="36" text-anchor="middle">Rep</text></g>
+            <g transform="translate(750,10)"><rect width="118" height="50" rx="6"/><text x="59" y="29" text-anchor="middle">Staff</text></g>
+          </g>
+
+          <g class="dline" style="color:var(--line-strong)">
+            <line x1="65" y1="160" x2="189" y2="190" marker-end="url(#arrowend)"/>
+            <line x1="189" y1="260" x2="313" y2="290" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="380" x2="313" y2="420" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="380" x2="437" y2="420" marker-end="url(#arrowend)"/>
+            <line x1="437" y1="490" x2="313" y2="520" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="610" x2="189" y2="650" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="610" x2="561" y2="650" marker-end="url(#arrowend)"/>
+            <line x1="561" y1="720" x2="685" y2="750" marker-end="url(#arrowend)"/>
+            <line x1="685" y1="820" x2="313" y2="850" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="940" x2="189" y2="980" marker-end="url(#arrowend)"/>
+            <line x1="313" y1="940" x2="809" y2="980" marker-end="url(#arrowend)"/>
+          </g>
+          <g class="slbranch" font-family="IBM Plex Sans, sans-serif">
+            <text x="270" y="407">no PA</text>
+            <text x="355" y="407">PA required</text>
+            <text x="330" y="507">approved</text>
+            <text x="330" y="637">unresolved</text>
+            <text x="200" y="967">approved</text>
+            <text x="480" y="967">missing docs</text>
+          </g>
+
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(6,90)"><rect width="118" height="70" rx="7"/><text class="slnum" x="8" y="14">1</text><text x="59" y="30" text-anchor="middle" font-size="10.5" font-weight="600">Orders MRI</text><text class="sub" x="59" y="48" text-anchor="middle" font-size="9">L-spine · CPT 72148</text></g>
+            <g transform="translate(130,190)"><rect width="118" height="70" rx="7"/><text class="slnum" x="8" y="14">2</text><text x="59" y="30" text-anchor="middle" font-size="10.5" font-weight="600">Order captured</text><text class="sub" x="59" y="48" text-anchor="middle" font-size="9">Patient + insurance in EHR</text></g>
+            <g class="sldia" transform="translate(254,290)"><polygon points="59,0 118,45 59,90 0,45"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">3</text><text x="59" y="49" text-anchor="middle" font-size="10">PA required?</text></g>
+            <g transform="translate(254,420)"><rect width="118" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="59" y="26" text-anchor="middle" font-size="9.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">NO PA NEEDED</text><text class="sub" x="59" y="44" text-anchor="middle" font-size="8.5">Logged with reference #</text></g>
+            <g transform="translate(378,420)"><rect width="118" height="70" rx="7" style="fill:var(--accent-soft);stroke:var(--accent)"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">4</text><text x="59" y="30" text-anchor="middle" font-size="10.5" font-weight="600" style="fill:var(--accent-strong)">Submit via portal</text><text class="sub" x="59" y="48" text-anchor="middle" font-size="9">Order, notes, imaging, docs</text></g>
+            <g class="sldia" transform="translate(254,520)"><polygon points="59,0 118,45 59,90 0,45"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">5</text><text x="59" y="49" text-anchor="middle" font-size="9.5">Portal resolves it?</text></g>
+            <g transform="translate(130,650)"><rect width="118" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="59" y="26" text-anchor="middle" font-size="9.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">APPROVED</text><text class="sub" x="59" y="44" text-anchor="middle" font-size="8.5">Auth # + valid dates logged</text></g>
+            <g transform="translate(502,650)"><rect width="118" height="70" rx="7" style="fill:var(--auto-soft);stroke:var(--auto)"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">6</text><text x="59" y="30" text-anchor="middle" font-size="10.5" font-weight="600" style="fill:var(--auto)">Call payer</text><text class="sub" x="59" y="48" text-anchor="middle" font-size="9">Navigate IVR, verify requirements</text></g>
+            <g transform="translate(626,750)"><rect width="118" height="70" rx="7" style="fill:var(--auto-soft);stroke:var(--auto)"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">7</text><text x="59" y="30" text-anchor="middle" font-size="10.5" font-weight="600" style="fill:var(--auto)">Rep responds</text><text class="sub" x="59" y="48" text-anchor="middle" font-size="9">Confirms req. or lists gaps</text></g>
+            <g class="sldia" transform="translate(254,850)"><polygon points="59,0 118,45 59,90 0,45"/><text class="slnum" x="8" y="14" style="fill:var(--muted-2)">8</text><text x="59" y="49" text-anchor="middle" font-size="10">Outcome?</text></g>
+            <g transform="translate(130,980)"><rect width="118" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="59" y="26" text-anchor="middle" font-size="9.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">APPROVED</text><text class="sub" x="59" y="44" text-anchor="middle" font-size="8.5">Auth # + valid dates logged</text></g>
+            <g transform="translate(750,980)"><rect width="118" height="80" rx="7" style="fill:var(--attention-soft);stroke:var(--attention)"/><text x="59" y="24" text-anchor="middle" font-size="8.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--attention)">CLINICAL REVIEW</text><text x="59" y="35" text-anchor="middle" font-size="8.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--attention)">REQUIRED</text><text class="sub" x="59" y="56" text-anchor="middle" font-size="8.5">Flagged to staff for review</text></g>
+          </g>
+        </svg>
+        <figcaption>The same MRI authorization as the walkthrough below, traced across all seven participants — electronic check, portal submission, phone call, and the two outcomes staff actually see: an approval logged automatically, or a clinical-review flag.</figcaption>
+      </figure>
+
+      <div class="walk">
+        <div class="walk-head"><span class="tag clearauth">ClearAuth AI</span><b>Physician orders an MRI, lumbar spine — CPT 72148</b></div>
+        <div class="walk-body">
+          <div class="wstep"><div class="num">1</div><div class="body">Agent receives patient + insurance + CPT + diagnosis + order, and checks electronically via payer API, clearinghouse, or Availity: does this plan require authorization for CPT 72148?</div></div>
+          <div class="wstep branch"><div class="num">2a</div><div class="body">If <b>no authorization required</b>, the agent logs the result, date, source, and reference number in the patient record — done, no portal or call needed.</div></div>
+          <div class="wstep branch"><div class="num">2b</div><div class="body">If <b>authorization is required</b>, the agent opens the payer's portal, enters patient and procedure details, uploads the order, office notes, imaging history and supporting clinical documentation, and submits the request.</div></div>
+          <div class="wstep"><div class="num">3</div><div class="body">If the portal can't resolve it, the agent calls the insurer directly: <span class="say">"I'm calling on behalf of Dr. Smith regarding prior authorization for a patient."</span> It navigates the IVR, waits on hold, verifies requirements, and obtains the authorization number.</div></div>
+          <div class="wstep"><div class="num">4</div><div class="body">Staff only ever see the outcome — <b>"MRI L-Spine — APPROVED, valid Aug 26–Sep 26"</b> — or an exception flag such as <b>"CLINICAL REVIEW REQUIRED — missing 6 weeks conservative treatment documentation."</b> The agent never makes an independent medical judgment; that always goes to a licensed staff member.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="s5">
+      <div class="sec-num">05 / Solution architecture</div>
+      <h2 class="headline">The agent sits <em>above</em> what the practice already runs — nothing to rip out.</h2>
+      <p class="lede">The bottom layer is the practice's existing systems of record, untouched. Everything above it is new: a connector layer that speaks EDI and drives browser/portal automation, a voice engine for the calls electronic channels can't resolve, an orchestration layer that runs the waterfall and enforces policy, an audit layer that write-locks every action, and a thin human interface for the exceptions.</p>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 560" role="img" aria-label="Layered architecture diagram, bottom to top: existing systems of record (EHR and clearinghouse, unchanged), connector layer, voice AI engine, decision and orchestration layer, audit and compliance log, and human interface layer on top, with a bracket marking the bottom layer as the client's existing, untouched systems.">
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(150,20)">
+              <rect width="650" height="66" rx="8"/>
+              <text x="24" y="28" font-size="12" font-weight="600">6 · Human interface</text>
+              <text class="sub" x="24" y="46" font-size="10.5">Exception dashboard, approval queue, staff decisions</text>
+            </g>
+            <g transform="translate(150,96)">
+              <rect width="650" height="66" rx="8"/>
+              <text x="24" y="28" font-size="12" font-weight="600">5 · Audit &amp; compliance log</text>
+              <text class="sub" x="24" y="46" font-size="10.5">Timestamps, reference numbers, recordings — write-once</text>
+            </g>
+            <g transform="translate(150,172)">
+              <rect width="650" height="66" rx="8" style="fill:var(--accent-soft);stroke:var(--accent)"/>
+              <text x="24" y="28" font-size="12" font-weight="600" style="fill:var(--accent-strong)">4 · Decision &amp; orchestration</text>
+              <text class="sub" x="24" y="46" font-size="10.5">The waterfall logic, claim/auth state machine, client policy rules</text>
+            </g>
+            <g transform="translate(150,248)">
+              <rect width="650" height="66" rx="8" style="fill:var(--auto-soft);stroke:var(--auto)"/>
+              <text x="24" y="28" font-size="12" font-weight="600" style="fill:var(--auto)">3 · Voice AI engine</text>
+              <text class="sub" x="24" y="46" font-size="10.5">IVR navigation and live conversation with payer representatives</text>
+            </g>
+            <g transform="translate(150,324)">
+              <rect width="650" height="66" rx="8"/>
+              <text x="24" y="28" font-size="12" font-weight="600">2 · Connector layer</text>
+              <text class="sub" x="24" y="46" font-size="10.5">EDI transactions, payer-portal browser automation, telephony gateway</text>
+            </g>
+            <g transform="translate(150,400)">
+              <rect width="650" height="80" rx="8" style="stroke-dasharray:4 3"/>
+              <text x="24" y="30" font-size="12" font-weight="600">1 · Systems of record</text>
+              <text class="sub" x="24" y="48" font-size="10.5">Practice management / EHR — patient, orders, documents</text>
+              <text class="sub" x="24" y="64" font-size="10.5">Clearinghouse (Gateway EDI / TriZetto) — claims, eligibility, remittance</text>
+            </g>
+          </g>
+          <g style="color:var(--line-strong)">
+            <path d="M 130 402 L 110 402 L 110 478 L 130 478" fill="none" class="dline"/>
+          </g>
+          <text x="24" y="444" font-family="IBM Plex Mono, monospace" font-size="10.5" style="fill:var(--muted-2)" transform="rotate(-90 24 444)">YOUR SYSTEMS — UNCHANGED</text>
+          <g class="dline" style="color:var(--line-strong)">
+            <line x1="825" y1="86" x2="825" y2="400" marker-end="url(#arrowend)"/>
+          </g>
+          <text x="838" y="250" font-family="IBM Plex Mono, monospace" font-size="10" style="fill:var(--muted-2)" transform="rotate(90 838 250)">DATA FLOWS UP · POLICY FLOWS DOWN</text>
+        </svg>
+        <figcaption>Four new layers (2–5) sit between the practice's existing systems and a thin human interface — the clearinghouse and EHR are read from and written to, never replaced.</figcaption>
+      </figure>
+      <p class="lede" style="margin-top:28px;">This is ClearAuth AI and VICE's specific deployment of a general shape: layer 2, the connector layer, is built so that a different client's EHR or clearinghouse plugs into the same core without changing it — the architecture principle behind that is Section 06.</p>
+    </section>
+
+    <section class="sec" id="s6">
+      <div class="sec-num">06 / Platform strategy</div>
+      <h2 class="headline">ClearAuth AI and VICE are the first two agents <em>on</em> a platform — not the platform itself.</h2>
+      <p class="lede">Every future client will run a different EHR, a different clearinghouse, a different set of payer portals — sometimes none of the above. The platform has to absorb that variation without a rewrite per client, which means one architectural rule is non-negotiable: <b style="color:var(--ink)">the orchestration core is closed for modification; the connector layer is open for extension.</b> A new client's system becomes a new connector implementing the same interface — never a fork of the core, never a conditional branch buried in the decision engine. If adding a client ever means changing the orchestration engine, the audit layer, or the dashboard, that's the architecture failing, not the client being unusual.</p>
+
+      <div class="grid-3">
+        <div class="card"><span class="tag">Startups</span><h3>Fast, minimal, self-serve</h3><p>A single connector set, multi-tenant SaaS by default, self-serve onboarding, usage-based pricing with no minimum commitment.</p></div>
+        <div class="card"><span class="tag">SMBs</span><h3>This document's scope</h3><p>A handful of connectors — one EHR, one clearinghouse, a few payer portals — multi-tenant SaaS, a guided onboarding with a short Discovery pass (Section 10).</p></div>
+        <div class="card"><span class="tag">Enterprise</span><h3>Custom, isolated, dedicated</h3><p>Larger connector counts, custom connector development, dedicated or fully air-gapped deployment (Section 09), its own SLA and its own compliance review before go-live.</p></div>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 640" role="img" aria-label="Diagram of the platform's core-and-connector architecture: a stable Core Platform at the center — orchestration engine, audit log, tenant admin, dashboard — surrounded by a dashed Connector Interface boundary, with pluggable connectors (EHR, clearinghouse, payer portal, voice, webhook) attached outside that boundary, plus a dashed placeholder node showing where a brand-new connector attaches without changing the core.">
+          <circle cx="450" cy="320" r="150" fill="none" stroke="var(--accent)" stroke-width="1.4" stroke-dasharray="5 4"/>
+          <text x="450" y="163" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="10.5" style="fill:var(--accent-strong)">CONNECTOR INTERFACE — THE ONLY CONTRACT A CONNECTOR MUST SATISFY</text>
+
+          <g class="dline">
+            <line x1="450" y1="320" x2="450" y2="100"/>
+            <line x1="450" y1="320" x2="666" y2="195"/>
+            <line x1="450" y1="320" x2="666" y2="445"/>
+            <line x1="450" y1="320" x2="450" y2="540"/>
+            <line x1="450" y1="320" x2="233" y2="445"/>
+          </g>
+          <line x1="450" y1="320" x2="233" y2="195" class="dline" stroke-dasharray="4 3"/>
+
+          <g class="dhub">
+            <circle cx="450" cy="320" r="66"/>
+            <text x="450" y="315" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12">CORE</text>
+            <text x="450" y="332" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12">PLATFORM</text>
+          </g>
+
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(360,40)"><rect width="180" height="60" rx="7"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600">EHR Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">API or MCP, per vendor</text></g>
+            <g transform="translate(576,165)"><rect width="180" height="60" rx="7"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600">Clearinghouse Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">EDI 270/271/276/277/278</text></g>
+            <g transform="translate(576,415)"><rect width="180" height="60" rx="7"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600">Payer Portal Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">API where possible, browser automation where not</text></g>
+            <g transform="translate(360,540)"><rect width="180" height="60" rx="7"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600">Voice Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">The Vapi voice engine — IVR + calls</text></g>
+            <g transform="translate(143,415)"><rect width="180" height="60" rx="7"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600">Webhook Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">Real-time pushes from client systems</text></g>
+            <g transform="translate(143,165)"><rect width="180" height="60" rx="7" style="stroke-dasharray:4 3"/><text x="90" y="24" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--muted)">+ New Connector</text><text class="sub" x="90" y="42" text-anchor="middle" font-size="10">Built once, added to the registry</text></g>
+          </g>
+        </svg>
+        <figcaption>Open for extension: a new connector attaches outside the dashed boundary. Closed for modification: nothing inside the boundary changes to accommodate it.</figcaption>
+      </figure>
+
+      <div class="int-grid">
+        <div class="int-card"><div class="idx">API</div><h4>API connector</h4><p>Direct, versioned API — the fastest and most reliable option when a system offers one.</p></div>
+        <div class="int-card"><div class="idx">MCP</div><h4>MCP connector</h4><p>Model Context Protocol — structured, permissioned tool calls for agent actions, not just data reads.</p></div>
+        <div class="int-card"><div class="idx">WEB</div><h4>Browser / scraping connector</h4><p>Drives a payer portal or legacy web UI directly when no API exists — the fallback, not the default.</p></div>
+        <div class="int-card"><div class="idx">HOOK</div><h4>Webhook / event connector</h4><p>Real-time pushes from a client system instead of polling, where the source system supports it.</p></div>
+        <div class="int-card"><div class="idx">SFTP</div><h4>File / batch connector</h4><p>Scheduled file drops — 835 remittance batches, nightly exports — for systems that only speak in files.</p></div>
+      </div>
+
+      <p class="lede" style="margin-top:28px;">Similar to how Claude ships a directory of ready-made connectors a user just switches on, the platform ships with a growing library of pre-built connectors for the EHRs, clearinghouses, and payer portals already integrated. Onboarding a new client checks that library first (Section 08) — new connector code is the exception that gets contributed back to the library, not a one-off thrown away after the project.</p>
+    </section>
+
+    <section class="sec" id="s7">
+      <div class="sec-num">07 / Product roadmap</div>
+      <h2 class="headline">MVP1, then MVP2 — proven internally before it's sold.</h2>
+      <p class="lede">The platform gets built by building two real agents on it, not by building a platform in the abstract. ClearAuth AI and VICE run first for the first client (or internally) — only once both hold up under real volume does the platform open to the market described in Section 06.</p>
+
+      <div class="grid-2">
+        <div class="card"><span class="tag">MVP1</span><h3>ClearAuth AI</h3><p>Implement, deliver, and deploy the prior-authorization agent first — proves the connector framework and the audit/compliance model end-to-end on one workflow before a second is added.</p></div>
+        <div class="card"><span class="tag">MVP2</span><h3>VICE</h3><p>Implement and deliver the claims-collection agent on the same core — the real test of the platform's own claim: a second agent, a second set of connectors, zero changes to the orchestration core.</p></div>
+        <div class="card"><span class="tag">Phase 3</span><h3>Internal validation</h3><p>Both agents run for the first client, or internally — real volume, real exceptions, a real audit trail — hardening the platform before any other client's data touches it.</p></div>
+        <div class="card"><span class="tag">Phase 4</span><h3>External market launch</h3><p>The platform opens to new clients across the startup / SMB / enterprise segments; onboarding runs through the guided questionnaire (Section 08) instead of a bespoke integration project.</p></div>
+      </div>
+
+      <div class="closing-box">
+        <div class="k">Why internal-first</div>
+        <p>Building MVP1 and MVP2 for the first client (or internally) first means the compliance model, the audit trail, and the connector interface all get proven under our own accountability before a paying client's data runs through them. Selling the platform is the second business; running it well ourselves is what makes the second business credible.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s8">
+      <div class="sec-num">08 / Onboarding</div>
+      <h2 class="headline">A new client becomes a working tenant — not a bespoke integration project.</h2>
+      <p class="lede">Onboarding is itself a platform requirement, not a services engagement done once per client. A new client answers a guided questionnaire about their systems and their deployment needs; the platform matches those answers against the connector library from Section 06 — new connector development is the exception path, not the default one.</p>
+
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--accent)"></span>Automated / platform-driven</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--attention)"></span>Platform admin / manual path</span>
+        <span class="legend-item"><span class="legend-dot" style="background:var(--good)"></span>Resolved outcome</span>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 1090" role="img" aria-label="Swimlane diagram of the client onboarding process across six lanes: New Client, Onboarding Wizard, Connector Registry, Platform Admin, Client IT and Ops, and Tenant Provisioning. A new client answers a guided questionnaire; the connector registry checks whether matching connectors already exist — if so the tenant is auto-provisioned, if not the platform admin scopes and builds a new connector which is then added to the registry for all future clients; either way the client supplies credentials, the connections are validated, the tenant goes live, and users are invited to log in under their own persona.">
+          <g><rect class="slbandbg" x="6" y="0" width="140" height="1090"/><rect class="slbandbg" x="298" y="0" width="140" height="1090"/><rect class="slbandbg" x="590" y="0" width="140" height="1090"/></g>
+
+          <g class="slcolhead" font-family="IBM Plex Sans, sans-serif" font-size="11">
+            <g transform="translate(6,10)"><rect width="140" height="50" rx="6"/><text x="70" y="29" text-anchor="middle">New Client</text></g>
+            <g transform="translate(152,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Onboarding</text><text x="70" y="36" text-anchor="middle">Wizard</text></g>
+            <g transform="translate(298,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Connector</text><text x="70" y="36" text-anchor="middle">Registry</text></g>
+            <g transform="translate(444,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Platform</text><text x="70" y="36" text-anchor="middle">Admin</text></g>
+            <g transform="translate(590,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Client IT</text><text x="70" y="36" text-anchor="middle">&amp; Ops</text></g>
+            <g transform="translate(736,10)"><rect width="140" height="50" rx="6"/><text x="70" y="21" text-anchor="middle">Tenant</text><text x="70" y="36" text-anchor="middle">Provisioning</text></g>
+          </g>
+
+          <g class="dline" style="color:var(--line-strong)">
+            <line x1="76" y1="160" x2="222" y2="190" marker-end="url(#arrowend)"/>
+            <line x1="222" y1="260" x2="368" y2="290" marker-end="url(#arrowend)"/>
+            <line x1="368" y1="380" x2="514" y2="420" marker-end="url(#arrowend)"/>
+            <polyline points="368,380 368,610 806,620" fill="none" marker-end="url(#arrowend)"/>
+            <line x1="514" y1="490" x2="514" y2="520" marker-end="url(#arrowend)"/>
+            <line x1="514" y1="590" x2="806" y2="620" marker-end="url(#arrowend)"/>
+            <line x1="806" y1="690" x2="660" y2="720" marker-end="url(#arrowend)"/>
+            <line x1="660" y1="790" x2="806" y2="820" marker-end="url(#arrowend)"/>
+            <line x1="806" y1="890" x2="806" y2="920" marker-end="url(#arrowend)"/>
+            <line x1="806" y1="980" x2="76" y2="1010" marker-end="url(#arrowend)"/>
+          </g>
+          <g class="slbranch" font-family="IBM Plex Sans, sans-serif">
+            <text x="378" y="407">new integration needed</text>
+            <text x="430" y="603">already in registry</text>
+          </g>
+
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(6,90)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">1</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600">Signs up</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">Requests onboarding</text></g>
+            <g transform="translate(152,190)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">2</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600">Guided questionnaire</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">EHR, clearinghouse, portals, deployment</text></g>
+            <g class="sldia" transform="translate(298,290)"><polygon points="70,0 140,45 70,90 0,45"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">3</text><text x="70" y="49" text-anchor="middle" font-size="10.5">Connectors exist?</text></g>
+            <g transform="translate(444,420)" style="fill:var(--attention-soft);stroke:var(--attention)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">3a</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--attention)">Scope new connector</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Mirrors Discovery for this integration</text></g>
+            <g transform="translate(444,520)" style="fill:var(--attention-soft);stroke:var(--attention)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">3b</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--attention)">Build &amp; register</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Added to registry for all future clients</text></g>
+            <g transform="translate(736,620)" style="fill:var(--accent-soft);stroke:var(--accent)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">4</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--accent-strong)">Auto-provision tenant</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Wires existing connectors</text></g>
+            <g transform="translate(590,720)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14">5</text><text x="70" y="30" text-anchor="middle" font-size="11.5" font-weight="600">Supplies credentials</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9.5">Via secure vault, per connector</text></g>
+            <g transform="translate(736,820)" style="fill:var(--accent-soft);stroke:var(--accent)"><rect width="140" height="70" rx="7"/><text class="slnum" x="10" y="14" style="fill:var(--muted-2)">6</text><text x="70" y="30" text-anchor="middle" font-size="11" font-weight="600" style="fill:var(--accent-strong)">Validate connections</text><text class="sub" x="70" y="48" text-anchor="middle" font-size="9">Test call/API ping per connector</text></g>
+            <g transform="translate(736,920)"><rect width="140" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="70" y="26" text-anchor="middle" font-size="10.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">TENANT LIVE</text><text class="sub" x="70" y="44" text-anchor="middle" font-size="9">Ready for its first case</text></g>
+            <g transform="translate(6,1010)"><rect width="140" height="60" rx="7" style="fill:var(--good-soft);stroke:var(--good)"/><text x="70" y="26" text-anchor="middle" font-size="10.5" font-weight="700" font-family="IBM Plex Mono, monospace" style="fill:var(--good)">USERS INVITED</text><text class="sub" x="70" y="44" text-anchor="middle" font-size="9">Each logs in to their own persona</text></g>
+          </g>
+        </svg>
+        <figcaption>The connector registry is the fork in the road: a known system means minutes to provision, an unknown one means the platform admin scopes and builds one connector — which then joins the library for every client after this one.</figcaption>
+      </figure>
+
+      <div class="closing-box">
+        <div class="k">Guided today, self-serve tomorrow</div>
+        <p>Early on, a platform admin stays in the loop for anything the registry doesn't already recognize. As the connector library covers more of the common EHRs, clearinghouses, and payer portals, more of onboarding moves to fully self-serve — the questionnaire and the registry match are what make that shift possible without redesigning the process.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s9">
+      <div class="sec-num">09 / Tenancy &amp; administration</div>
+      <h2 class="headline">Every client owns their tenant. Some own the whole box.</h2>
+      <p class="lede">Two deployment shapes have to work from day one, and both share the same three-tier admin model underneath.</p>
+
+      <div class="grid-2">
+        <div class="card"><span class="tag">Default</span><h3>Multi-tenant SaaS</h3><p>Platform-hosted, shared infrastructure, strict per-tenant logical data isolation. Fastest to onboard, usage-metered — the default for startups and most SMB clients.</p></div>
+        <div class="card"><span class="tag">On request</span><h3>Air-gapped / dedicated</h3><p>Deployed inside the client's own environment — on-prem or their private cloud — with no external network dependency. Same core, same connector framework, chosen where compliance posture requires full isolation.</p></div>
+      </div>
+
+      <figure class="diagram">
+        <svg viewBox="0 0 900 420" role="img" aria-label="Hierarchy diagram: a single Master Admin at the top manages the platform and the connector registry; below it, each client has its own Tenant Admin and End Users, enclosed in a dashed boundary marking that tenant's isolated data and audit log, with a note that every additional client tenant is isolated the same way.">
+          <g class="dline">
+            <line x1="450" y1="90" x2="150" y2="180"/>
+            <line x1="450" y1="90" x2="450" y2="180"/>
+            <line x1="450" y1="90" x2="750" y2="180"/>
+            <line x1="150" y1="210" x2="150" y2="260"/>
+            <line x1="450" y1="210" x2="450" y2="260"/>
+            <line x1="750" y1="210" x2="750" y2="260"/>
+          </g>
+          <g fill="none" stroke="var(--line-strong)" stroke-width="1.2" stroke-dasharray="4 3">
+            <rect x="40" y="130" width="220" height="220" rx="8"/>
+            <rect x="340" y="130" width="220" height="220" rx="8"/>
+            <rect x="640" y="130" width="220" height="220" rx="8"/>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="9.5" style="fill:var(--muted-2)">
+            <text x="60" y="145">TENANT A — ISOLATED</text>
+            <text x="360" y="145">TENANT B — ISOLATED</text>
+            <text x="660" y="145">TENANT C — ISOLATED</text>
+          </g>
+          <g class="dnode" font-family="IBM Plex Sans, sans-serif">
+            <g transform="translate(360,30)" style="fill:var(--accent-soft);stroke:var(--accent)"><rect width="180" height="60" rx="7"/><text x="90" y="26" text-anchor="middle" font-size="12" font-weight="600" style="fill:var(--accent-strong)">Master Admin</text><text class="sub" x="90" y="44" text-anchor="middle" font-size="9.5">Platform operator</text></g>
+            <g transform="translate(60,180)"><rect width="180" height="60" rx="7"/><text x="90" y="26" text-anchor="middle" font-size="11.5" font-weight="600">Tenant Admin</text><text class="sub" x="90" y="44" text-anchor="middle" font-size="9.5">Client A's own admin</text></g>
+            <g transform="translate(360,180)"><rect width="180" height="60" rx="7"/><text x="90" y="26" text-anchor="middle" font-size="11.5" font-weight="600">Tenant Admin</text><text class="sub" x="90" y="44" text-anchor="middle" font-size="9.5">Client B's own admin</text></g>
+            <g transform="translate(660,180)"><rect width="180" height="60" rx="7"/><text x="90" y="26" text-anchor="middle" font-size="11.5" font-weight="600">Tenant Admin</text><text class="sub" x="90" y="44" text-anchor="middle" font-size="9.5">Client C's own admin</text></g>
+            <g transform="translate(60,260)"><rect width="180" height="70" rx="7"/><text x="90" y="28" text-anchor="middle" font-size="11" font-weight="600">End Users</text><text class="sub" x="90" y="46" text-anchor="middle" font-size="9">Billing · front-desk · clinical</text></g>
+            <g transform="translate(360,260)"><rect width="180" height="70" rx="7"/><text x="90" y="28" text-anchor="middle" font-size="11" font-weight="600">End Users</text><text class="sub" x="90" y="46" text-anchor="middle" font-size="9">Billing · front-desk · clinical</text></g>
+            <g transform="translate(660,260)"><rect width="180" height="70" rx="7"/><text x="90" y="28" text-anchor="middle" font-size="11" font-weight="600">End Users</text><text class="sub" x="90" y="46" text-anchor="middle" font-size="9">Billing · front-desk · clinical</text></g>
+          </g>
+          <text x="450" y="400" text-anchor="middle" font-family="IBM Plex Sans, sans-serif" font-size="12" style="fill:var(--muted)">…and every additional client tenant, isolated the same way</text>
+        </svg>
+        <figcaption>One Master Admin runs the platform; every client's Tenant Admin and users sit inside their own isolated tenant boundary — a dashed line here, a hard data and audit-log boundary underneath.</figcaption>
+      </figure>
+
+      <div class="checklist">
+        <div class="cl-group">
+          <div class="cl-group-t">Master Admin — the platform operator</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Onboards new client tenants</div><div class="d">Runs the Section 08 process for each new client.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Manages the shared connector registry</div><div class="d">Adds new connectors once, available to every tenant afterward.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Sees cross-tenant usage and health</div><div class="d">Never PHI — volume, uptime, and exception-rate metrics only.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">Tenant Admin — the client's own admin</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Manages their tenant's users and roles</div><div class="d">Invites staff, assigns billing / front-desk / clinical personas.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Configures their own rules</div><div class="d">Auto-submit thresholds, escalation routing, payer-matrix overrides — through the platform's rules engine, not a code change.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Views their own full audit log</div><div class="d">Every action inside their tenant, exportable on request.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">End User — the client's staff</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Logs in to their own persona</div><div class="d">Sees only their role's queue and exceptions — nothing cross-tenant, nothing outside their permission.</div></div></div>
+        </div>
+      </div>
+
+      <div class="closing-box">
+        <div class="k">Rules live in configuration, not code</div>
+        <p>Auto-submit thresholds, escalation routing, and payer-requirement overrides are set by each Tenant Admin through the platform's own rules engine. Changing a threshold is a configuration change with its own audit entry — never a code deployment, and never something only we can do on the client's behalf.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s10">
+      <div class="sec-num">10 / Discovery</div>
+      <h2 class="headline">We can't design your waterfall from the outside. <em>Discovery</em> is where we learn how the job is actually done today.</h2>
+      <p class="lede">Every payer-requirement matrix, IVR script, and auto-submit threshold in Section 03 has to come from somewhere real — not a template. Discovery is a set of working sessions with the people who currently do this job (billing, prior-auth coordinators, front desk), plus a hard look at the systems and volume behind them. Below are the 25 questions we bring into those sessions, grouped A–F. The output isn't a document — it's a scoped MVP and a build plan grounded in your actual numbers.</p>
+      <p class="lede">For a new client onto the platform, this same discovery feeds the onboarding questionnaire in Section 08 — the answers here decide which connectors get wired up automatically and which need new connector work.</p>
+
+      <div class="qbank">
+        <div class="q-group">
+          <div class="q-group-t">A · Systems &amp; ownership — what you run today</div>
+          <div class="q-row"><div class="q-num">1</div><div><div class="q">Which EHR / practice-management system do you use, and who administers it day to day?</div></div></div>
+          <div class="q-row"><div class="q-num">2</div><div><div class="q">Which clearinghouse do you use — Gateway EDI / TriZetto or another — and which transaction types (eligibility, claim status, authorization) are actually turned on versus available but unused?</div></div></div>
+          <div class="q-row"><div class="q-num">3</div><div><div class="q">Which payer portals does staff log into today, and who holds those logins?</div></div></div>
+          <div class="q-row"><div class="q-num">4</div><div><div class="q">What phone system do you use for payer calls — main line, dedicated extension, or softphone — and are calls already recorded?</div></div></div>
+          <div class="q-row"><div class="q-num">5</div><div><div class="q">Is there a spreadsheet, whiteboard, or tracker staff actually use instead of the official system — and can we see it?</div><div class="why">Almost always more current than the system of record.</div></div></div>
+        </div>
+        <div class="q-group">
+          <div class="q-group-t">B · Volume — what we're sizing this for</div>
+          <div class="q-row"><div class="q-num">6</div><div><div class="q">What is your total outstanding A/R today, broken down by 0–30 / 31–60 / 61–90 / 90+ days?</div></div></div>
+          <div class="q-row"><div class="q-num">7</div><div><div class="q">How many new claims do you file per month, and how many prior-authorization requests per month?</div></div></div>
+          <div class="q-row"><div class="q-num">8</div><div><div class="q">Which 5–10 payers cover most of your claim count and dollar volume?</div><div class="why">The 80/20 that decides where a pilot starts.</div></div></div>
+          <div class="q-row"><div class="q-num">9</div><div><div class="q">Which CPT / procedure codes trigger prior authorization most often, and how frequently does each come up?</div></div></div>
+          <div class="q-row"><div class="q-num">10</div><div><div class="q">Roughly how many payer phone calls does staff place per week — separately for claims follow-up and for prior auth?</div></div></div>
+          <div class="q-row"><div class="q-num">11</div><div><div class="q">How much time does staff spend, on average, per claim and per authorization today?</div><div class="why">This becomes the baseline the pilot gets measured against.</div></div></div>
+        </div>
+        <div class="q-group">
+          <div class="q-group-t">C · Current-state process — how it's actually done</div>
+          <div class="q-row"><div class="q-num">12</div><div><div class="q">Can you walk us through one real claim, start to finish, with the person who works it?</div><div class="why">Screen-shared live — not described from memory.</div></div></div>
+          <div class="q-row"><div class="q-num">13</div><div><div class="q">Can you walk us through one real prior-authorization request the same way?</div></div></div>
+          <div class="q-row"><div class="q-num">14</div><div><div class="q">What makes staff decide to call the payer right now versus wait and check again later?</div></div></div>
+          <div class="q-row"><div class="q-num">15</div><div><div class="q">What gets escalated to a supervisor or physician today, and through what channel?</div></div></div>
+          <div class="q-row"><div class="q-num">16</div><div><div class="q">Where do exceptions and follow-ups get tracked today, if anywhere?</div></div></div>
+        </div>
+        <div class="q-group">
+          <div class="q-group-t">D · Rule ownership — who actually knows the policy</div>
+          <div class="q-row"><div class="q-num">17</div><div><div class="q">Who maintains your payer-requirement matrix — which payer needs authorization for which CPT — and how is it kept updated?</div></div></div>
+          <div class="q-row"><div class="q-num">18</div><div><div class="q">Who decides what can be submitted or appealed automatically versus what always needs a signature?</div></div></div>
+          <div class="q-row"><div class="q-num">19</div><div><div class="q">Who is the clinical escalation contact for medical-necessity questions and peer-to-peer reviews?</div></div></div>
+          <div class="q-row"><div class="q-num">20</div><div><div class="q">How does staff find out when a payer changes its requirements today?</div><div class="why">A bulletin, a portal notice, or finding out the hard way on a denial.</div></div></div>
+        </div>
+        <div class="q-group">
+          <div class="q-group-t">E · MVP scope vs. future forecast</div>
+          <div class="q-row"><div class="q-num">21</div><div><div class="q">What's the smallest slice worth automating first — one payer, one CPT family, or claim-status calls only?</div></div></div>
+          <div class="q-row"><div class="q-num">22</div><div><div class="q">What claim/authorization volume would make a pilot feel real, without being unmanageable to validate by hand?</div></div></div>
+          <div class="q-row"><div class="q-num">23</div><div><div class="q">What should be explicitly out of scope for v1, and deferred to a later phase?</div><div class="why">Named now — additional payers, appeals automation, a second workflow, multi-location — so scope doesn't drift later.</div></div></div>
+        </div>
+        <div class="q-group">
+          <div class="q-group-t">F · Data validation</div>
+          <div class="q-row"><div class="q-num">24</div><div><div class="q">Can you provide a sample export of real claims and authorization history for us to test the decision logic against?</div></div></div>
+          <div class="q-row"><div class="q-num">25</div><div><div class="q">Can we agree on a comparison window — the agent's proposed action checked against what staff actually did — before it runs unsupervised?</div></div></div>
+        </div>
+      </div>
+
+      <div class="closing-box">
+        <div class="k">This is a working session, not a questionnaire</div>
+        <p>A form filled out by a manager misses the exceptions the front-line staff route around every day. Discovery needs time with the people who actually work the claims and authorizations today — not as a formality, but because their current workaround usually <i>is</i> the real specification.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s11">
+      <div class="sec-num">11 / What we need from you</div>
+      <h2 class="headline">Access, a policy, and one point of contact.</h2>
+      <p class="lede">None of this is unusual for a practice already running an EHR and a clearinghouse — it's mostly granting the agent the same access a new staff member would need, plus a few decisions only the practice can make.</p>
+
+      <div class="checklist">
+        <div class="cl-group">
+          <div class="cl-group-t">Access &amp; credentials</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">EHR / practice-management integration access</div><div class="d">Read access to patient, insurance, claim and order data; write access to log authorization results and attach documents.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Clearinghouse credentials</div><div class="d">Gateway EDI / TriZetto (or equivalent) access for eligibility, claim-status, and authorization transactions.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Payer portal logins</div><div class="d">Availity and any payer-specific portals the practice already uses for authorizations and claim status.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">A dedicated outbound phone line</div><div class="d">A number the agent places calls from, separate from the practice's main line, with call recording enabled.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">Policy decisions only the practice can make</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Auto-submit thresholds</div><div class="d">Which appeals and reprocessing requests can go out automatically, and which always wait for a signature.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Pilot scope</div><div class="d">Which payers and which claim/procedure types are in scope for the first phase — narrower is better for the first pilot.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Exception owner</div><div class="d">One named staff member who triages the exception queue during the pilot.</div></div></div>
+        </div>
+        <div class="cl-group">
+          <div class="cl-group-t">Legal &amp; data</div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Signed Business Associate Agreement</div><div class="d">Covering every vendor in the chain that touches PHI — the voice platform, hosting, and any model API.</div></div></div>
+          <div class="cl-row"><div class="cl-box"></div><div><div class="t">Sample historical data</div><div class="d">A sample of unpaid claims and past authorization outcomes, used to validate the decision logic before it runs live.</div></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sec" id="s12">
+      <div class="sec-num">12 / Engagement model</div>
+      <h2 class="headline">Three stages. Three different cost shapes.</h2>
+      <p class="lede">Discovery in Section 10 is what turns this from a concept into a scoped, priced proposal — so no figures appear here. What follows is what each stage actually includes, and what drives its cost once your systems and volume are known.</p>
+
+      <div class="stage">
+        <div class="stage-head"><span class="tag">Stage 1</span><h3>Discovery &amp; onboarding</h3></div>
+        <p class="stage-desc">The working sessions, systems inventory, and volume analysis from Section 10. The output is a scoped build plan, not an estimate pulled from a template.</p>
+        <div class="stage-cols">
+          <div class="stage-col">
+            <div class="stage-col-t">Included</div>
+            <ul>
+              <li>Working sessions with current-state staff — billing, prior-auth, front desk</li>
+              <li>Full systems, payer, and volume inventory</li>
+              <li>MVP definition and a phase-2/3 forecast</li>
+              <li>Data-validation sample pulled and reviewed</li>
+              <li>Written discovery report and scoped proposal</li>
+            </ul>
+          </div>
+          <div class="stage-col">
+            <div class="stage-col-t">What drives the cost</div>
+            <ul>
+              <li>Number of distinct systems to inventory</li>
+              <li>Number of stakeholder and staff sessions needed</li>
+              <li>Whether claims/volume data is readily exportable or needs manual assembly</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="tag">Stage 2</span><h3>Build the dedicated solution</h3></div>
+        <p class="stage-desc">Integration and agent development scoped exactly to what Discovery defined — not a generic template rolled out unchanged.</p>
+        <div class="stage-cols">
+          <div class="stage-col">
+            <div class="stage-col-t">Included</div>
+            <ul>
+              <li>EHR/PM, clearinghouse, and payer-portal integration work</li>
+              <li>Voice-agent conversation design tuned to each in-scope payer's IVR</li>
+              <li>Orchestration/waterfall logic and the client's auto-submit policy rules</li>
+              <li>Exception dashboard and audit-log build-out</li>
+              <li>HIPAA safeguards and BAA setup with every subprocessor</li>
+            </ul>
+          </div>
+          <div class="stage-col">
+            <div class="stage-col-t">What drives the cost</div>
+            <ul>
+              <li>Number of distinct integrations — EHR, clearinghouse, each payer portal</li>
+              <li>Number of payer IVR flows to build and tune</li>
+              <li>Complexity of the auto-submit / appeal policy rules</li>
+              <li>Whether prior integration work exists to build on, or it's greenfield</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-head"><span class="tag">Stage 3</span><h3>Run in production</h3></div>
+        <p class="stage-desc">The live system — hosting, the voice platform, telephony, and everything that keeps it running day to day.</p>
+        <div class="stage-cols">
+          <div class="stage-col">
+            <div class="stage-col-t">Included</div>
+            <ul>
+              <li>Cloud hosting — compute, database, encrypted PHI storage, backups</li>
+              <li>Voice AI platform usage for every payer call placed</li>
+              <li>Telephony / carrier connectivity for outbound calling</li>
+              <li>Clearinghouse/EDI transaction fees not already covered by the practice's existing contract</li>
+              <li>Audit-log storage, monitoring, and ongoing payer-rule-matrix maintenance</li>
+            </ul>
+          </div>
+          <div class="stage-col">
+            <div class="stage-col-t">What drives the cost</div>
+            <ul>
+              <li>Call volume — minutes per month</li>
+              <li>Claims and authorizations processed per month</li>
+              <li>Number of active payer integrations kept current</li>
+              <li>Support tier</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="closing-box">
+        <div class="k">Pricing model — pay per use</div>
+        <p>Running cost is metered against the underlying platforms rather than billed as a flat monthly fee: cloud compute and storage, the voice platform's per-minute usage, telephony carrier minutes, clearinghouse per-transaction charges, and any model-API usage. The practice pays for what the agent actually does — a quiet week costs less to run than a busy one. Discovery is what sizes what "busy" looks like for your volume; no cost figures appear until that sizing is done.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="s13">
+      <div class="sec-num">13 / Compliance &amp; guardrails</div>
+      <h2 class="headline">The agent does the paperwork. It <em>never</em> makes the medical call.</h2>
+      <p class="lede">This is the boundary the whole design is built around: administrative and procedural work is fully automatable; medical judgment is not. Every guardrail below exists to keep that line firm and provable.</p>
+
+      <div class="comp-grid">
+        <div class="comp-row"><div class="k">HIPAA</div><div class="v">PHI moves through EHR data, call transcripts, and clinical documents. A signed <b>BAA</b> is required with every subprocessor in the chain — the voice platform, hosting provider, and any model API — before PHI touches the system.</div></div>
+        <div class="comp-row"><div class="k">Call disclosure</div><div class="v">The agent identifies itself as an automated representative <b>only where the payer permits it</b>; the payer-requirement matrix has to track which payers accept this versus require a human caller.</div></div>
+        <div class="comp-row"><div class="k">Recording consent</div><div class="v">Outbound calls are recorded for the audit trail. Consent rules vary by state (one-party vs. two-party) and by payer — this has to be checked per call, not assumed.</div></div>
+        <div class="comp-row"><div class="k">No medical judgment</div><div class="v">Medical necessity, peer-to-peer review, and unusual denials <b>always</b> escalate to a licensed staff member. The agent reports facts and missing documentation — it does not decide whether a procedure is justified.</div></div>
+        <div class="comp-row"><div class="k">Audit trail</div><div class="v">Every electronic check, portal submission, and call is logged with a timestamp, source, and reference number — the same record used for both compliance review and payer disputes.</div></div>
+        <div class="comp-row"><div class="k">Data handling</div><div class="v">PHI encrypted at rest and in transit; retention follows the practice's existing HIPAA policy rather than a separate schedule.</div></div>
+        <div class="comp-row"><div class="k">Access control</div><div class="v">The exception dashboard and audit log are role-restricted — front-desk, billing, and clinical staff see only what their role needs.</div></div>
+        <div class="comp-row"><div class="k">Client IP &amp; ownership</div><div class="v">Every case record, configured rule, and document a tenant creates belongs to that client — exportable on request, and <b>never</b> used to train a model shared across other tenants without explicit opt-in.</div></div>
+        <div class="comp-row"><div class="k">Tenant isolation</div><div class="v">Logical isolation per tenant in the multi-tenant SaaS deployment, physical isolation in the air-gapped deployment (Section 09) — a breach or bug in one tenant can't cross into another's.</div></div>
+        <div class="comp-row"><div class="k">Configurable rules</div><div class="v">Auto-submit thresholds and escalation routing are set by each Tenant Admin, not hardcoded per client — every rule change is itself an audited, versioned event.</div></div>
+      </div>
+    </section>
+
+    <section class="sec" id="s14">
+      <div class="sec-num">14 / Next steps</div>
+      <h2 class="headline">Start narrow. Prove the waterfall before widening it.</h2>
+      <p class="lede">The recommended first pilot is one workflow, one payer set, and a shadow period before anything submits automatically — so the practice can see the agent's decisions before trusting it to act on them unsupervised.</p>
+
+      <div class="grid-2">
+        <div class="card"><span class="tag">Phase 1</span><h3>Pick one workflow</h3><p>Either VICE (claims follow-up) or ClearAuth AI (prior auth) — not both at once — scoped to your highest-volume payer.</p></div>
+        <div class="card"><span class="tag">Phase 2</span><h3>Shadow mode</h3><p>Agent runs the full waterfall and proposes every action, but a human approves each one before it goes out — validates accuracy against real cases.</p></div>
+        <div class="card"><span class="tag">Phase 3</span><h3>Supervised auto-submit</h3><p>Low-risk actions (electronic checks, routine reprocessing requests) go live automatically; appeals and anything over the client's threshold still route to a person.</p></div>
+        <div class="card"><span class="tag">Phase 4</span><h3>Widen scope</h3><p>Add payers, add the second workflow, and raise auto-submit thresholds only as the exception rate proves the agent is trustworthy.</p></div>
+      </div>
+
+      <div class="closing-box">
+        <div class="k">What this means for the first working session</div>
+        <p>We'll start with Discovery (Section 10) to map current-state process and volume, then confirm the access and policy items from Section 11. Everything else — the waterfall logic, the integrations, the audit trail — is the part we build; the practice's job is mostly the decisions only it can make.</p>
+      </div>
+    </section>
+
+    <div class="foot">VICE &amp; ClearAuth AI — solution walkthrough · prepared for client review</div>
+  </main>
+</div>
+
+<script>
+(function(){
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.sec'));
+  var items = Array.prototype.slice.call(document.querySelectorAll('.rail-item'));
+  function setActive(id){
+    items.forEach(function(it){
+      it.classList.toggle('active', it.getAttribute('data-target') === id);
+    });
+  }
+  if('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ setActive(e.target.id); }
+      });
+    }, { rootMargin: '-40% 0px -55% 0px', threshold: 0 });
+    sections.forEach(function(s){ io.observe(s); });
+  }
+
+  function applyTheme(mode){
+    if(mode === 'dark'){
+      document.documentElement.setAttribute('data-theme','dark');
+    } else {
+      document.documentElement.setAttribute('data-theme','light');
+    }
+    var label = mode === 'dark' ? 'Light mode' : 'Dark mode';
+    var t1 = document.getElementById('themeToggle');
+    var t2 = document.getElementById('themeToggleMobile');
+    if(t1) t1.textContent = label;
+    if(t2) t2.textContent = mode === 'dark' ? 'Light' : 'Dark';
+  }
+  var current = 'system';
+  try{
+    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    current = prefersDark ? 'dark' : 'light';
+  }catch(e){}
+  function toggle(){
+    current = current === 'dark' ? 'light' : 'dark';
+    applyTheme(current);
+  }
+  var b1 = document.getElementById('themeToggle');
+  var b2 = document.getElementById('themeToggleMobile');
+  if(b1) b1.addEventListener('click', toggle);
+  if(b2) b2.addEventListener('click', toggle);
+  applyTheme(current);
+})();
+</script>

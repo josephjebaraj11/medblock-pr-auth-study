@@ -1,0 +1,201 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+
+.pageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  /*  height: 100vh;*/
+  /*  padding: 40px 0;*/
+}
+
+.mainContainer {
+  width: 1550px;
+  height: 836px;
+  position: relative;
+  background: white;
+  overflow: auto;
+  transform: scale(0.8);
+  transform-origin: center;
+  /* border-radius and border removed to hide the box */
+}
+
+.bgRectangle {
+  width: 200px;
+  height: 200px;
+  left: 121px;
+  top: 272px;
+  position: absolute;
+  background: #D9D9D9;
+  border-radius: 13px;
+}
+
+.droppedImage {
+  width: 254px;
+  height: 254px;
+  left: 94px;
+  top: 245px;
+  position: absolute;
+}
+
+.chatCard {
+  width: 351px;
+  height: 162px;
+  left: 280px;
+  top: 339px;
+  position: absolute;
+  background: white;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 9px;
+  padding: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chatBubbleContainer {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.userBubble {
+  justify-content: flex-end;
+}
+
+.iconCircle {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.textBubble {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 9px;
+}
+
+.textBubbleUser {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 9px;
+  background: #D3E3FD;
+}
+
+.textLine {
+  height: 7px;
+  background: #8BB0EB;
+  border-radius: 4px;
+}
+
+.logoContainer {
+  position: absolute;
+  left: 1304px;
+  top: 21px;
+  display: flex;
+  align-items: center;
+}
+
+.logoText {
+  color: #202124;
+  font-size: 31.08px;
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-regular);
+  line-height: 1;
+}
+
+.rightContent {
+  position: absolute;
+  left: 739px;
+  top: 130px;
+  width: 658px;
+  text-align: left;
+}
+
+.title {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xxxl);
+  font-weight: var(--font-weight-medium);
+  line-height: 40px;
+  margin-bottom: 2rem;
+}
+
+.subtext {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-regular);
+  color: black;
+  line-height: 1.5;
+}
+
+.disclaimerText {
+  margin-top: 1rem;
+  color: black;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-regular);
+  font-family: var(--font-family-text);
+  line-height: 20px;
+  word-wrap: break-word;
+}
+
+.highlightAnchor {
+  position: relative;
+  font-weight: 400;
+}
+
+.highlightAnchor::before {
+  content: '';
+  position: absolute;
+  inset: -2px -2px;
+  background: #F1E161;
+  mix-blend-mode: multiply;
+  border-radius: 14.27px;
+  z-index: -1;
+}
+
+.disclaimerAndButtonContainer {
+  margin-top: 2rem;
+}
+
+.viewDemoButton {
+  margin-top: 2rem;
+  padding: 10px 24px;
+  background: #0B57D0;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color 0.2s;
+  width: fit-content;
+}
+
+.viewDemoButton:hover {
+  background: #0a4ab5;
+}

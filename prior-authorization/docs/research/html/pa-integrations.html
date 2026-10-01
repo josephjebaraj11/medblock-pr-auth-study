@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Integrations — FHIR &amp; Standards Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64; --line:#e2e2e0; --accent:#3457d5; --accent2:#0f766e; --warn:#b45309; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; --accent2:#2dd4bf; --warn:#f0b429; --bad:#f87171; } }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:2.5rem 1.5rem 1.5rem; max-width:960px; margin:0 auto;}
+  h1{font-size:1.7rem; margin:0 0 .3rem;}
+  .sub{color:var(--muted); font-size:.95rem;}
+  main{max-width:960px; margin:0 auto; padding:0 1.5rem;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;}
+  h2{font-size:1.15rem; margin-top:0;}
+  .mermaid{background:transparent; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.5rem;}
+  th,td{border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top;}
+  th{background:rgba(52,87,213,.08); font-weight:600;}
+  .diagram-note{font-size:.8rem; color:var(--muted); margin-top:.5rem;}
+  a{color:var(--accent);}
+  nav.crumbs{max-width:960px; margin:1rem auto 0; padding:0 1.5rem; font-size:.85rem;}
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">&larr; All research</a></nav>
+<header>
+  <h1>Integrating Prior Authorization: EHRs, FHIR, and Data Standards</h1>
+  <div class="sub">Visual companion to <a href="../pa-integrations.md">pa-integrations.md</a> — the plumbing that lets a provider's EHR and a payer's system talk without a human retyping data in the middle.</div>
+</header>
+<main>
+
+<section>
+  <h2>1. Swimlane: a PA request across EHR, clearinghouse, and payer</h2>
+  <p>This is the modern, FHIR-based path a PA request takes today — one lane per organization.</p>
+  <div class="mermaid">
+sequenceDiagram
+  participant Clinician
+  participant EHR
+  participant CH as Clearinghouse
+  participant Payer
+
+  Clinician->>EHR: Places order
+  EHR->>Payer: CRD: needs PA?
+  Payer-->>EHR: Yes, plus required docs
+  EHR->>EHR: DTR auto-fills from chart
+  EHR->>CH: PAS submission
+  CH->>Payer: Routed to payer
+  Payer->>Payer: Adjudication engine
+  Payer-->>CH: Decision
+  CH-->>EHR: Decision returned
+  alt Pended
+    EHR->>Payer: CDex: more documentation
+    Payer-->>EHR: Updated decision
+  end
+  EHR-->>Clinician: PA status shown
+</div>
+  <div class="diagram-note">Note: the clearinghouse rarely disappears — most traffic still passes through an intermediary rather than a direct EHR&harr;payer connection.</div>
+</section>
+
+<section>
+  <h2>2. Architecture: where each Da Vinci standard fires</h2>
+  <div class="mermaid">
+flowchart TD
+  Order[Clinician places order] --> Hooks[CDS Hooks fires]
+  Hooks --> CRD[CRD: needs PA?]
+  CRD -->|Yes| DTR[DTR: auto-fill questionnaire]
+  DTR --> PAS[PAS: submit and get decision]
+  PAS -->|Pended| CDex[CDex: more documentation]
+  CDex --> PAS
+  PAS -->|Decided| Done[Decision recorded in EHR]
+  CRD -->|No PA needed| Done
+
+  style CRD fill:#3457d520,stroke:#3457d5
+  style DTR fill:#3457d520,stroke:#3457d5
+  style PAS fill:#0f766e20,stroke:#0f766e
+  style CDex fill:#b4530920,stroke:#b45309
+</div>
+</section>
+
+<section>
+  <h2>3. Legacy vs. modern standards coexisting</h2>
+  <div class="mermaid">
+flowchart LR
+  subgraph MED[Medical PA - the CMS-mandated path]
+    direction LR
+    EHR2[Provider EHR] --> FHIR[FHIR API:<br/>CRD, DTR, PAS, CDex]
+    FHIR -->|payer translates<br/>internally| X12[X12 278<br/>legacy EDI]
+    X12 --> Adjud[Payer adjudication<br/>engine]
+    Adjud --> MedDec[Medical PA decision]
+  end
+
+  subgraph RX[Pharmacy PA - a separate track]
+    direction LR
+    RxEHR[E-prescribing system] --> NCPDP[NCPDP SCRIPT<br/>pharmacy ePA]
+    NCPDP --> PBM[PBM system]
+    PBM --> RxDec[Pharmacy PA decision]
+  end
+</div>
+  <div class="diagram-note">These are two <strong>separate</strong> pipelines, not one. Pharmacy PA runs on NCPDP standards through PBMs and already has high adoption; medical PA is the one CMS-0057-F targets with FHIR. A drug request and a procedure request never meet in the same system.</div>
+  <div class="diagram-note">CMS grants enforcement discretion: a payer can run fully FHIR-based without filing a separate X12 278 — but most still translate internally to older adjudication engines.</div>
+</section>
+
+<section>
+  <h2>4. Standards maturity summary</h2>
+  <table>
+    <tr><th>Standard</th><th>Role</th><th>Status</th></tr>
+    <tr><td>HL7 FHIR</td><td>Common data format</td><td>Mature, industry-wide</td></tr>
+    <tr><td>CDS Hooks</td><td>Trigger mechanism</td><td>Finalized, in production</td></tr>
+    <tr><td>CRD</td><td>Real-time "needs PA?" check</td><td>Finalized; live at Epic + several payers</td></tr>
+    <tr><td>DTR</td><td>Auto-fills documentation</td><td>Finalized; adoption growing</td></tr>
+    <tr><td>PAS</td><td>Submission + decision</td><td>Finalized; CMS-0057-F's technical basis (Jan 2027 deadline)</td></tr>
+    <tr><td>CDex</td><td>Handles pended requests</td><td>Finalized but least mature in production</td></tr>
+    <tr><td>X12 278</td><td>Legacy EDI submission</td><td>HIPAA-mandated; low EHR-side adoption; often runs underneath FHIR</td></tr>
+  </table>
+  <p><a href="../pa-integrations.md">Read the full markdown report &rarr;</a></p>
+</section>
+
+</main>
+<script src="diagrams.js"></script>
+</body>
+</html>

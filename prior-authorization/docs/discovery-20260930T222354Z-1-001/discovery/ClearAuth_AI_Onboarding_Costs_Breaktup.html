@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClearAuth AI — Onboarding Costs</title>
+<style>
+  :root{
+    --bg:#070A12;
+    --panel:#0E1422;
+    --panel2:#111A2C;
+    --text:#F7FAFF;
+    --muted:#AAB6CB;
+    --line:#27334B;
+    --cyan:#28E7FF;
+    --green:#55F7A5;
+    --purple:#B583FF;
+    --yellow:#FFD166;
+    --orange:#FFB44A;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    color:var(--text);
+    background:
+      radial-gradient(900px 520px at 8% -5%,rgba(40,231,255,.12),transparent 58%),
+      radial-gradient(900px 520px at 95% 0%,rgba(181,131,255,.13),transparent 58%),
+      var(--bg);
+    line-height:1.6;
+  }
+  .page{max-width:1180px;margin:0 auto;padding:38px 24px 72px}
+  .hero,.section{
+    background:linear-gradient(180deg,rgba(15,22,38,.98),rgba(9,14,25,.98));
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:22px;
+    padding:26px 28px;
+    margin-bottom:18px;
+    box-shadow:0 18px 55px rgba(0,0,0,.28);
+  }
+  .hero{position:relative;overflow:hidden;border-color:rgba(40,231,255,.24)}
+  .hero:before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--purple))}
+  .eyebrow{font-size:12px;font-weight:900;letter-spacing:1.8px;text-transform:uppercase;color:var(--cyan)}
+  h1{font-size:46px;line-height:1.05;letter-spacing:-1.8px;margin:8px 0 14px}
+  h2{font-size:28px;letter-spacing:-.6px;margin:0 0 14px}
+  h3{font-size:18px;margin:18px 0 8px}
+  p{margin:0 0 14px;color:#D3DCEC}
+  strong{color:#fff}
+  .formula{
+    margin:14px 0;
+    padding:16px 18px;
+    border-radius:14px;
+    background:linear-gradient(90deg,rgba(40,231,255,.08),rgba(85,247,165,.06));
+    border:1px solid rgba(40,231,255,.22);
+    font-size:20px;
+    font-weight:800;
+  }
+  blockquote{
+    margin:14px 0;
+    padding:15px 18px;
+    border-left:4px solid var(--cyan);
+    background:#0A1020;
+    border-radius:10px;
+    color:#E3EAF6;
+  }
+  ul{margin:8px 0 14px;padding-left:22px}
+  li{margin:5px 0;color:#D1DBEB}
+  table{width:100%;border-collapse:collapse;margin:14px 0 10px;font-size:14px}
+  th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:#95A3BC;background:#0A1020}
+  td:last-child,th:last-child{text-align:right}
+  code{
+    display:inline-block;
+    padding:2px 6px;
+    background:#080D18;
+    border:1px solid #222D43;
+    border-radius:6px;
+    color:#DDE7F7;
+  }
+  .callout{
+    padding:16px 18px;
+    border-radius:14px;
+    border:1px solid rgba(181,131,255,.28);
+    background:linear-gradient(90deg,rgba(181,131,255,.08),rgba(40,231,255,.05));
+    margin:14px 0;
+  }
+  .accent{color:var(--green);font-weight:900}
+  .muted{color:var(--muted)}
+  .divider{height:1px;background:var(--line);margin:22px 0}
+  .footer{color:#7E8CA5;font-size:11px;text-align:center;margin-top:18px}
+  @media(max-width:700px){
+    .page{padding:20px 14px 50px}
+    .hero,.section{padding:20px}
+    h1{font-size:36px}
+    h2{font-size:24px}
+    table{font-size:12px}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <section class="hero">
+    <div class="eyebrow">ClearAuth AI</div>
+    <h1>Onboarding Costs</h1>
+
+    <p>I’m assuming your <strong>$50 means $50 per onboarding/implementation hour</strong>, not $50 per prior authorization. Charging $50 per PA would be difficult to justify against the attached benchmark of $20–$30 manual cost per PA.</p>
+
+    <p>Based on the architecture we defined and your attached volume/cost assumptions, I would price onboarding mostly by <strong>integration complexity</strong>, not physician count. A 10-doctor practice does not take 10× the onboarding effort of a 1-doctor practice because the EHR, payer routes, n8n workflows, security, and portal integrations are practice-level setup.</p>
+
+    <p>The client requirement supports this model: ClearAuth receives patient/insurance/CPT/diagnosis/order data, checks electronically first, uses payer/clearinghouse or portal integrations, gathers clinical documents, and routes only exceptions to humans.</p>
+  </section>
+
+  <section class="section">
+    <h2>Recommended onboarding formula</h2>
+
+    <p>Use this formula:</p>
+
+    <div class="formula">Onboarding Hours = 34 + (0.25 × Physicians) + (3 × Electronic Payer Routes) + (4 × Portal Routes)</div>
+
+    <p>The fixed <strong>34 hours</strong> covers the common work:</p>
+
+    <table>
+      <thead>
+        <tr><th>Onboarding activity</th><th>Hours</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Discovery + access readiness</td><td>4</td></tr>
+        <tr><td>Practice/tenant/security setup</td><td>4</td></tr>
+        <tr><td>EHR integration + data mapping</td><td>10</td></tr>
+        <tr><td>n8n/HITL workflow configuration</td><td>4</td></tr>
+        <tr><td>End-to-end UAT</td><td>6</td></tr>
+        <tr><td>User/admin training</td><td>2</td></tr>
+        <tr><td>Go-live + initial hypercare</td><td>4</td></tr>
+        <tr><td><strong>Base hours</strong></td><td><strong>34</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Then add:</p>
+    <ul>
+      <li><strong>0.25 hr per physician</strong> for provider/NPI/EHR mapping</li>
+      <li><strong>3 hrs per electronic payer/clearinghouse route</strong></li>
+      <li><strong>4 hrs per payer portal</strong> needing browser configuration/validation</li>
+    </ul>
+
+    <p>So:</p>
+    <blockquote><strong>Onboarding Cost = Onboarding Hours × $50/hour</strong></blockquote>
+
+    <p>I would then add <strong>15% implementation contingency</strong> for credential issues, EHR field differences, test-data problems, payer portal changes, etc.</p>
+  </section>
+
+  <section class="section">
+    <h2>Example: 10-physician practice</h2>
+
+    <p>Assume:</p>
+    <ul>
+      <li>10 physicians</li>
+      <li>1 already-supported EHR</li>
+      <li>3 electronic payer/clearinghouse routes</li>
+      <li>2 payer portals requiring browser fallback</li>
+    </ul>
+
+    <p>Calculation:</p>
+
+    <p><strong>34 base hours</strong></p>
+    <ul>
+      <li><code>10 × 0.25 = 2.5 hours</code> physician mapping</li>
+      <li><code>3 × 3 = 9 hours</code> electronic payer setup</li>
+      <li><code>2 × 4 = 8 hours</code> portal setup</li>
+    </ul>
+
+    <blockquote><strong>= 53.5 onboarding hours</strong></blockquote>
+
+    <p>At $50/hour:</p>
+    <blockquote><strong>53.5 × $50 = $2,675</strong></blockquote>
+
+    <p>With 15% contingency:</p>
+    <blockquote><strong>$2,675 × 1.15 = $3,076</strong></blockquote>
+
+    <h3>Recommendation</h3>
+    <p>For a normal 10-physician practice with an already-supported EHR, I would offer:</p>
+    <blockquote><strong>ClearAuth Standard Onboarding: $3,000–$3,500 one time</strong></blockquote>
+    <p>That is cleaner commercially than invoicing 53.5 hours.</p>
+  </section>
+
+  <section class="section">
+    <h2>Now compare that to the client's current PA burden</h2>
+
+    <p>Your attached numbers say a physician handles roughly:</p>
+    <blockquote><strong>160–175 PAs/month</strong></blockquote>
+
+    <p>Therefore a 10-physician practice has:</p>
+    <blockquote><strong>1,600–1,750 PAs/month</strong></blockquote>
+
+    <p>The attached manual-cost assumption is:</p>
+    <blockquote><strong>$20–$30 per PA</strong></blockquote>
+
+    <p>So current administrative burden is approximately:</p>
+
+    <h3>Low end</h3>
+    <p><code>1,600 × $20 = $32,000/month</code></p>
+
+    <h3>High end</h3>
+    <p><code>1,750 × $30 = $52,500/month</code></p>
+
+    <blockquote><strong>Current PA administrative burden ≈ $32,000–$52,500/month</strong></blockquote>
+  </section>
+
+  <section class="section">
+    <h2>What automation potentially saves</h2>
+
+    <p>Your attached data says automation can reduce manual PA work from <strong>20+ minutes to under 5 minutes</strong>.</p>
+
+    <p>For modeling, that is roughly a:</p>
+    <blockquote><strong>75% reduction in handling time</strong></blockquote>
+
+    <p>If cost scaled proportionally, the theoretical administrative value automated would be:</p>
+
+    <h3>Low end</h3>
+    <p><code>$32,000 × 75% = $24,000/month</code></p>
+
+    <h3>High end</h3>
+    <p><code>$52,500 × 75% = $39,375/month</code></p>
+
+    <p>So the theoretical gross savings opportunity for a 10-physician practice is:</p>
+    <blockquote><strong>$24,000–$39,375/month</strong></blockquote>
+
+    <p>I would <strong>not sell using this entire number</strong> because some authorizations will still need human intervention, peer-to-peer review, missing-document resolution, portal failures, etc. The client requirement itself specifically retains humans for medical-necessity questions, peer-to-peer reviews, and unusual denials.</p>
+
+    <p>For a business case, use a more conservative <strong>50% realization of that theoretical value</strong> initially:</p>
+    <blockquote><strong>Estimated practical savings: $12,000–$19,688/month</strong></blockquote>
+
+    <p>That makes the sales story much more defensible.</p>
+  </section>
+
+  <section class="section">
+    <h2>Payback on onboarding</h2>
+
+    <p>If onboarding costs approximately <strong>$3,100</strong>:</p>
+
+    <p>At $12,000/month savings:</p>
+    <blockquote><code>$3,100 ÷ $12,000 = 0.258 months</code></blockquote>
+
+    <p>Approximately <strong>7–8 days</strong> to recover onboarding cost.</p>
+
+    <p>At $19,688/month savings:</p>
+    <blockquote><code>$3,100 ÷ $19,688 = 0.157 months</code></blockquote>
+
+    <p>Approximately <strong>5 days</strong>.</p>
+
+    <p>So even under the conservative model:</p>
+    <blockquote><strong>A 10-physician practice could recover the ClearAuth onboarding cost within approximately one week of operational savings.</strong></blockquote>
+
+    <p>Again, that is before recurring ClearAuth subscription fees, API/clearinghouse fees, browser/voice costs, or support costs.</p>
+  </section>
+
+  <section class="section">
+    <h2>Scale comparison</h2>
+
+    <p>Using the attached PA volumes and the same conservative 50%-of-theoretical-savings assumption:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Practice</th>
+          <th>Monthly PA volume</th>
+          <th>Current manual burden</th>
+          <th>Conservative monthly savings</th>
+          <th>Approx. onboarding</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>10 physicians</strong></td>
+          <td>1,600–1,750</td>
+          <td>$32K–$52.5K</td>
+          <td><strong>$12K–$19.7K</strong></td>
+          <td>~$3.1K</td>
+        </tr>
+        <tr>
+          <td><strong>25 physicians</strong></td>
+          <td>4,000–4,375</td>
+          <td>$80K–$131.3K</td>
+          <td><strong>$30K–$49.2K</strong></td>
+          <td>~$3.3K*</td>
+        </tr>
+        <tr>
+          <td><strong>50 physicians</strong></td>
+          <td>8,000–8,750</td>
+          <td>$160K–$262.5K</td>
+          <td><strong>$60K–$98.4K</strong></td>
+          <td>~$3.7K*</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="muted">*Assumes the same EHR and approximately the same number of payer integrations. Larger practices with more payer routes or locations will take more onboarding effort.</p>
+
+    <p>This demonstrates an important commercial point:</p>
+    <blockquote><strong>Onboarding cost grows slowly, while the customer's value grows almost linearly with PA volume.</strong></blockquote>
+
+    <p>That is why I would <strong>not price onboarding per physician</strong>.</p>
+  </section>
+
+  <section class="section">
+    <h2>Better pricing model</h2>
+
+    <p>I would structure ClearAuth commercially in three pieces.</p>
+
+    <h3>1. One-time onboarding</h3>
+
+    <p>For a normal practice with supported integrations:</p>
+    <blockquote><strong>$3,000–$3,500</strong></blockquote>
+
+    <p>Includes:</p>
+    <ul>
+      <li>practice setup</li>
+      <li>doctor mapping</li>
+      <li>EHR configuration</li>
+      <li>payer route configuration</li>
+      <li>n8n setup</li>
+      <li>portal configuration</li>
+      <li>HITL setup</li>
+      <li>UAT</li>
+      <li>training</li>
+      <li>go-live</li>
+    </ul>
+
+    <h3>2. Net-new integration charges</h3>
+
+    <p>Do not absorb custom integration work into the standard onboarding price.</p>
+
+    <p>For example:</p>
+
+    <table>
+      <thead>
+        <tr><th>Additional work</th><th>Suggested formula at $50/hr</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>New EHR integration</td><td>20–40 hrs = <strong>$1,000–$2,000</strong></td></tr>
+        <tr><td>New electronic payer integration</td><td>8–16 hrs = <strong>$400–$800</strong></td></tr>
+        <tr><td>New payer portal automation</td><td>8–16 hrs = <strong>$400–$800</strong></td></tr>
+        <tr><td>Voice payer workflow</td><td>8–20 hrs = <strong>$400–$1,000</strong></td></tr>
+        <tr><td>Additional complex location/workflow</td><td>4–8 hrs = <strong>$200–$400</strong></td></tr>
+      </tbody>
+    </table>
+
+    <p>Once a connector becomes reusable, later customers should <strong>not incur the full development cost</strong>.</p>
+
+    <p>That is where your margins improve significantly.</p>
+  </section>
+
+  <section class="section">
+    <h2>The formula I would actually put into the business plan</h2>
+
+    <h3>Onboarding</h3>
+
+    <div class="formula">H = 34 + 0.25P + 3E + 4B + N</div>
+
+    <p>Where:</p>
+    <ul>
+      <li><strong>P</strong> = number of physicians</li>
+      <li><strong>E</strong> = electronic payer connections</li>
+      <li><strong>B</strong> = browser/portal payer connections</li>
+      <li><strong>N</strong> = net-new integration/customization hours</li>
+    </ul>
+
+    <p>Then:</p>
+    <blockquote><strong>Onboarding Cost = H × $50</strong></blockquote>
+
+    <p>And:</p>
+    <blockquote><strong>Quoted Onboarding Price = Onboarding Cost × 1.15</strong></blockquote>
+
+    <p>for standard contingency.</p>
+
+    <div class="divider"></div>
+
+    <h3>Customer savings</h3>
+
+    <p>Use:</p>
+    <blockquote><strong>Monthly Manual Cost = Monthly PA Volume × Manual Cost per PA</strong></blockquote>
+
+    <p>Then:</p>
+    <blockquote><strong>Theoretical Automation Value = Monthly Manual Cost × Automation Reduction</strong></blockquote>
+
+    <p>With your numbers:</p>
+    <p><code>Automation Reduction ≈ 75%</code></p>
+
+    <p>For conservative sales modeling:</p>
+    <blockquote><strong>Expected Savings = Theoretical Automation Value × 50% realization factor</strong></blockquote>
+
+    <p>So the complete formula becomes:</p>
+    <blockquote><strong>Expected Monthly Savings = PA Volume × $20–$30 × 75% × 50%</strong></blockquote>
+
+    <p>For the 10-physician example:</p>
+    <blockquote><code>1,600–1,750 × $20–$30 × 0.75 × 0.50</code></blockquote>
+
+    <p>= approximately:</p>
+    <blockquote><strong>$12,000–$19,688/month</strong></blockquote>
+  </section>
+
+  <section class="section">
+    <h2>My recommended commercial position</h2>
+
+    <p>For the first customers, I would use:</p>
+
+    <blockquote><strong>Standard ClearAuth Onboarding: $3,000</strong></blockquote>
+
+    <p>and define it as:</p>
+
+    <blockquote>1 practice, up to 10 physicians, one supported EHR, up to three supported electronic payer routes, two payer portal configurations, HITL workflow, training and go-live.</blockquote>
+
+    <p>Then clearly state:</p>
+
+    <blockquote><strong>Net-new EHR or payer integrations are estimated separately at $50/hour.</strong></blockquote>
+
+    <p>That protects you from a customer whose EHR unexpectedly requires 50 hours of custom work.</p>
+
+    <p>More importantly, <strong>don't lead the customer with “we spent 54 hours onboarding you.”</strong> Lead with:</p>
+
+    <div class="callout">
+      <strong>“Your practice currently processes approximately 1,600–1,750 prior authorizations every month. At the stated $20–$30 administrative burden per authorization, that represents $32K–$52.5K of monthly burden. A one-time ~$3K ClearAuth onboarding investment is small relative to even a conservative $12K–$20K/month automation opportunity.”</strong>
+    </div>
+
+    <p>That is the much stronger ROI story.</p>
+  </section>
+
+  <div class="footer">ClearAuth AI · Onboarding Costs · Internal reference</div>
+</div>
+</body>
+</html>

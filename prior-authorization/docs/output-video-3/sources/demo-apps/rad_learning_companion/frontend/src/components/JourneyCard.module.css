@@ -1,0 +1,80 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+.card {
+  width: 100%;
+  max-width: 452px;
+  background: white;
+  border-radius: 14px;
+  border: 2px #E9E9E9 solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: contain;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  background-color: white;
+  border-top: 2px #E9E9E9 solid;
+}
+
+.label {
+  color: black;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 24px;
+}
+
+.launchButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 100px;
+  background: #0B57D0;
+  color: white;
+  border: none;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  font-family: var(--font-family-text);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.launchButton:hover {
+  background: #0a4ab5;
+}
+
+.buttonIcon {
+  width: 20px;
+  height: 20px;
+  fill: white;
+}

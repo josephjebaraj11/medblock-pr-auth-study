@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Competitors — Ecosystem Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64; --line:#e2e2e0; --accent:#3457d5; --accent2:#0f766e; --warn:#b45309; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; --accent2:#2dd4bf; --warn:#f0b429; --bad:#f87171; } }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:2.5rem 1.5rem 1.5rem; max-width:960px; margin:0 auto;}
+  h1{font-size:1.7rem; margin:0 0 .3rem;}
+  .sub{color:var(--muted); font-size:.95rem;}
+  main{max-width:960px; margin:0 auto; padding:0 1.5rem;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;}
+  h2{font-size:1.15rem; margin-top:0;}
+  .mermaid{background:transparent; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.5rem;}
+  th,td{border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top;}
+  th{background:rgba(52,87,213,.08); font-weight:600;}
+  .diagram-note{font-size:.8rem; color:var(--muted); margin-top:.5rem;}
+  a{color:var(--accent);}
+  .tag-risk{color:var(--bad); font-weight:600;}
+  nav.crumbs{max-width:960px; margin:1rem auto 0; padding:0 1.5rem; font-size:.85rem;}
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">&larr; All research</a></nav>
+<header>
+  <h1>Who's Using PA Automation and How They're Performing</h1>
+  <div class="sub">Visual companion to <a href="../pa-competitors.md">pa-competitors.md</a> — the market map, the regulatory timeline forcing everyone's hand, and one detailed cross-company data flow.</div>
+</header>
+<main>
+
+<section>
+  <h2>1. Market ecosystem map</h2>
+  <p>Payers, PBMs, providers/EHRs, and startups — and the acquisitions/partnerships connecting them.</p>
+  <div class="mermaid">
+flowchart LR
+  OLIVE[Olive AI<br/>shut down 2023] -->|PA business<br/>sold to| HUMATA[Humata Health]
+  OLIVE -->|clearinghouse<br/>sold to| WAYSTAR[Waystar]
+  UHC[UnitedHealthcare<br/>and Optum] -->|invested in,<br/>then partnered with| HUMATA
+  FORT[Fort HealthCare<br/>health system] -->|bought| NOTABLE[Notable Health]
+  ATHENA[athenahealth<br/>EHR] -->|routes PA through| AVAILITY[Availity<br/>clearinghouse]
+  AVAILITY -->|submits to| HUM[Humana<br/>payer]
+
+  style OLIVE fill:#b91c1c25,stroke:#b91c1c
+</div>
+  <div class="diagram-note">Olive AI ($850M+ raised, shut down 2023) is the clearest cautionary node — its PA business survives as Humata Health, which Optum then commercially partnered with. See the report for the full list of payers, PBMs, and startups.</div>
+</section>
+
+<section>
+  <h2>2. Regulatory & market timeline</h2>
+  <div class="mermaid">
+timeline
+  title Key dates in PA automation
+  2023 : Olive AI shuts down
+       : UnitedHealthcare pledges PA cuts
+  2024 : CMS-0057-F rule finalized
+       : nH Predict Senate findings published
+  2025 : AHIP 48-insurer pledge
+       : Startup funding rounds accelerate
+  2026 : CMS-0057-F decision timeframes begin
+       : Epic CRD live at 4+ health systems
+  2027 : CMS-0057-F FHIR API deadline
+</div>
+</section>
+
+<section>
+  <h2>3. A real cross-company data flow: athenahealth &rarr; Availity &rarr; Humana</h2>
+  <p>One of the few publicly documented, end-to-end, three-party FHIR pipelines actually working in production.</p>
+  <div class="mermaid">
+sequenceDiagram
+  participant Clinician
+  participant EHR as athenaOne EHR
+  participant CH as Availity clearinghouse
+  participant Payer as Humana
+
+  Clinician->>EHR: Places order needing PA
+  EHR->>CH: FHIR request
+  CH->>Payer: Routed via gateway
+  Payer-->>CH: Coverage decision
+  CH-->>EHR: Decision returned
+  EHR-->>Clinician: PA status shown
+  Note over EHR,Payer: Real 3-party FHIR pipeline, KLAS award winner
+</div>
+</section>
+
+<section>
+  <h2>4. How trustworthy are the published numbers?</h2>
+  <div class="mermaid">
+flowchart LR
+  A["TIER 3 — least credible<br/>Vendor claim<br/>(self-reported)"]
+  B["TIER 2<br/>Customer case study<br/>(vendor picked the customer)"]
+  C["TIER 1 — most credible<br/>Independent third party<br/>(no commercial stake)"]
+  C --> D[PHTI: no system-wide<br/>cost reduction shown]
+  C --> E[nH Predict litigation:<br/>high reversal rate alleged]
+  style A fill:#b91c1c15,stroke:#b91c1c
+  style B fill:#b4530915,stroke:#b45309
+  style C fill:#0f766e20,stroke:#0f766e
+  style D fill:#b4530920,stroke:#b45309
+  style E fill:#b91c1c25,stroke:#b91c1c
+</div>
+  <div class="diagram-note">These are three <strong>credibility tiers</strong>, not process steps. Nearly every "96% first-pass approval" or "18-second decision" figure in this space is Tier 3. Only two Tier 1 findings exist — and both counsel caution.</div>
+</section>
+
+<section>
+  <h2>Key takeaways</h2>
+  <table>
+    <tr><th>Category</th><th>Leader(s)</th><th>Watch out for</th></tr>
+    <tr><td>Payer-built</td><td>Optum (Digital Auth Complete, InterQual Auth Accelerator)</td><td class="tag-risk">nH Predict litigation — denial rate roughly doubled after AI introduction</td></tr>
+    <tr><td>PBM</td><td>CVS Caremark (18–22 sec median approval)</td><td>Vendor-reported, not independently audited</td></tr>
+    <tr><td>EHR</td><td>Epic Payer Platform (CRD live, 4+ health systems)</td><td>Requires payer-side integration to actually pay off</td></tr>
+    <tr><td>Startup</td><td>Cohere Health ($106M raised, full pipeline)</td><td>"AI never denies" is a policy choice, not a technical guarantee</td></tr>
+  </table>
+  <p><a href="../pa-competitors.md">Read the full markdown report &rarr;</a></p>
+</section>
+
+</main>
+<script src="diagrams.js"></script>
+</body>
+</html>

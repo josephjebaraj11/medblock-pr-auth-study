@@ -1,0 +1,3 @@
+case_id,image_type,case_condition_name,download_image_url,report_path,findings
+1,CXR,Pleural Effusion,https://huggingface.co/spaces/google/rad-learn-companion-samples/resolve/main/images/1.png,data/reports/1.txt,The findings on this Chest X-Ray are suggestive of Right-sided Pleural Effusion. This is indicated by the blunting of the right costophrenic angle and the presence of fluid in the right pleural space.
+2,CXR,No Abnormalities,https://huggingface.co/spaces/google/rad-learn-companion-samples/resolve/main/images/4.png,data/reports/2.txt,"Based on the image, it appears to be a Normal Chest X-Ray. The lungs appear clear with no obvious signs of consolidation, nodules, or masses. The heart size seems normal and there are no apparent mediastinal abnormalities."

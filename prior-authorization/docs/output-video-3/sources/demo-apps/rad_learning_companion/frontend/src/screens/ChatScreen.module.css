@@ -1,0 +1,257 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transform: scale(0.8);
+  transform-origin: center;
+}
+
+.topNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  width: 1550px;
+}
+
+.contentBox {
+  width: 1550px;
+  height: 772px;
+  background: white;
+  border-radius: 28px;
+  border: 2px #E9E9E9 solid;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.navButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 100px;
+  padding: 0 16px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  gap: 8px;
+  border: 1px solid #C4C7C5;
+  background-color: transparent;
+  color: #444746;
+}
+
+.detailsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 100px;
+  padding: 0 16px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  gap: 8px;
+  background: #C2E7FF;
+  color: #004A77;
+  border: none;
+}
+
+.mainLayout {
+  flex-grow: 1;
+  display: flex;
+  gap: 22px;
+  overflow: hidden;
+}
+
+.leftPanel {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rightPanel {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.caseImage {
+  width: 100%;
+  max-width: 755px;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.imageErrorFallback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+
+  width: 90%;
+  height: 90%;
+  max-width: 600px;
+
+  background-color: #fcefee;
+  border: 1px solid #ea4335;
+  border-radius: 8px;
+
+  color: #c5221f;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  text-align: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.imageErrorFallback p {
+  margin: 0;
+}
+
+.imageErrorFallback p:first-child {
+  font-size: 2rem;
+}
+
+.chatWindow {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scroll-behavior: smooth;
+}
+
+.mcqOptionsOnly {
+  margin-left: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: calc(90% - 44px);
+  align-self: flex-start;
+}
+
+.disclaimerBox {
+  margin-top: auto;
+  background: #FEF7E0;
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.disclaimerIcon {
+  width: 24px;
+  height: 24px;
+  color: #444746;
+  flex-shrink: 0;
+}
+
+.disclaimerText {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  color: #000;
+}
+
+.summaryButtonContainer {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.summaryButton {
+  padding: 10px 24px;
+  background: #0B57D0;
+  color: white;
+  border: none;
+  border-radius: 100px;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-text);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.summaryButton:hover {
+  background: #0a4ab5;
+}
+
+.summaryButton:disabled {
+  background: #a5a5a5;
+  cursor: not-allowed;
+}
+
+.hintText {
+  font-style: italic;
+  margin-top: 8px;
+  color: #444746;
+}
+
+.loadingContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  gap: 16px;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #d1e5ff;
+  border-top-color: #0B57D0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loadingText {
+  font-size: 1.1rem;
+  color: #444746;
+  font-weight: 500;
+}
+
+.progressTracker {
+  text-align: center;
+  font-size: 1em;
+  color: #000;
+  padding: 0 20px 10px;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

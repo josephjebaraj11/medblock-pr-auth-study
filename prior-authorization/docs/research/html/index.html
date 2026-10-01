@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prior Authorization Research</title>
+<style>
+  :root{ --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64; --line:#e2e2e0; --accent:#3457d5; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; } }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:3rem 1.5rem 1.5rem; max-width:760px; margin:0 auto;}
+  h1{font-size:1.8rem; margin:0 0 .4rem;}
+  .sub{color:var(--muted);}
+  main{max-width:760px; margin:0 auto; padding:0 1.5rem; display:grid; gap:1rem;}
+  a.card{display:block; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.25rem 1.5rem; text-decoration:none; color:var(--ink); transition:border-color .15s;}
+  a.card:hover{border-color:var(--accent);}
+  a.card h2{margin:0 0 .3rem; font-size:1.05rem; color:var(--accent);}
+  a.card p{margin:0; color:var(--muted); font-size:.9rem;}
+  .num{display:inline-block; width:1.6rem; height:1.6rem; border-radius:50%; background:var(--accent); color:#fff; text-align:center; line-height:1.6rem; font-size:.8rem; margin-right:.5rem;}
+</style>
+</head>
+<body>
+<header>
+  <h1>Prior Authorization: Research &amp; Diagrams</h1>
+  <div class="sub">Five visual companions to the markdown research files in this folder. Each page has flowcharts, architecture diagrams, and swimlanes summarizing the full report.</div>
+</header>
+<main>
+  <a class="card" href="pa-tech-landscape.html">
+    <h2><span class="num">1</span>How Vendors Are Automating Prior Authorization</h2>
+    <p>Microsoft, Google, AWS, n8n, and 9 other vendors — architecture diagrams and a maturity map.</p>
+  </a>
+  <a class="card" href="pa-competitors.html">
+    <h2><span class="num">2</span>Who's Using PA Automation and How They're Performing</h2>
+    <p>Market ecosystem map, regulatory timeline, and a real cross-company FHIR data flow.</p>
+  </a>
+  <a class="card" href="pa-alternatives.html">
+    <h2><span class="num">3</span>Alternatives to Prior Authorization</h2>
+    <p>A decision tree: does anything actually eliminate PA, or just narrow/speed it up?</p>
+  </a>
+  <a class="card" href="pa-integrations.html">
+    <h2><span class="num">4</span>Integrating PA: EHRs, FHIR, and Data Standards</h2>
+    <p>A swimlane of a real PA request across EHR, clearinghouse, and payer.</p>
+  </a>
+  <a class="card" href="pa-best-solution.html">
+    <h2><span class="num">5</span>The Best Solution for Prior Authorization</h2>
+    <p>The recommended architecture, agent swimlane, and rollout plan — synthesized from 1–4.</p>
+  </a>
+</main>
+</body>
+</html>

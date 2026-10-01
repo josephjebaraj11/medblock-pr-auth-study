@@ -1,0 +1,188 @@
+@import "./fonts.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Semantic surface/content tokens. Components reference these rather than
+   * raw palette steps, so a theme swap is a change of eleven variables instead
+   * of a `dark:` variant on every utility in the codebase.
+   *
+   * Values are space-separated RGB channels so Tailwind's `<alpha-value>` can
+   * apply opacity modifiers (`bg-surface-raised/60`).
+   */
+  :root {
+    color-scheme: light;
+
+    --surface: 255 255 255;
+    --surface-subtle: 245 248 252;
+    --surface-raised: 255 255 255;
+    --surface-inset: 245 248 252;
+    --surface-mint: 241 250 244;
+    /* Deliberately dark panels. These stay dark in BOTH themes. */
+    --surface-inverse: 10 19 34;
+
+    --line: 207 220 235;
+    --line-subtle: 232 239 247;
+
+    --content: 17 29 46;
+    --content-secondary: 42 64 92;
+    --content-muted: 82 111 147;
+    /* Brand/danger text that sits on a page surface. */
+    --content-brand: 10 79 166;
+    --content-danger: 143 67 9;
+
+    /* Soft colour washes and the text that sits on them. */
+    --tint-brand: 239 246 255;
+    --tint-brand-on: 13 66 133;
+    --tint-accent: 233 248 239;
+    --tint-accent-on: 9 82 42;
+    --tint-aqua: 239 252 251;
+    --tint-aqua-on: 19 84 86;
+    --tint-signal: 255 247 237;
+    --tint-signal-on: 143 67 9;
+
+    --shadow: 10 19 34;
+    --ring: 11 99 206;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --surface: 10 19 34;
+    --surface-subtle: 14 25 41;
+    --surface-raised: 22 35 58;
+    --surface-inset: 27 44 66;
+    --surface-mint: 10 31 26;
+    /* Lighter than the page in dark mode, so inverse panels still read as
+       panels rather than dissolving into the background. */
+    --surface-inverse: 17 29 46;
+
+    --line: 42 64 92;
+    --line-subtle: 27 44 66;
+
+    --content: 255 255 255;
+    --content-secondary: 207 220 235;
+    --content-muted: 169 190 214;
+    --content-brand: 141 189 250;
+    --content-danger: 240 168 104;
+
+    --tint-brand: 18 41 74;
+    --tint-brand-on: 141 189 250;
+    --tint-accent: 12 44 27;
+    --tint-accent-on: 106 207 153;
+    --tint-aqua: 10 46 48;
+    --tint-aqua-on: 109 220 216;
+    --tint-signal: 51 32 12;
+    --tint-signal-on: 240 168 104;
+
+    /* Pure black reads as a shadow on a dark ground; navy does not. */
+    --shadow: 0 0 0;
+    --ring: 109 220 216;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    /* Keep anchored sections clear of the sticky header. */
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface font-sans text-content-secondary antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply text-content;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistent, always-visible focus treatment. */
+  :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px rgb(var(--surface)),
+      0 0 0 4px rgb(var(--ring));
+    border-radius: 0.25rem;
+  }
+
+  /* Inverse panels keep a dark ground in light mode, so the ring and its
+     offset have to be re-based against that panel rather than the page. */
+  .on-dark :focus-visible {
+    box-shadow:
+      0 0 0 2px rgb(var(--surface-inverse)),
+      0 0 0 4px #6DDCD8;
+  }
+
+  ::selection {
+    @apply bg-brand-600/20 text-content;
+  }
+}
+
+@layer components {
+  /*
+   * The display face. Deliberately narrow in scope: page titles, section
+   * titles and pull quotes — the moments meant to feel editorial. Body copy,
+   * card headings, UI labels and controls all stay in Inter, so the switch
+   * between the two actually signals importance instead of being decoration.
+   *
+   * The `text-display-*` sizes are tracked tight for Inter; a serif wants less
+   * of that, so the tracking is corrected here rather than at each call site.
+   */
+  .type-display {
+    font-family: theme("fontFamily.display");
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-brand-700 via-brand-600 to-aqua-600 bg-clip-text text-transparent;
+  }
+
+  .dark .text-gradient {
+    @apply from-brand-300 via-brand-300 to-aqua-300;
+  }
+
+  /* CSS transforms on SVG shapes take their origin from the SVG root by
+     default, which throws scaled shapes off-centre. */
+  .origin-shape {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  /* Fades the edges of the logo marquee without a hard cut. */
+  .mask-fade-x {
+    mask-image: linear-gradient(
+      to right,
+      transparent,
+      black 12%,
+      black 88%,
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -1,0 +1,1151 @@
+<title>ClearAuth AI Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout concept: an operations console. Fixed role-shaped sidebar, sticky top bar,
+   a scannable work surface, and a right-hand case drawer that shows the agent's waterfall live.
+   Palette and faces follow the existing Nexauth web tokens (navy ink, brand blue, aqua,
+   "greenlight" green for approvals, signal orange for attention only). */
+:root{
+  --bg:#F5F8FC; --surface:#FFFFFF; --surface-2:#EEF3F9; --inset:#E8EFF7;
+  --fg:#111D2E; --fg-2:#3B5576; --muted:#5E7795; --line:#CFDCEB; --line-2:#E3EAF3;
+  --brand:#0B63CE; --brand-ink:#FFFFFF; --brand-tint:#DCEAFE; --brand-tint-fg:#0A4FA6;
+  --aqua:#118585; --aqua-tint:#D1F6F3; --aqua-tint-fg:#126A6B;
+  --ok:#0D7F40; --ok-tint:#CFF0DD; --ok-tint-fg:#09522A;
+  --warn:#B45309; --warn-tint:#FFEDD5; --warn-tint-fg:#8F4309;
+  --bad:#B42318; --bad-tint:#FEE4E2; --bad-tint-fg:#912018;
+  --sidebar:#111D2E; --sidebar-fg:#CFDCEB; --sidebar-muted:#7793B4; --sidebar-active:#1B2C42;
+  --shadow:0 1px 2px rgba(17,29,46,.06),0 8px 24px rgba(17,29,46,.08);
+  --f-display:"Source Serif 4","Iowan Old Style",Georgia,serif;
+  --f-body:Inter,"Segoe UI",system-ui,-apple-system,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0A1322; --surface:#111D2E; --surface-2:#16253A; --inset:#1B2C42;
+  --fg:#E8EFF7; --fg-2:#A9BED6; --muted:#8AA2BF; --line:#2A405C; --line-2:#1F324A;
+  --brand:#569AF5; --brand-ink:#0A1322; --brand-tint:#10386C; --brand-tint-fg:#BCD8FD;
+  --aqua:#35C3C1; --aqua-tint:#0E4546; --aqua-tint-fg:#A6ECE8;
+  --ok:#34C77A; --ok-tint:#0B3A20; --ok-tint-fg:#A2E2BE;
+  --warn:#F0A04B; --warn-tint:#43260A; --warn-tint-fg:#FFD2A6;
+  --bad:#F97066; --bad-tint:#4A1512; --bad-tint-fg:#FECDCA;
+  --sidebar:#070E19; --sidebar-fg:#CFDCEB; --sidebar-muted:#7793B4; --sidebar-active:#16253A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark }}
+:root[data-theme="dark"]{
+  --bg:#0A1322; --surface:#111D2E; --surface-2:#16253A; --inset:#1B2C42;
+  --fg:#E8EFF7; --fg-2:#A9BED6; --muted:#8AA2BF; --line:#2A405C; --line-2:#1F324A;
+  --brand:#569AF5; --brand-ink:#0A1322; --brand-tint:#10386C; --brand-tint-fg:#BCD8FD;
+  --aqua:#35C3C1; --aqua-tint:#0E4546; --aqua-tint-fg:#A6ECE8;
+  --ok:#34C77A; --ok-tint:#0B3A20; --ok-tint-fg:#A2E2BE;
+  --warn:#F0A04B; --warn-tint:#43260A; --warn-tint-fg:#FFD2A6;
+  --bad:#F97066; --bad-tint:#4A1512; --bad-tint-fg:#FECDCA;
+  --sidebar:#070E19; --sidebar-fg:#CFDCEB; --sidebar-muted:#7793B4; --sidebar-active:#16253A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px rgba(0,0,0,.35); color-scheme:dark }
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px;border-radius:4px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+.mono{font-family:var(--f-mono);font-size:12.5px;letter-spacing:-.01em}
+.num{font-variant-numeric:tabular-nums}
+
+.app{display:grid;grid-template-columns:248px minmax(0,1fr);min-height:100%}
+.side{background:var(--sidebar);color:var(--sidebar-fg);padding:18px 12px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;overflow-y:auto}
+.brandmark{display:flex;align-items:center;gap:10px;padding:2px 8px}
+.brandmark svg{flex:none}
+.brandmark b{font-family:var(--f-display);font-size:19px;font-weight:600;color:#FFFFFF;letter-spacing:-.01em}
+.brandmark small{display:block;font-size:11px;color:var(--sidebar-muted);letter-spacing:.04em}
+.navs{display:flex;flex-direction:column;gap:18px}
+.navgroup{display:flex;flex-direction:column;gap:2px}
+.navlabel{font-size:10.5px;text-transform:uppercase;letter-spacing:.09em;color:var(--sidebar-muted);padding:0 10px 6px;font-weight:600}
+.navbtn{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;text-align:left;background:none;border:0;color:var(--sidebar-fg);padding:8px 10px;border-radius:6px;cursor:pointer;font-size:13.5px}
+.navbtn:hover{background:var(--sidebar-active)}
+.navbtn[aria-current="page"]{background:var(--sidebar-active);color:#FFFFFF;box-shadow:inset 2px 0 0 #569AF5}
+.navbtn .count{font-size:11px;background:#B45309;color:#FFFFFF;border-radius:10px;padding:0 7px;font-variant-numeric:tabular-nums}
+.side-foot{margin-top:auto;font-size:11.5px;color:var(--sidebar-muted);padding:0 10px;line-height:1.45}
+
+.main{min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:10px 24px;flex-wrap:wrap}
+.tenant{display:flex;flex-direction:column;min-width:0;margin-right:auto}
+.tenant b{font-size:14px}
+.tenant span{font-size:12px;color:var(--muted)}
+.whois{display:flex;align-items:center;gap:8px;min-width:0;flex-wrap:wrap}
+.whois label{font-size:12px;color:var(--muted)}
+.select{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font-size:13px;max-width:100%}
+.iconbtn{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;font-size:13px}
+.iconbtn:hover{background:var(--surface-2)}
+.dot{position:absolute;top:-6px;right:-6px;background:var(--warn);color:#FFFFFF;font-size:10.5px;border-radius:9px;padding:0 5px;min-width:18px;text-align:center;font-variant-numeric:tabular-nums}
+
+.content{padding-block:24px 64px;padding-inline:24px;display:flex;flex-direction:column;gap:20px;max-width:1240px;width:100%}
+.pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.pagehead h1{font-family:var(--f-display);font-weight:600;font-size:28px;letter-spacing:-.015em;line-height:1.15}
+.pagehead p{color:var(--fg-2);margin-top:4px;max-width:68ch}
+.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--muted);font-weight:600}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.panel-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line-2);flex-wrap:wrap}
+.panel-h h2{font-size:15px;font-weight:600}
+.panel-h p{font-size:12.5px;color:var(--muted)}
+.panel-b{padding:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.kpi{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.kpi .v{overflow-wrap:anywhere;font-size:26px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.2}
+.kpi .l{font-size:12px;color:var(--muted)}
+.kpi.attn .v{color:var(--warn)}
+.kpi.good .v{color:var(--ok)}
+
+.tablewrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td.mono{white-space:nowrap}
+td{padding:10px 12px;border-bottom:1px solid var(--line-2);vertical-align:top}
+tr.click{cursor:pointer}
+tr.click:hover td{background:var(--surface-2)}
+td .sub{display:block;font-size:12px;color:var(--muted)}
+
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:2px 9px 2px 8px;border-radius:999px;white-space:nowrap;line-height:1.6}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-ok{background:var(--ok-tint);color:var(--ok-tint-fg)}
+.p-warn{background:var(--warn-tint);color:var(--warn-tint-fg)}
+.p-bad{background:var(--bad-tint);color:var(--bad-tint-fg)}
+.p-info{background:var(--brand-tint);color:var(--brand-tint-fg)}
+.p-aqua{background:var(--aqua-tint);color:var(--aqua-tint-fg)}
+.p-mute{background:var(--inset);color:var(--fg-2)}
+.p-live::before{animation:pulse 1.1s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.25}}
+.tag{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.04em;padding:1px 6px;border-radius:4px;background:var(--inset);color:var(--fg-2);font-family:var(--f-mono)}
+.tag.phi{background:var(--bad-tint);color:var(--bad-tint-fg)}
+.tag.cfg{background:var(--brand-tint);color:var(--brand-tint-fg)}
+.tag.sec{background:var(--warn-tint);color:var(--warn-tint-fg)}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 12px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--brand-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.go{background:var(--ok);border-color:var(--ok);color:#FFFFFF}
+:root[data-theme="dark"] .btn.go{color:#04170C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.go{color:#04170C}}
+.btn.danger{color:var(--bad);border-color:var(--bad-tint)}
+.btn.small{padding:4px 9px;font-size:12px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+.btn.big{padding:11px 18px;font-size:14px;font-weight:600;letter-spacing:.02em}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:12px;font-weight:600;color:var(--fg-2)}
+.input{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:13.5px;width:100%}
+.muted{color:var(--muted)}
+.small{font-size:12.5px}
+.note{font-size:12.5px;color:var(--fg-2);background:var(--surface-2);border:1px solid var(--line-2);border-radius:6px;padding:10px 12px}
+.banner{display:flex;gap:10px;align-items:flex-start;border-radius:var(--r);padding:12px 14px;font-size:13px;border:1px solid}
+.banner.warn{background:var(--warn-tint);color:var(--warn-tint-fg);border-color:transparent}
+.banner.info{background:var(--brand-tint);color:var(--brand-tint-fg);border-color:transparent}
+.banner.ok{background:var(--ok-tint);color:var(--ok-tint-fg);border-color:transparent}
+.banner b{font-weight:600}
+.empty{padding:28px 16px;text-align:center;color:var(--muted)}
+
+/* channel mix bar */
+.mix{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--inset)}
+.mix span{display:block;height:100%}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--fg-2);margin-top:10px}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:rgba(10,19,34,.38);z-index:40}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(680px,100%);background:var(--bg);z-index:41;display:flex;flex-direction:column;box-shadow:var(--shadow);border-left:1px solid var(--line);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer-h{background:var(--surface);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;gap:12px;align-items:flex-start}
+.drawer-h h2{font-family:var(--f-display);font-size:21px;font-weight:600;line-height:1.2}
+.drawer-b{overflow-y:auto;padding:16px 18px 40px;display:flex;flex-direction:column;gap:16px}
+.close{margin-left:auto}
+
+/* waterfall stage tracker */
+.stages{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.stage{display:flex;flex-direction:column;gap:6px;font-size:11.5px;color:var(--muted);min-width:0}
+.stage .bar{height:6px;border-radius:3px;background:var(--inset)}
+.stage.done .bar{background:var(--aqua)}
+.stage.now .bar{background:var(--brand);animation:pulse 1.1s ease-in-out infinite}
+.stage.stop .bar{background:var(--warn)}
+.stage.fail .bar{background:var(--bad)}
+.stage.done,.stage.now{color:var(--fg)}
+.channels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ch{border:1px solid var(--line);border-radius:6px;padding:8px 10px;background:var(--surface);font-size:12px;min-width:0}
+.ch b{display:block;font-size:12.5px}
+.ch.used{border-color:var(--aqua);box-shadow:inset 0 0 0 1px var(--aqua)}
+.ch.failed{border-color:var(--bad-tint)}
+.ch.skip{opacity:.55}
+.ch .st{color:var(--muted)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.fact{min-width:0}
+.fact .k{font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600}
+.fact .v{font-size:13.5px;overflow-wrap:anywhere}
+.outcome{border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;gap:4px;border:1px solid var(--line)}
+.outcome.ok{background:var(--ok-tint);color:var(--ok-tint-fg);border-color:transparent}
+.outcome.warn{background:var(--warn-tint);color:var(--warn-tint-fg);border-color:transparent}
+.outcome.bad{background:var(--bad-tint);color:var(--bad-tint-fg);border-color:transparent}
+.outcome.info{background:var(--brand-tint);color:var(--brand-tint-fg);border-color:transparent}
+.outcome .big{font-size:17px;font-weight:600;letter-spacing:-.01em}
+.timeline{display:flex;flex-direction:column}
+.tl{display:grid;grid-template-columns:62px 18px minmax(0,1fr);gap:8px;font-size:13px;padding-bottom:12px;position:relative}
+.tl .t{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums;padding-top:1px}
+.tl .m{width:10px;height:10px;border-radius:50%;margin-top:5px;background:var(--line);justify-self:center;position:relative;z-index:1}
+.tl::after{content:"";position:absolute;left:79px;top:16px;bottom:-2px;width:1px;background:var(--line-2)}
+.tl:last-child::after{display:none}
+.tl.agent .m{background:var(--aqua)}
+.tl.user .m{background:var(--brand)}
+.tl.warn .m{background:var(--warn)}
+.tl.ok .m{background:var(--ok)}
+.tl .who{font-size:11.5px;color:var(--muted)}
+.tl .ref{font-family:var(--f-mono);font-size:11.5px;color:var(--fg-2)}
+.doclist{display:flex;flex-direction:column;gap:6px}
+.doc{display:flex;align-items:center;gap:10px;justify-content:space-between;border:1px solid var(--line-2);background:var(--surface);border-radius:6px;padding:8px 10px;font-size:13px;flex-wrap:wrap}
+.transcript{font-size:12.5px;background:var(--surface-2);border-radius:6px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.transcript b{font-weight:600}
+
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;z-index:60;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+/* notifications */
+.npanel{position:absolute;right:0;top:calc(100% + 8px);width:min(360px,calc(100vw - 32px));background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);z-index:30;text-align:left}
+.nitem{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--line-2);padding:10px 14px;cursor:pointer;font-size:13px}
+.nitem:hover{background:var(--surface-2)}
+.nitem.unread{box-shadow:inset 3px 0 0 var(--brand)}
+.nitem span{display:block;font-size:11.5px;color:var(--muted)}
+
+/* blueprint */
+.layers{display:flex;flex-direction:column;gap:8px}
+.layer{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;align-items:stretch}
+.layer .ln{font-size:12px;font-weight:600;color:var(--fg-2);padding:10px 0;border-top:2px solid var(--line)}
+.layer .ln small{display:block;font-weight:400;color:var(--muted)}
+.boxes{display:flex;flex-wrap:wrap;gap:6px;align-content:flex-start}
+.box{border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:7px 10px;font-size:12.5px;min-width:0}
+.box small{display:block;color:var(--muted);font-size:11.5px}
+.box.ext{border-style:dashed;background:transparent}
+.box.core{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.entities{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.entity{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);display:flex;flex-direction:column;min-width:0}
+.entity h3{font-size:13.5px;font-family:var(--f-mono);font-weight:500;padding:9px 12px;border-bottom:1px solid var(--line-2);display:flex;justify-content:space-between;gap:8px;align-items:center}
+.entity ul{list-style:none;margin:0;padding:8px 12px 10px;display:flex;flex-direction:column;gap:3px;font-size:12px;font-family:var(--f-mono)}
+.entity li{display:flex;justify-content:space-between;gap:8px}
+.entity li em{font-style:normal;color:var(--muted)}
+.entity .foot{margin-top:auto;padding:8px 12px;border-top:1px solid var(--line-2);display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+pre.json{margin:0;font-family:var(--f-mono);font-size:12px;background:var(--surface-2);border-radius:6px;padding:12px;overflow:auto;max-height:420px}
+.flow{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.flow .s{font-family:var(--f-mono);font-size:12px;padding:5px 9px;border-radius:5px;background:var(--surface);border:1px solid var(--line)}
+.flow .a{color:var(--muted)}
+.phases{display:flex;flex-direction:column;gap:10px}
+.phase{display:grid;grid-template-columns:150px minmax(0,1fr);gap:16px;border-top:1px solid var(--line);padding-top:12px}
+.phase h3{font-size:14px}
+.phase .when{font-size:12px;color:var(--muted)}
+.phase ul{margin:0;padding-left:18px;font-size:13px;display:flex;flex-direction:column;gap:2px}
+.check{color:var(--ok);font-weight:700}
+.dash{color:var(--line)}
+.slider{width:100%;accent-color:var(--brand)}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:13px}
+.switch input{width:36px;height:20px;accent-color:var(--bad)}
+.steps{display:flex;gap:4px;flex-wrap:wrap}
+.steps span{font-size:11.5px;padding:2px 8px;border-radius:4px;background:var(--inset);color:var(--muted)}
+.steps span.done{background:var(--aqua-tint);color:var(--aqua-tint-fg)}
+.steps span.now{background:var(--brand-tint);color:var(--brand-tint-fg);font-weight:600}
+.track{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;min-width:280px}
+.track span{font-size:11px;text-align:center;padding:3px 4px;border-radius:4px;background:var(--inset);color:var(--muted)}
+.track span.done{background:var(--aqua-tint);color:var(--aqua-tint-fg)}
+.track span.now{background:var(--brand);color:var(--brand-ink);font-weight:600}
+.track span.stuck{background:var(--warn-tint);color:var(--warn-tint-fg);font-weight:600}
+
+@media (max-width:1080px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.entities{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;height:auto;padding:12px 16px;gap:10px}
+  .navs{display:flex;gap:12px;overflow-x:auto;padding-bottom:4px}
+  .navgroup{flex:none}
+  .navgroup .navbtns{display:flex;gap:2px}
+  .navbtn{white-space:nowrap}
+  .side-foot{display:none}
+  .top{padding:10px 16px}
+  .content{padding-inline:16px}
+  .grid2,.grid3,.facts{grid-template-columns:minmax(0,1fr)}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .entities{grid-template-columns:minmax(0,1fr)}
+  .layer,.phase{grid-template-columns:minmax(0,1fr)}
+  .stages{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .channels{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app" id="app">
+  <aside class="side" id="side"></aside>
+  <div class="main">
+    <header class="top" id="top"></header>
+    <main class="content" id="main"></main>
+  </div>
+</div>
+<div id="overlay"></div>
+<div id="toast" class="toast" hidden></div>
+
+<script>
+/* ===================================================================
+   ClearAuth AI — clickable, frontend-only prototype.
+   Everything lives in memory: refresh resets it. All patient data is synthetic.
+   =================================================================== */
+const TODAY = '2026-10-01';
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fd = iso => { if(!iso) return '—'; const [y,m,d]=iso.split('-').map(Number); return MON[m-1]+' '+d; };
+const addDays = (iso,n) => { const d=new Date(iso+'T12:00:00Z'); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); };
+const diffDays = (a,b) => Math.round((new Date(a+'T12:00:00Z')-new Date(b+'T12:00:00Z'))/864e5);
+let clockMin = 9*60+12;
+const now = () => { clockMin += 1 + Math.floor(Math.random()*2); const h=Math.floor(clockMin/60)%24, m=clockMin%60; return 'Oct 1 '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0'); };
+const rnd = n => String(Math.floor(Math.random()*Math.pow(10,n))).padStart(n,'0');
+const tsKey = ts => { const [m,d,t]=ts.split(' '); return String(MON.indexOf(m)).padStart(2,'0')+String(d).padStart(2,'0')+(t||''); };
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+/* ---------------- Reference data ---------------- */
+const ROLES = {
+  physician:{ label:'Ordering physician', user:'u_rao',   home:'orders' },
+  staff:    { label:'Operations staff',   user:'u_chen',  home:'overview' },
+  clinical: { label:'Clinical reviewer',  user:'u_okafor',home:'clinical' },
+  admin:    { label:'Tenant admin',       user:'u_blake', home:'automation' },
+  master:   { label:'Platform operator',  user:'u_shah',  home:'tenants' },
+};
+const NAV = {
+  physician:[['orders','My orders'],['neworder','New order'],['journey','Patient journey']],
+  staff:[['overview','Today'],['queue','Exception queue'],['cases','All cases'],['journey','Patient journey'],['vice','A/R recovery · VICE']],
+  clinical:[['clinical','Clinical review'],['cases','All cases']],
+  admin:[['automation','Automation rules'],['matrix','Payer requirements'],['connections','Connections'],['users','Users & roles'],['audit','Audit log'],['billing','Billing']],
+  master:[['tenants','Tenants'],['registry','Connector registry'],['onboarding','Onboarding']],
+};
+const BLUEPRINT_NAV = [['architecture','Architecture'],['datamodel','Data model'],['lifecycle','Case lifecycle'],['rbac','Roles & permissions'],['buildplan','Build plan']];
+
+const PROC = {
+  '72148':{name:'MRI lumbar spine w/o contrast', short:'MRI L-spine', needsConservative:true},
+  '72141':{name:'MRI cervical spine w/o contrast', short:'MRI C-spine', needsConservative:true},
+  '73721':{name:'MRI knee w/o contrast', short:'MRI knee', needsConservative:false},
+  '64483':{name:'Lumbar epidural steroid injection', short:'Lumbar ESI', needsConservative:true},
+  '74177':{name:'CT abdomen & pelvis with contrast', short:'CT abd/pelvis', needsConservative:false},
+  '22630':{name:'Lumbar interbody fusion', short:'Lumbar fusion', needsConservative:true},
+  '97161':{name:'Physical therapy evaluation, low complexity', short:'PT evaluation', needsConservative:false},
+  '97110':{name:'Therapeutic exercise (12 visits)', short:'PT 12 visits', needsConservative:false},
+  'E0730':{name:'TENS unit, four lead', short:'TENS unit', needsConservative:false},
+};
+const ICD = {'M54.16':'Radiculopathy, lumbar region','M54.12':'Radiculopathy, cervical region','M17.11':'Primary osteoarthritis, right knee','M54.50':'Low back pain, unspecified','M48.061':'Spinal stenosis, lumbar','R10.9':'Unspecified abdominal pain'};
+
+const PAYERS = {
+  uhc:{name:'UnitedHealthcare', plan:'Choice Plus', routes:['FHIR PAS','X12 278'], electronic:true, portal:'UHC Provider Portal', automatedCaller:true, pends:false, portalFails:false},
+  aetna:{name:'Aetna', plan:'Open Access', routes:['X12 278'], electronic:true, portal:'Availity', automatedCaller:true, pends:false, portalFails:false},
+  bcbs:{name:'Blue Cross Blue Shield', plan:'PPO', routes:['X12 278'], electronic:true, portal:'Availity', automatedCaller:true, pends:false, portalFails:false},
+  humana:{name:'Humana', plan:'Medicare Advantage', routes:['FHIR PAS'], electronic:true, portal:'Availity', automatedCaller:true, pends:true, portalFails:false},
+  cigna:{name:'Cigna', plan:'OAP', routes:['X12 278'], electronic:true, portal:'CignaforHCP', automatedCaller:false, pends:false, portalFails:false},
+  mcd:{name:'State Medicaid MCO', plan:'Managed Medicaid', routes:[], electronic:false, portal:'MCO web portal', automatedCaller:true, pends:false, portalFails:true},
+};
+/* Payer requirement matrix: [payer][cpt] -> rule. Versioned, sourced. */
+const RULES = {};
+(function(){
+  const docsImg=['Physician order','Office / visit notes','Imaging history','Conservative therapy record (6 wks)'];
+  const base = { '72148':{req:true,docs:docsImg}, '72141':{req:true,docs:docsImg}, '73721':{req:true,docs:['Physician order','Office / visit notes','X-ray report']},
+    '64483':{req:true,docs:['Physician order','Office / visit notes','MRI report','Conservative therapy record (6 wks)']}, '74177':{req:true,docs:['Physician order','Office / visit notes','Lab results']},
+    '22630':{req:true,docs:['Physician order','Office / visit notes','MRI report','Conservative therapy record (6 wks)','Surgical consult']},
+    '97161':{req:false,docs:[]}, '97110':{req:true,docs:['Physician order','PT evaluation','Plan of care']}, 'E0730':{req:true,docs:['Physician order','Office / visit notes']} };
+  for(const p in PAYERS){ RULES[p]={}; for(const c in base){ RULES[p][c]={...base[c], version:'v'+(3+((p.length+c.length)%4)), source: p==='uhc'?'Da Vinci CRD (live)':p==='humana'?'Da Vinci CRD (live)':p==='mcd'?'Payer bulletin, Jul 2026':'Availity auth-required API', reviewed:'Sep '+(10+((p.length*c.length)%18))}; } }
+  RULES.bcbs['73721'].req=false; RULES.aetna['97110'].req=false; RULES.cigna['74177'].req=false;
+})();
+
+const USERS = [
+  {id:'u_rao', name:'Dr. Anika Rao', email:'a.rao@cascade-spine.example', roles:['physician'], title:'Physiatrist, NPI 1902837465', mfa:true, status:'Active'},
+  {id:'u_lin', name:'Dr. Marcus Lin', email:'m.lin@cascade-spine.example', roles:['physician'], title:'Orthopedic surgeon', mfa:true, status:'Active'},
+  {id:'u_chen', name:'Maria Chen', email:'m.chen@cascade-spine.example', roles:['staff'], title:'Prior-auth coordinator', mfa:true, status:'Active'},
+  {id:'u_ade', name:'Tunde Adeyemi', email:'t.adeyemi@cascade-spine.example', roles:['staff'], title:'Billing & front desk', mfa:true, status:'Active'},
+  {id:'u_okafor', name:'Dr. Samuel Okafor', email:'s.okafor@cascade-spine.example', roles:['clinical'], title:'Licensed clinical reviewer (MD)', mfa:true, status:'Active'},
+  {id:'u_blake', name:'Jordan Blake', email:'j.blake@cascade-spine.example', roles:['admin','staff'], title:'Practice manager', mfa:true, status:'Active'},
+  {id:'u_shah', name:'Priya Shah', email:'priya@clearauth.example', roles:['master'], title:'Platform operations (ClearAuth)', mfa:true, status:'Active'},
+];
+
+const PATIENTS = [
+  {id:'pt1', name:'Lee Moore', dob:'1968-04-12', mrn:'MRN-204118', payer:'uhc', member:'UHC884120771', active:true, therapy:true},
+  {id:'pt2', name:'Rosa Delgado', dob:'1975-09-30', mrn:'MRN-204377', payer:'aetna', member:'W193344812', active:true, therapy:false},
+  {id:'pt3', name:'James Whitaker', dob:'1959-01-22', mrn:'MRN-203902', payer:'bcbs', member:'XYP220017334', active:true, therapy:true},
+  {id:'pt4', name:'Hannah Kim', dob:'1952-06-03', mrn:'MRN-204455', payer:'humana', member:'H71920034', active:true, therapy:true},
+  {id:'pt5', name:'Marcus Bell', dob:'1981-11-15', mrn:'MRN-204512', payer:'uhc', member:'UHC771045923', active:true, therapy:true},
+  {id:'pt6', name:'Evelyn Ward', dob:'1964-02-08', mrn:'MRN-204601', payer:'cigna', member:'U44210983', active:true, therapy:true},
+  {id:'pt7', name:'Tomás Alvarez', dob:'1971-07-19', mrn:'MRN-203877', payer:'aetna', member:'W100293455', active:true, therapy:true},
+  {id:'pt8', name:'Grace Liu', dob:'1988-03-27', mrn:'MRN-204633', payer:'uhc', member:'UHC662019384', active:true, therapy:true},
+  {id:'pt9', name:'Daniel Foster', dob:'1993-12-01', mrn:'MRN-204688', payer:'mcd', member:'MCD-55120984', active:true, therapy:true},
+  {id:'pt10', name:'Aisha Rahman', dob:'1979-05-14', mrn:'MRN-204702', payer:'bcbs', member:'XYP881203457', active:true, therapy:true},
+  {id:'pt11', name:'Robert Hayes', dob:'1949-10-09', mrn:'MRN-204719', payer:'humana', member:'H55018832', active:false, therapy:true},
+  {id:'pt12', name:'Mei Tanaka', dob:'1985-08-21', mrn:'MRN-204730', payer:'cigna', member:'U77102384', active:true, therapy:true},
+  {id:'pt13', name:'Owen Brooks', dob:'1977-02-17', mrn:'MRN-204801', payer:'uhc', member:'UHC530119827', active:true, therapy:true},
+  {id:'pt14', name:'Sofia Marino', dob:'1990-10-25', mrn:'MRN-204812', payer:'aetna', member:'W552019334', active:true, therapy:false},
+  {id:'pt15', name:'Kwame Mensah', dob:'1966-04-04', mrn:'MRN-204823', payer:'mcd', member:'MCD-55193310', active:true, therapy:true},
+];
+
+/* ---------------- Mutable app state ---------------- */
+const S = {
+  role:'staff', route:'overview', openCase:null, notifOpen:false, filter:'all', search:'', queueFilter:'all',
+  inspect:null, onboardMatch:false,
+  policy:{ version:14, threshold:0.90, killSwitch:false, trust:{uhc:'supervised',aetna:'supervised',bcbs:'supervised',humana:'supervised',cigna:'shadow',mcd:'shadow'}, expedited:'72 hours', standard:'7 days' },
+  policyLog:[
+    {v:14, ts:'Sep 29 16:02', by:'Jordan Blake', change:'Humana MA moved Shadow → Supervised after 30-day shadow window (exception rate 3.1%)'},
+    {v:13, ts:'Sep 18 10:40', by:'Jordan Blake', change:'Confidence threshold 0.92 → 0.90'},
+    {v:12, ts:'Sep 2 09:15', by:'Jordan Blake', change:'UHC, Aetna, BCBS moved Shadow → Supervised'},
+  ],
+  cases:[], audit:[], notifs:[], seq:1053,
+  connections:[
+    {id:'cn1', system:'athenahealth', kind:'EHR / PM', type:'API', detail:'FHIR R4 + SMART backend services · read Patient, Coverage, ServiceRequest, DocumentReference · write auth fields', state:'active', tested:'Oct 1 06:00', latency:'212 ms'},
+    {id:'cn2', system:'Availity', kind:'Clearinghouse', type:'API', detail:'X12 270/271, 278 via REST · auth-required lookup · attachments', state:'active', tested:'Oct 1 06:00', latency:'340 ms'},
+    {id:'cn3', system:'UHC / Optum', kind:'Payer API', type:'API', detail:'Da Vinci CRD · DTR · PAS (FHIR R4)', state:'active', tested:'Oct 1 06:00', latency:'480 ms'},
+    {id:'cn4', system:'Humana', kind:'Payer API', type:'API', detail:'Da Vinci PAS + CDex additional-info loop', state:'active', tested:'Oct 1 06:00', latency:'515 ms'},
+    {id:'cn5', system:'CignaforHCP', kind:'Payer portal', type:'Browser', detail:'Browser agent · auth submit + status · MFA via shared mailbox', state:'refresh_failed', tested:'Sep 30 22:10', latency:'—'},
+    {id:'cn6', system:'MCO web portal', kind:'Payer portal', type:'Browser', detail:'Browser agent · auth submit + status', state:'active', tested:'Oct 1 06:01', latency:'2.4 s'},
+    {id:'cn7', system:'Retell AI', kind:'Voice', type:'API', detail:'Outbound payer calls · IVR maps for 4 payers · line (617) 555-0193 · recording on', state:'active', tested:'Oct 1 06:02', latency:'—'},
+    {id:'cn8', system:'Document & fax', kind:'Documents', type:'SFTP', detail:'Nightly scanned-document drop + eFax outbound', state:'active', tested:'Oct 1 02:00', latency:'—'},
+  ],
+};
+const user = id => USERS.find(u=>u.id===id);
+const me = () => user(ROLES[S.role].user);
+const patient = id => PATIENTS.find(p=>p.id===id);
+const findCase = id => S.cases.find(c=>c.id===id);
+
+/* ---------------- Status model ---------------- */
+const WORKING = ['RECEIVED','ELIGIBILITY','REQUIREMENT_CHECK','DOCUMENTATION','DECISION','SUBMITTING'];
+function isExpiring(c){ return (c.state==='APPROVED'||c.state==='PARTIAL') && c.decision && c.scheduled && diffDays(c.scheduled, c.decision.to) > 0 && !c.extensionRequested; }
+function status(c){
+  if(WORKING.includes(c.state)) return {label: c.state==='SUBMITTING'?'Submitting':'Agent working', cls:'p-info p-live', group:'working'};
+  if(c.state==='NO_AUTH_REQUIRED') return {label:'No authorization required', cls:'p-aqua', group:'done'};
+  if(c.state==='SUBMITTED') return {label:'Submitted – pending', cls:'p-info', group:'pending'};
+  if(c.state==='PENDED') return {label:'More info requested', cls:'p-info', group:'pending'};
+  if(isExpiring(c)) return {label:'Expiring soon', cls:'p-warn', group:'staff'};
+  if(c.state==='APPROVED') return {label:'Approved', cls:'p-ok', group:'done'};
+  if(c.state==='PARTIAL') return {label:'Partially approved', cls:'p-ok', group:'done'};
+  if(c.state==='CLINICAL_REVIEW') return {label:'Clinical review required', cls:'p-warn', group:'clinical'};
+  if(c.state==='NEEDS_APPROVAL') return {label:'Needs approval', cls:'p-warn', group:'staff'};
+  if(c.state==='ADMIN_EXCEPTION') return {label:'Admin exception', cls:'p-warn', group:'staff'};
+  if(c.state==='DENIED') return {label:'Denied – appeal prep', cls:'p-bad', group:'clinical'};
+  if(c.state==='P2P_SCHEDULED') return {label:'Peer-to-peer scheduled', cls:'p-warn', group:'clinical'};
+  if(c.state==='APPEAL_SUBMITTED') return {label:'Appeal submitted', cls:'p-info', group:'pending'};
+  if(c.state==='WITHDRAWN') return {label:'Withdrawn', cls:'p-mute', group:'done'};
+  return {label:c.state, cls:'p-mute', group:'other'};
+}
+const pill = c => { const s=status(c); return `<span class="pill ${s.cls}">${esc(s.label)}</span>`; };
+
+/* ---------------- Events, audit, notifications ---------------- */
+function ev(c, kind, who, text, ref){
+  const e = {ts:now(), kind, who, text, ref:ref||''};
+  c.events.push(e);
+  S.audit.unshift({ts:e.ts, actor:who, actorType: kind==='user'?'User':'Agent', action:text, target:c.id, ref:ref||''});
+}
+function auditCfg(action, target){ S.audit.unshift({ts:now(), actor:me().name, actorType:'User', action, target, ref:'policy v'+S.policy.version}); }
+function notify(roles, text, caseId){ S.notifs.unshift({id:'n'+rnd(6), roles, text, caseId, ts:now(), read:false}); }
+function setState(c, st){ c.state = st; c.updated = now(); }
+
+/* ---------------- Seed cases ---------------- */
+function mk(o){
+  const p = patient(o.pt);
+  const c = { id:'CA-'+o.n, patientId:o.pt, payer:p.payer, cpt:o.cpt, icd:o.icd, orderedBy:o.by||'u_rao', scheduled:o.sched, state:o.state,
+    created:o.created||'Sep 29', updated:o.created||'Sep 29', idem:'idem-'+o.n+'-'+o.cpt, confidence:o.conf??null, findings:o.findings||[],
+    docs:o.docs||[], attempts:o.attempts||[], decision:o.decision||null, exception:o.exception||'', events:[], deadline:o.deadline||null, extensionRequested:false, appeal:null, live:false };
+  (o.events||[]).forEach(([ts,kind,who,text,ref])=>{ c.events.push({ts,kind,who,text,ref:ref||''}); S.audit.push({ts, actor:who, actorType:kind==='user'?'User':'Agent', action:text, target:c.id, ref:ref||''}); });
+  S.cases.push(c); return c;
+}
+const D = (name, st, src) => ({name, status:st, source:src||'athenahealth'});
+function seed(){
+  mk({n:1042, pt:'pt1', cpt:'72148', icd:'M54.16', sched:'2026-10-09', state:'APPROVED', conf:0.95, created:'Sep 28',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('Imaging history','attached'),D('Conservative therapy record (6 wks)','attached')],
+    attempts:[{channel:'electronic', label:'FHIR PAS Claim/$submit', outcome:'Accepted', ref:'PAS-CR-55-90311', ts:'Sep 28 10:22'}],
+    decision:{type:'Approved', authNo:'A8812345', from:'2026-09-29', to:'2026-10-28', units:1, payerRef:'UHC-REF-447120'},
+    events:[['Sep 28 10:14','agent','Orchestrator','Case opened from GET AUTHORIZATION','idem-1042-72148'],['Sep 28 10:14','agent','Coverage','X12 270/271: coverage active','271 TRN 8841-2207'],['Sep 28 10:15','agent','Coverage','Da Vinci CRD: PA required for 72148','CRD card 3f9a'],['Sep 28 10:18','agent','Clinical + Compliance','DTR questionnaire auto-filled from chart · 4 of 4 documents','DTR QR-1042'],['Sep 28 10:19','agent','Decision','Confidence 0.95 ≥ 0.90 · auto-submit (Supervised)'],['Sep 28 10:22','agent','Submission','Submitted electronically via FHIR PAS','PAS-CR-55-90311'],['Sep 28 14:51','agent','Follow-Up','Payer decision: APPROVED · Auth A8812345','UHC-REF-447120'],['Sep 28 14:52','agent','Follow-Up','Written back to athenahealth: auth #, valid Sep 29–Oct 28','DocRef wb-1042']]});
+  mk({n:1043, pt:'pt2', cpt:'72148', icd:'M54.16', sched:'2026-10-12', state:'CLINICAL_REVIEW', conf:0.58, created:'Sep 30',
+    findings:['No conservative-therapy documentation in the last 90 days. Aetna Clinical Policy requires 6 weeks of PT, chiropractic or medication trial before advanced imaging.','Visit note Sep 22 mentions "home exercise program" without dates or duration.','No red-flag symptoms documented (would waive the 6-week requirement).'],
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('Imaging history','attached'),D('Conservative therapy record (6 wks)','missing')],
+    events:[['Sep 30 15:02','agent','Orchestrator','Case opened from GET AUTHORIZATION','idem-1043-72148'],['Sep 30 15:02','agent','Coverage','X12 270/271: coverage active','271 TRN 8841-3310'],['Sep 30 15:03','agent','Coverage','Availity auth-required lookup: PA required','AV-REQ-22018'],['Sep 30 15:05','agent','Clinical','Missing evidence: 6 weeks conservative treatment'],['Sep 30 15:05','agent','Orchestrator','Flagged CLINICAL REVIEW REQUIRED · routed to licensed reviewer']]});
+  mk({n:1044, pt:'pt3', cpt:'97161', icd:'M54.50', sched:'2026-10-06', state:'NO_AUTH_REQUIRED', created:'Sep 30',
+    events:[['Sep 30 11:40','agent','Orchestrator','Case opened from EHR order trigger','idem-1044-97161'],['Sep 30 11:40','agent','Coverage','X12 270/271: coverage active','271 TRN 8841-3102'],['Sep 30 11:41','agent','Coverage','X12 278 inquiry: no authorization required for 97161 under BCBS PPO','278 TRN 5510-0921'],['Sep 30 11:41','agent','Follow-Up','Written back to EHR: not required · source, date, reference','DocRef wb-1044']]});
+  mk({n:1045, pt:'pt4', cpt:'74177', icd:'R10.9', sched:'2026-10-15', state:'SUBMITTED', conf:0.93, created:'Sep 30', deadline:'2026-10-07',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('Lab results','attached')],
+    attempts:[{channel:'electronic', label:'FHIR PAS Claim/$submit', outcome:'Pending payer review', ref:'PAS-HUM-20931', ts:'Sep 30 16:31'}],
+    events:[['Sep 30 16:20','agent','Orchestrator','Case opened from GET AUTHORIZATION','idem-1045-74177'],['Sep 30 16:21','agent','Coverage','Da Vinci CRD: PA required','CRD card 77b1'],['Sep 30 16:28','agent','Decision','Confidence 0.93 · auto-submit'],['Sep 30 16:31','agent','Submission','Submitted via FHIR PAS · decision timer 7 days (standard)','PAS-HUM-20931']]});
+  mk({n:1046, pt:'pt5', cpt:'64483', icd:'M48.061', sched:'2026-10-08', state:'PENDED', conf:0.91, created:'Sep 29',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('MRI report','attached'),D('Conservative therapy record (6 wks)','attached'),D('Prior injection operative note','resupplied')],
+    attempts:[{channel:'electronic', label:'X12 278 request', outcome:'Pended — info requested', ref:'278 TRN 5510-1188', ts:'Sep 29 13:10'}],
+    events:[['Sep 29 13:02','agent','Orchestrator','Case opened','idem-1046-64483'],['Sep 29 13:10','agent','Submission','Submitted via X12 278','278 TRN 5510-1188'],['Sep 30 09:12','agent','Follow-Up','Payer pended: requests prior injection operative note','UHC pend 33-12'],['Sep 30 09:14','agent','Follow-Up','Retrieved operative note (Jun 2) from EHR and resupplied · recheck Oct 3','attach AT-6611']]});
+  mk({n:1047, pt:'pt6', cpt:'73721', icd:'M17.11', sched:'2026-10-13', state:'NEEDS_APPROVAL', conf:0.91, created:'Oct 1',
+    findings:['Cigna is in Shadow mode: every submission needs staff approval before it goes out.','All 3 required documents attached. Weight-bearing X-ray (Aug 30) shows moderate medial compartment narrowing.'],
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('X-ray report','attached')],
+    events:[['Oct 1 08:41','agent','Orchestrator','Case opened from GET AUTHORIZATION','idem-1047-73721'],['Oct 1 08:42','agent','Coverage','X12 278 inquiry: PA required','278 TRN 5510-2210'],['Oct 1 08:44','agent','Decision','Confidence 0.91 · payer in Shadow mode → staff approval']]});
+  mk({n:1048, pt:'pt7', cpt:'22630', icd:'M48.061', sched:'2026-10-21', state:'DENIED', conf:0.88, created:'Sep 24', by:'u_lin',
+    findings:['Denial reason (CARC 50): "Not medically necessary — no documented failure of 3 months non-operative care."','Chart shows 14 weeks of PT (Jun 3 – Sep 9) and two ESIs. Evidence appears to have been omitted from the original submission.','Appeal deadline: Oct 24 (30 days from denial).'],
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('MRI report','attached'),D('Conservative therapy record (6 wks)','attached'),D('Surgical consult','attached'),D('Draft appeal letter','prepared','ClearAuth')],
+    attempts:[{channel:'electronic', label:'X12 278 request', outcome:'Denied', ref:'278 TRN 5510-0702', ts:'Sep 24 11:05'}],
+    decision:{type:'Denied', reason:'CARC 50 — medical necessity', payerRef:'AET-DN-88120'},
+    events:[['Sep 24 11:05','agent','Submission','Submitted via X12 278','278 TRN 5510-0702'],['Sep 24 17:30','agent','Follow-Up','Payer decision: DENIED (medical necessity)','AET-DN-88120'],['Sep 24 17:31','agent','Orchestrator','Every denial routes to a licensed human · appeal packet drafted']]});
+  mk({n:1049, pt:'pt8', cpt:'72141', icd:'M54.12', sched:'2026-10-20', state:'APPROVED', conf:0.94, created:'Sep 15',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('Imaging history','attached'),D('Conservative therapy record (6 wks)','attached')],
+    attempts:[{channel:'electronic', label:'FHIR PAS Claim/$submit', outcome:'Accepted', ref:'PAS-CR-55-81022', ts:'Sep 15 09:40'}],
+    decision:{type:'Approved', authNo:'A8790012', from:'2026-09-16', to:'2026-10-15', units:1, payerRef:'UHC-REF-430019'},
+    events:[['Sep 15 09:40','agent','Submission','Submitted via FHIR PAS','PAS-CR-55-81022'],['Sep 15 15:02','agent','Follow-Up','APPROVED · Auth A8790012 · valid Sep 16–Oct 15','UHC-REF-430019'],['Oct 1 06:00','agent','Follow-Up','Expiry timer: approval ends Oct 15, procedure scheduled Oct 20']]});
+  mk({n:1050, pt:'pt9', cpt:'E0730', icd:'M54.50', sched:'2026-10-10', state:'SUBMITTED', conf:0.87, created:'Sep 30',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached')],
+    attempts:[{channel:'electronic', label:'No electronic PA route', outcome:'Skipped', ref:'', ts:'Sep 30 10:02'},{channel:'portal', label:'MCO web portal', outcome:'Failed — session timeout after upload', ref:'', ts:'Sep 30 10:09'},{channel:'voice', label:'Retell call to MCO UM line', outcome:'Request taken by rep · decision in 3 business days', ref:'Call ref 0930-4471', ts:'Sep 30 10:31', transcript:true}],
+    deadline:'2026-10-07',
+    events:[['Sep 30 10:02','agent','Submission','No electronic route for State Medicaid MCO → portal'],['Sep 30 10:09','agent','Submission','Portal submission failed (session timeout) → voice fallback'],['Sep 30 10:31','agent','Submission','Voice: request accepted by representative "Denise"','Call ref 0930-4471']]});
+  mk({n:1051, pt:'pt10', cpt:'97110', icd:'M54.50', sched:'2026-10-05', state:'PARTIAL', conf:0.92, created:'Sep 26',
+    docs:[D('Physician order','attached'),D('PT evaluation','attached'),D('Plan of care','attached')],
+    attempts:[{channel:'electronic', label:'X12 278 request', outcome:'Certified with modification', ref:'278 TRN 5510-0877', ts:'Sep 26 12:00'}],
+    decision:{type:'Partial', authNo:'BC-55102', from:'2026-09-28', to:'2026-12-27', units:'8 of 12 visits', payerRef:'BCBS-REF-1180'},
+    events:[['Sep 26 12:00','agent','Submission','Submitted via X12 278','278 TRN 5510-0877'],['Sep 27 08:12','agent','Follow-Up','PARTIAL: 8 of 12 visits certified','BCBS-REF-1180'],['Sep 27 08:13','agent','Follow-Up','Written back with units = 8; reminder to re-request at visit 6']]});
+  mk({n:1052, pt:'pt11', cpt:'72148', icd:'M54.16', sched:'2026-10-07', state:'ADMIN_EXCEPTION', created:'Oct 1',
+    exception:'Coverage inactive on 271 response for date of service. Humana MA terminated Sep 30. Confirm current insurance with the patient.',
+    events:[['Oct 1 07:55','agent','Orchestrator','Case opened from EHR order trigger','idem-1052-72148'],['Oct 1 07:55','agent','Coverage','X12 270/271: coverage INACTIVE (term date Sep 30)','271 TRN 8841-4012'],['Oct 1 07:56','agent','Orchestrator','Administrative exception → operations queue']]});
+  mk({n:1053, pt:'pt12', cpt:'73721', icd:'M17.11', sched:'2026-10-16', state:'APPROVED', conf:0.96, created:'Sep 25', by:'u_lin',
+    docs:[D('Physician order','attached'),D('Office / visit notes','attached'),D('X-ray report','attached')],
+    attempts:[{channel:'electronic', label:'X12 278 request', outcome:'Certified', ref:'278 TRN 5510-0790', ts:'Sep 25 15:20'}],
+    decision:{type:'Approved', authNo:'CG-2201988', from:'2026-09-26', to:'2026-11-24', units:1, payerRef:'CIG-REF-9921'},
+    events:[['Sep 25 15:20','agent','Submission','Approved by staff (Shadow) and submitted via X12 278','278 TRN 5510-0790'],['Sep 26 09:01','agent','Follow-Up','APPROVED · Auth CG-2201988','CIG-REF-9921']]});
+  S.audit.sort((a,b)=> tsKey(b.ts).localeCompare(tsKey(a.ts)));
+  notify(['clinical'],'A case needs clinical review', 'CA-1043');
+  notify(['staff'],'A submission is waiting for your approval (Shadow mode)', 'CA-1047');
+  notify(['staff'],'An administrative exception needs attention', 'CA-1052');
+  notify(['staff','physician'],'An approval expires before the scheduled procedure', 'CA-1049');
+  notify(['clinical'],'A denial needs appeal review', 'CA-1048');
+  notify(['admin'],'A payer portal connection needs to be reconnected', null);
+  S.notifs.forEach(n=>{ n.ts = 'Oct 1 0'+(6+Math.floor(Math.random()*3))+':'+rnd(1)+'0'; });
+}
+
+/* ---------------- The agent pipeline (simulated) ---------------- */
+const STAGES = ['Intake','Eligibility','PA required?','Packet','Decision','Submit','Outcome'];
+function stageIndex(c){
+  return ({RECEIVED:0,ELIGIBILITY:1,ADMIN_EXCEPTION:1,REQUIREMENT_CHECK:2,NO_AUTH_REQUIRED:6,DOCUMENTATION:3,CLINICAL_REVIEW:3,DECISION:4,NEEDS_APPROVAL:4,SUBMITTING:5,SUBMITTED:5,PENDED:5,APPROVED:6,PARTIAL:6,DENIED:6,APPEAL_SUBMITTED:6,P2P_SCHEDULED:6,WITHDRAWN:6})[c.state] ?? 0;
+}
+async function tick(ms){ await sleep(ms||650); render(); }
+
+async function runCase(c, from){
+  c.live = true; render();
+  const p = patient(c.patientId), payer = PAYERS[c.payer], rule = RULES[c.payer][c.cpt], proc = PROC[c.cpt];
+  if(from==='intake'){
+    setState(c,'RECEIVED'); ev(c,'agent','Orchestrator','Case opened from GET AUTHORIZATION · packet complete enough to act on', c.idem); await tick();
+    setState(c,'ELIGIBILITY'); await tick();
+    if(!p.active){
+      ev(c,'agent','Coverage','X12 270/271: coverage INACTIVE for date of service','271 TRN 8841-'+rnd(4));
+      setState(c,'ADMIN_EXCEPTION'); c.exception='Coverage inactive on 271 response. Confirm current insurance with the patient.';
+      ev(c,'agent','Orchestrator','Administrative exception → operations queue'); notify(['staff'],'An administrative exception needs attention', c.id);
+      c.live=false; render(); return;
+    }
+    ev(c,'agent','Coverage','X12 270/271: coverage active · '+payer.name+' '+payer.plan,'271 TRN 8841-'+rnd(4)); await tick();
+    setState(c,'REQUIREMENT_CHECK'); await tick();
+    const via = payer.routes.includes('FHIR PAS') ? 'Da Vinci CRD' : payer.electronic ? 'Availity auth-required lookup' : 'Payer requirement matrix '+rule.version;
+    if(!rule.req){
+      ev(c,'agent','Coverage',via+': no authorization required for '+c.cpt, (via.startsWith('Da')?'CRD card ':'AV-REQ-')+rnd(5));
+      setState(c,'NO_AUTH_REQUIRED');
+      ev(c,'agent','Follow-Up','Written back to EHR: not required · source, date and reference logged','DocRef wb-'+c.id.slice(3));
+      notify(['physician'],'An order needs no authorization — logged to the chart', c.id);
+      c.live=false; render(); return;
+    }
+    ev(c,'agent','Coverage',via+': PA required · '+rule.docs.length+' documents requested', (via.startsWith('Da')?'CRD card ':'AV-REQ-')+rnd(5)); await tick();
+    setState(c,'DOCUMENTATION');
+    c.docs = rule.docs.map(d=>D(d,'attached'));
+    await tick(400);
+    const missing = proc.needsConservative && !p.therapy;
+    if(missing){
+      c.docs.forEach(d=>{ if(d.name.startsWith('Conservative')) d.status='missing'; });
+      c.findings=['No conservative-therapy documentation in the last 90 days. '+payer.name+' policy requires 6 weeks of PT, chiropractic or medication trial before '+proc.short+'.','No red-flag symptoms documented that would waive the requirement.'];
+      ev(c,'agent','Clinical','DTR auto-fill: '+(rule.docs.length-1)+' of '+rule.docs.length+' documents found · conservative therapy record missing','DTR QR-'+c.id.slice(3));
+      c.confidence = 0.58; setState(c,'CLINICAL_REVIEW');
+      ev(c,'agent','Orchestrator','Flagged CLINICAL REVIEW REQUIRED · the agent does not decide medical necessity');
+      notify(['clinical'],'A case needs clinical review', c.id); notify(['physician'],'An order is waiting on clinical review', c.id);
+      c.live=false; render(); return;
+    }
+    ev(c,'agent','Clinical + Compliance','DTR auto-fill: '+rule.docs.length+' of '+rule.docs.length+' documents · minimum-necessary check passed','DTR QR-'+c.id.slice(3)); await tick();
+  }
+  if(from==='intake' || from==='decision'){
+    setState(c,'DECISION'); await tick();
+    c.confidence = c.confidence && c.confidence>0.8 ? c.confidence : (payer.electronic ? 0.93 : 0.87) + (from==='decision'? -0.01:0);
+    const mode = S.policy.trust[c.payer];
+    const gate = S.policy.killSwitch ? 'kill switch is on' : mode==='shadow' ? payer.name+' is in Shadow mode' : c.confidence < S.policy.threshold ? 'confidence below '+S.policy.threshold.toFixed(2) : null;
+    if(gate){
+      ev(c,'agent','Decision','Confidence '+c.confidence.toFixed(2)+' · '+gate+' → staff approval');
+      c.findings = [ (mode==='shadow'? payer.name+' is in Shadow mode: every submission needs staff approval before it goes out.' : 'Held for approval because '+gate+'.'), 'All required documents attached.'];
+      setState(c,'NEEDS_APPROVAL'); notify(['staff'],'A submission is waiting for your approval', c.id);
+      c.live=false; render(); return;
+    }
+    ev(c,'agent','Decision','Confidence '+c.confidence.toFixed(2)+' ≥ '+S.policy.threshold.toFixed(2)+' · auto-submit ('+(mode==='wider'?'Wider autonomy':'Supervised')+')'); await tick();
+  }
+  if(from==='intake' || from==='decision' || from==='submit'){
+    setState(c,'SUBMITTING'); c.findings=[]; await tick();
+    ev(c,'agent','Submission','Inquire-before-submit: no open authorization for this order','idempotency '+c.idem);
+    let done=false;
+    if(payer.electronic){
+      const r = payer.routes[0]; const ref = r==='FHIR PAS' ? 'PAS-'+rnd(5) : '278 TRN 5510-'+rnd(4);
+      c.attempts.push({channel:'electronic', label: r==='FHIR PAS'?'FHIR PAS Claim/$submit':'X12 278 request', outcome:'Accepted', ref, ts:now()});
+      ev(c,'agent','Submission','Submitted electronically via '+r, ref); done=true;
+    } else {
+      c.attempts.push({channel:'electronic', label:'No electronic PA route', outcome:'Skipped', ref:'', ts:now()});
+      ev(c,'agent','Submission','No electronic route for '+payer.name+' → payer portal'); await tick();
+      if(payer.portalFails){
+        c.attempts.push({channel:'portal', label:payer.portal, outcome:'Failed — session timeout after upload', ref:'', ts:now()});
+        ev(c,'agent','Submission','Browser agent: portal failed (session timeout) → voice fallback'); await tick(900);
+        if(payer.automatedCaller){
+          const ref='Call ref 1001-'+rnd(4);
+          c.attempts.push({channel:'voice', label:'Retell call to '+payer.name+' UM line', outcome:'Request accepted by representative', ref, ts:now(), transcript:true});
+          ev(c,'agent','Submission','Voice: IVR navigated, 11 min hold, request accepted by representative', ref); done=true;
+        }
+      } else {
+        const ref='Portal conf '+rnd(6);
+        c.attempts.push({channel:'portal', label:payer.portal, outcome:'Submitted', ref, ts:now()});
+        ev(c,'agent','Submission','Browser agent submitted via '+payer.portal, ref); done=true;
+      }
+    }
+    setState(c,'SUBMITTED'); c.deadline = addDays(TODAY,7);
+    ev(c,'agent','Follow-Up','Decision timer started · 7 days (standard)'); await tick(900);
+    if(payer.pends){
+      setState(c,'PENDED');
+      ev(c,'agent','Follow-Up','Payer pended via CDex Task: requests most recent imaging report','CDex Task '+rnd(5)); await tick(900);
+      c.docs.push(D('Imaging report (requested)','resupplied'));
+      ev(c,'agent','Follow-Up','Retrieved imaging report from EHR and resupplied without restarting the request','attach AT-'+rnd(4)); await tick(900);
+      setState(c,'SUBMITTED'); await tick(500);
+    }
+    const authNo = (payer.name.slice(0,2).toUpperCase())+rnd(7);
+    c.decision = {type:'Approved', authNo, from:addDays(TODAY,1), to:addDays(TODAY,31), units:1, payerRef: payer.name.split(' ')[0].toUpperCase().slice(0,4)+'-REF-'+rnd(6)};
+    setState(c,'APPROVED');
+    ev(c,'agent','Follow-Up','Payer decision: APPROVED · Auth '+authNo, c.decision.payerRef);
+    ev(c,'agent','Follow-Up','Written back to EHR: auth #, valid '+fd(c.decision.from)+'–'+fd(c.decision.to)+', reference','DocRef wb-'+c.id.slice(3));
+    notify(['physician'],'An authorization was approved', c.id);
+  }
+  c.live=false; render();
+}
+
+/* ---------------- User actions on cases ---------------- */
+const ACTIONS = {
+  approveSubmit(c){ ev(c,'user',me().name+' · Operations','Approved submission (Shadow / held case)'); toast('Approved. The agent is submitting now.'); runCase(c,'submit'); },
+  returnPhysician(c){ ev(c,'user',me().name+' · Operations','Returned to ordering physician for order clarification'); setState(c,'WITHDRAWN'); notify(['physician'],'An order was returned to you for clarification', c.id); toast('Returned to the ordering physician.'); },
+  rerunElig(c){ const p=patient(c.patientId); p.active=true; p.payer='uhc'; c.payer='uhc'; ev(c,'user',me().name+' · Operations','Updated coverage: UnitedHealthcare Choice Plus (new card on file) · re-run eligibility'); c.exception=''; toast('Coverage updated. Re-running from eligibility.'); runCase(c,'intake'); },
+  requestExtension(c){ c.extensionRequested=true; ev(c,'user',me().name+' · Operations','Asked agent to request a date-span extension to cover the Oct 20 procedure'); ev(c,'agent','Submission','Extension request sent via FHIR PAS update','PAS-UPD-'+rnd(5)); toast('Extension requested. The agent will track the response.'); },
+  attachEvidence(c){
+    c.docs.forEach(d=>{ if(d.status==='missing'){ d.status='attached'; d.source='athenahealth · PT progress notes Aug 4 – Sep 19 (7 wks)'; }});
+    ev(c,'user',me().name+' · Clinical reviewer (licensed)','Attested conservative-therapy evidence found in chart · returned to agent');
+    c.findings=[]; c.confidence=0.92; patient(c.patientId).therapy=true; toast('Evidence attached. The agent is resuming at the decision step.'); runCase(c,'decision'); },
+  notSupported(c){ ev(c,'user',me().name+' · Clinical reviewer (licensed)','Determined documentation does not support request · ordering physician notified'); setState(c,'WITHDRAWN'); notify(['physician'],'A clinical reviewer returned one of your orders', c.id); toast('Physician notified. Case closed as withdrawn.'); },
+  approveAppeal(c){ ev(c,'user',me().name+' · Clinical reviewer (licensed)','Approved appeal packet (first-level appeal) with 14 weeks PT + ESI history'); ev(c,'agent','Submission','Appeal submitted via Availity attachments','AV-APL-'+rnd(5)); setState(c,'APPEAL_SUBMITTED'); c.deadline=addDays(TODAY,30); toast('Appeal submitted. Decision tracked by the Follow-Up agent.'); },
+  scheduleP2P(c){ ev(c,'user',me().name+' · Clinical reviewer (licensed)','Requested peer-to-peer review with payer medical director'); ev(c,'agent','Follow-Up','Peer-to-peer requested by phone · slot offered Oct 6, 2:30 pm ET','Call ref 1001-'+rnd(4)); setState(c,'P2P_SCHEDULED'); toast('Peer-to-peer requested. It will appear on your calendar.'); },
+};
+function can(c, action){
+  const r=S.role;
+  const map = { approveSubmit:['staff'], returnPhysician:['staff'], rerunElig:['staff'], requestExtension:['staff'], attachEvidence:['clinical'], notSupported:['clinical'], approveAppeal:['clinical'], scheduleP2P:['clinical'] };
+  return (map[action]||[]).includes(r);
+}
+
+/* ---------------- Rendering: chrome ---------------- */
+const LOGO = `<svg width="30" height="30" viewBox="0 0 32 32" aria-hidden="true"><path d="M16 2 28.1 9v14L16 30 3.9 23V9z" fill="#0B63CE"/><path d="M10.5 21.5V11l11 10.5V10.5" stroke="#FFFFFF" stroke-width="2.6" fill="none" stroke-linecap="round" stroke-linejoin="round"/><circle cx="21.5" cy="10.5" r="2.2" fill="#34C77A"/></svg>`;
+function renderSide(){
+  const counts = { queue: S.cases.filter(c=>status(c).group==='staff').length, clinical: S.cases.filter(c=>status(c).group==='clinical').length };
+  const btn = ([id,label]) => `<button class="navbtn" data-go="${id}" ${S.route===id?'aria-current="page"':''}><span>${esc(label)}</span>${counts[id]?`<span class="count">${counts[id]}</span>`:''}</button>`;
+  document.getElementById('side').innerHTML = `
+    <div class="brandmark">${LOGO}<div><b>ClearAuth AI</b><small>PROTOTYPE · SYNTHETIC DATA</small></div></div>
+    <div class="navs">
+      <div class="navgroup"><div class="navlabel">${esc(ROLES[S.role].label)}</div><div class="navbtns">${NAV[S.role].map(btn).join('')}</div></div>
+      <div class="navgroup"><div class="navlabel">Blueprint</div><div class="navbtns">${BLUEPRINT_NAV.map(btn).join('')}</div></div>
+    </div>
+    <div class="side-foot">One portal, shaped by role. Switch the signed-in user at the top to see each persona. Nothing is saved; refreshing resets the demo.</div>`;
+}
+function renderTop(){
+  const mine = S.notifs.filter(n=>n.roles.includes(S.role));
+  const unread = mine.filter(n=>!n.read).length;
+  const tenantLine = S.role==='master' ? `<b>ClearAuth platform console</b><span>All tenants · operational metrics only, no PHI</span>` : `<b>Cascade Spine &amp; Rehab</b><span>Tenant · Growth tier · Multi-tenant SaaS · 18 physicians</span>`;
+  document.getElementById('top').innerHTML = `
+    <div class="tenant">${tenantLine}</div>
+    <div class="whois"><label for="roleSel">Signed in as</label>
+      <select id="roleSel" class="select">${Object.entries(ROLES).map(([k,r])=>`<option value="${k}" ${S.role===k?'selected':''}>${esc(user(r.user).name)} — ${esc(r.label)}</option>`).join('')}</select></div>
+    <div style="position:relative">
+      <button class="iconbtn" data-act="toggleNotif" aria-label="Notifications"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>${unread?`<span class="dot">${unread}</span>`:''}</button>
+      ${S.notifOpen?`<div class="npanel"><div class="panel-h"><h2>Notifications</h2><p>Email + web push carry no PHI</p></div>
+        ${mine.length? mine.slice(0,8).map(n=>`<button class="nitem ${n.read?'':'unread'}" data-notif="${n.id}">${esc(n.text)}${n.caseId?` <span class="mono" style="display:inline">${n.caseId}</span>`:''}<span>${esc(n.ts)}</span></button>`).join('') : '<div class="empty">Nothing needs you right now.</div>'}</div>`:''}
+    </div>`;
+}
+
+/* ---------------- Shared fragments ---------------- */
+function caseRow(c, cols){
+  const p=patient(c.patientId), pr=PROC[c.cpt];
+  const cells = {
+    id:`<td class="mono">${c.id}</td>`,
+    patient:`<td>${esc(p.name)}<span class="sub">${esc(p.mrn)}</span></td>`,
+    proc:`<td>${esc(pr.short)} <span class="mono muted">${c.cpt}</span><span class="sub">${esc(c.icd)} · ${esc(ICD[c.icd]||'')}</span></td>`,
+    payer:`<td>${esc(PAYERS[c.payer].name)}<span class="sub">${esc(PAYERS[c.payer].plan)}</span></td>`,
+    status:`<td>${pill(c)}</td>`,
+    reason:`<td class="small" style="max-width:300px">${esc(reasonText(c))}</td>`,
+    sched:`<td class="num">${fd(c.scheduled)}</td>`,
+    updated:`<td class="num small muted">${esc(c.updated)}</td>`,
+    auth:`<td class="mono">${c.decision&&c.decision.authNo?esc(c.decision.authNo):'—'}</td>`,
+  };
+  return `<tr class="click" data-case="${c.id}" tabindex="0">${cols.map(k=>cells[k]).join('')}</tr>`;
+}
+const HEAD = {id:'Case',patient:'Patient',proc:'Procedure',payer:'Payer',status:'Status',reason:'Why it is here',sched:'Procedure date',updated:'Updated',auth:'Auth #'};
+function caseTable(list, cols){
+  if(!list.length) return `<div class="empty">No cases here. The agent is handling everything else.</div>`;
+  return `<div class="tablewrap"><table><thead><tr>${cols.map(k=>`<th>${HEAD[k]}</th>`).join('')}</tr></thead><tbody>${list.map(c=>caseRow(c,cols)).join('')}</tbody></table></div>`;
+}
+function reasonText(c){
+  if(c.state==='NEEDS_APPROVAL') return S.policy.trust[c.payer]==='shadow' ? 'Shadow mode: approve before it is sent' : 'Held: below confidence threshold or kill switch on';
+  if(c.state==='ADMIN_EXCEPTION') return c.exception;
+  if(c.state==='CLINICAL_REVIEW') return 'Missing: 6 weeks conservative treatment documentation';
+  if(c.state==='DENIED') return 'Denied for medical necessity · appeal packet ready';
+  if(c.state==='P2P_SCHEDULED') return 'Peer-to-peer requested';
+  if(isExpiring(c)) return 'Approval ends '+fd(c.decision.to)+', procedure '+fd(c.scheduled);
+  if(c.state==='PENDED') return 'Payer asked for more; agent resupplied it';
+  return '';
+}
+
+/* ---------------- Pages ---------------- */
+const P = {};
+P.overview = () => {
+  const cs=S.cases, attention=cs.filter(c=>status(c).group==='staff'), clinical=cs.filter(c=>status(c).group==='clinical');
+  const inflight=cs.filter(c=>['working','pending'].includes(status(c).group)).length;
+  const resolved=cs.filter(c=>['APPROVED','PARTIAL','NO_AUTH_REQUIRED'].includes(c.state)&&!isExpiring(c)).length;
+  return `
+  <div class="pagehead"><div><div class="eyebrow">Operations · Oct 1, 2026</div><h1>Good morning, Maria</h1><p>The agent works every order. You only see what it could not finish on its own, already loaded with the context behind it.</p></div>
+    <button class="btn" data-go="queue">Open exception queue</button></div>
+  <div class="kpis">
+    <div class="kpi"><span class="v">${inflight}</span><span class="l">Agent working / pending payer</span></div>
+    <div class="kpi good"><span class="v">${resolved}</span><span class="l">Resolved without staff touch</span></div>
+    <div class="kpi attn"><span class="v">${attention.length}</span><span class="l">Need operations</span></div>
+    <div class="kpi attn"><span class="v">${clinical.length}</span><span class="l">With clinical reviewer</span></div>
+    <div class="kpi"><span class="v">78%</span><span class="l">Touchless rate, last 30 days</span></div>
+  </div>
+  <div class="grid2">
+    <section class="panel"><div class="panel-h"><div><h2>Needs you</h2><p>Exceptions and approvals, oldest first</p></div></div>
+      ${caseTable(attention,['id','patient','status','reason'])}</section>
+    <section class="panel"><div class="panel-h"><div><h2>How requests were resolved</h2><p>Cost-ordered waterfall, last 30 days · 1,214 requests</p></div></div>
+      <div class="panel-b">
+        <div class="mix" role="img" aria-label="Electronic 71 percent, portal 19 percent, voice 8 percent, human 2 percent"><span style="width:71%;background:var(--aqua)"></span><span style="width:19%;background:var(--brand)"></span><span style="width:8%;background:var(--warn)"></span><span style="width:2%;background:var(--bad)"></span></div>
+        <div class="legend"><span><i style="background:var(--aqua)"></i>Electronic 71%</span><span><i style="background:var(--brand)"></i>Portal 19%</span><span><i style="background:var(--warn)"></i>Voice 8%</span><span><i style="background:var(--bad)"></i>Human 2%</span></div>
+        <div class="tablewrap" style="margin-top:16px"><table><thead><tr><th>Measure</th><th class="num">Now</th><th class="num">Manual baseline</th></tr></thead><tbody>
+          <tr><td>Order → submitted, median</td><td class="num">14 min</td><td class="num">1.8 days</td></tr>
+          <tr><td>Missing-document cases caught before submit</td><td class="num">96%</td><td class="num">—</td></tr>
+          <tr><td>First-pass approval rate</td><td class="num">87%</td><td class="num">79%</td></tr>
+          <tr><td>Staff minutes per authorization</td><td class="num">4.6</td><td class="num">24</td></tr>
+        </tbody></table></div>
+        <p class="small muted" style="margin-top:8px">Illustrative pilot figures, measured against the practice's own discovery baseline.</p>
+      </div></section>
+  </div>
+  <section class="panel"><div class="panel-h"><div><h2>Agent activity</h2><p>Every action is written once to the audit log</p></div><button class="btn small" data-go="cases">All cases</button></div>
+    <div class="tablewrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Case</th><th>Reference</th></tr></thead><tbody>
+    ${S.audit.slice(0,8).map(a=>`<tr><td class="num small muted">${esc(a.ts)}</td><td class="small">${esc(a.actor)}</td><td class="small">${esc(a.action)}</td><td class="mono">${esc(a.target)}</td><td class="mono muted">${esc(a.ref)}</td></tr>`).join('')}</tbody></table></div></section>`;
+};
+P.queue = () => {
+  const groups = {all:'All', approval:'Needs approval', admin:'Admin exception', expiring:'Expiring soon'};
+  let list = S.cases.filter(c=>status(c).group==='staff');
+  if(S.queueFilter==='approval') list=list.filter(c=>c.state==='NEEDS_APPROVAL');
+  if(S.queueFilter==='admin') list=list.filter(c=>c.state==='ADMIN_EXCEPTION');
+  if(S.queueFilter==='expiring') list=list.filter(isExpiring);
+  return `<div class="pagehead"><div><div class="eyebrow">Operations</div><h1>Exception queue</h1><p>Administrative exceptions only. Anything that needs a medical judgment goes to the clinical reviewer instead.</p></div></div>
+  <div class="chips">${Object.entries(groups).map(([k,v])=>`<button class="chip" data-qf="${k}" aria-pressed="${S.queueFilter===k}">${v}</button>`).join('')}</div>
+  <section class="panel">${caseTable(list,['id','patient','proc','payer','status','reason','sched'])}</section>`;
+};
+P.cases = () => {
+  const f = S.filter, q=S.search.toLowerCase();
+  let list = S.cases.slice().reverse();
+  if(f!=='all') list=list.filter(c=>status(c).group===f);
+  if(q) list=list.filter(c=> (c.id+patient(c.patientId).name+PROC[c.cpt].name+c.cpt+PAYERS[c.payer].name).toLowerCase().includes(q));
+  const F={all:'All',working:'Agent working',pending:'Pending payer',staff:'Operations',clinical:'Clinical',done:'Resolved'};
+  return `<div class="pagehead"><div><div class="eyebrow">Cases</div><h1>All authorization cases</h1><p>One canonical case per order, whichever channel resolves it.</p></div></div>
+  <div class="row" style="justify-content:space-between"><div class="chips">${Object.entries(F).map(([k,v])=>`<button class="chip" data-cf="${k}" aria-pressed="${f===k}">${v}</button>`).join('')}</div>
+  <div style="width:min(280px,100%)"><input id="caseSearch" class="input" placeholder="Search patient, CPT, payer, case" value="${esc(S.search)}"></div></div>
+  <section class="panel">${caseTable(list,['id','patient','proc','payer','status','auth','sched','updated'])}</section>`;
+};
+P.clinical = () => {
+  const list=S.cases.filter(c=>status(c).group==='clinical');
+  return `<div class="pagehead"><div><div class="eyebrow">Licensed review</div><h1>Clinical review</h1><p>Medical-necessity questions, denials and peer-to-peer requests. Decisions here are recorded under your license; the agent never makes them.</p></div></div>
+  <div class="banner info"><div><b>Kept separate on purpose.</b> Only users holding the clinical-reviewer role can attest evidence, approve appeals or request a peer-to-peer. Every action is audited to the person.</div></div>
+  <section class="panel">${caseTable(list,['id','patient','proc','payer','status','reason','sched'])}</section>`;
+};
+P.orders = () => {
+  const list=S.cases.filter(c=>c.orderedBy==='u_rao').slice().reverse();
+  return `<div class="pagehead"><div><div class="eyebrow">Dr. Anika Rao · Physiatry</div><h1>My orders</h1><p>Place the order and click Get authorization. You hear back only with the result or if a clinical question needs you.</p></div>
+    <button class="btn primary big" data-go="neworder">New order</button></div>
+  <section class="panel">${caseTable(list,['id','patient','proc','payer','status','auth','sched'])}</section>`;
+};
+P.neworder = () => {
+  const opts = PATIENTS.map(p=>`<option value="${p.id}">${esc(p.name)} · ${esc(PAYERS[p.payer].name)}</option>`).join('');
+  return `<div class="pagehead"><div><div class="eyebrow">Order entry · stands in for the EHR order screen</div><h1>New order</h1><p>In production this button lives inside the EHR (CDS Hooks order-sign or a SMART app). Here it is a form so you can try each path.</p></div></div>
+  <form class="panel" id="orderForm"><div class="panel-b" style="display:grid;gap:14px;grid-template-columns:repeat(2,minmax(0,1fr))">
+    <div class="field"><label for="o_pt">Patient</label><select id="o_pt" class="input">${opts}</select></div>
+    <div class="field"><label for="o_cpt">Procedure (CPT)</label><select id="o_cpt" class="input">${Object.entries(PROC).filter(([k])=>k!=='22630').map(([k,v])=>`<option value="${k}">${k} · ${esc(v.name)}</option>`).join('')}</select></div>
+    <div class="field"><label for="o_icd">Diagnosis (ICD-10)</label><select id="o_icd" class="input">${Object.entries(ICD).map(([k,v])=>`<option value="${k}">${k} · ${esc(v)}</option>`).join('')}</select></div>
+    <div class="field"><label for="o_date">Scheduled date</label><input id="o_date" type="date" class="input" value="2026-10-14" min="2026-10-02"></div>
+    <div class="note" style="grid-column:1/-1"><b>Try these paths.</b> Owen Brooks + 72148 → approved electronically. Sofia Marino + 72148 → clinical review. Kwame Mensah + E0730 → held for approval (Medicaid is in Shadow mode); approve it as Operations and watch the portal fail and the voice call take over. Evelyn Ward + 72148 → Cigna is in Shadow mode, so it waits for staff approval. Owen Brooks + 97161 → no auth required. Robert Hayes + 72141 → inactive coverage. Ordering the same patient and CPT twice opens the existing case instead of creating a duplicate.</div>
+    <div class="row" style="grid-column:1/-1;justify-content:flex-end"><button type="submit" class="btn primary big">GET AUTHORIZATION</button></div>
+  </div></form>`;
+};
+P.journey = () => {
+  const rows = S.cases.filter(c=> S.role!=='physician' || c.orderedBy==='u_rao').slice().reverse().map(c=>{
+    const st=c.state, steps=['Ordered','Authorizing','Approved','Scheduled'];
+    let idx = ['APPROVED','PARTIAL','NO_AUTH_REQUIRED'].includes(st)?2:1; let stuck = ['CLINICAL_REVIEW','ADMIN_EXCEPTION','DENIED','NEEDS_APPROVAL','P2P_SCHEDULED'].includes(st) || isExpiring(c);
+    if(st==='WITHDRAWN'){ idx=0; }
+    const ready = idx===2 && !isExpiring(c);
+    return `<tr class="click" data-case="${c.id}"><td>${esc(patient(c.patientId).name)}<span class="sub">${esc(PROC[c.cpt].short)} · ${fd(c.scheduled)}</span></td>
+      <td><div class="track">${steps.map((s,i)=>`<span class="${i<idx||(ready&&i===2)?'done':i===idx?(stuck?'stuck':'now'):''}">${i===idx&&stuck?'Stuck · review':s}</span>`).join('')}</div></td>
+      <td class="small">${ready?`Cleared for ${fd(c.scheduled)}`:esc(status(c).label)}</td></tr>`; }).join('');
+  return `<div class="pagehead"><div><div class="eyebrow">Patient journey</div><h1>Is the patient cleared for the procedure?</h1><p>Each authorization tied to the procedure it unlocks. This view later feeds the CMS-0057-F Patient Access API.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Patient · procedure</th><th>Ordered → authorizing → approved → scheduled</th><th>Where it stands</th></tr></thead><tbody>${rows}</tbody></table></div></section>`;
+};
+P.vice = () => {
+  const claims=[
+    ['CLM-88412','Lee Moore','UHC','$4,850',47,'Follow-up scheduled','p-info','Rep: "We need the operative report." Retrieved, submitted, recheck Oct 11','Call ref 0930-5512'],
+    ['CLM-88377','Tomás Alvarez','Aetna','$12,300',63,'Appeal prepared','p-warn','Timely-filing denial; clearinghouse shows submitted Jul 2 (day 4). Appeal + proof awaiting approval','837 ack 2207-11'],
+    ['CLM-88501','Hannah Kim','Humana','$1,180',31,'Resolved (electronic)','p-ok','277: paid Sep 29, ERA matched','835 TRN 9910'],
+    ['CLM-88290','Daniel Foster','Medicaid MCO','$640',88,'Needs human attention','p-bad','Coordination of benefits: payer lists other primary coverage','Call ref 0929-3301'],
+    ['CLM-88533','Grace Liu','UHC','$2,215',22,'Escalated to call','p-info','277 ambiguous ("in process") · call queued for 10:40',''],
+  ];
+  return `<div class="pagehead"><div><div class="eyebrow">Phase 2 preview · same case engine, new case type</div><h1>A/R recovery · VICE</h1><p>"Give the AI the outstanding A/R and tell it: collect the money." Claim status electronically first (276/277), portal second, a call only when nothing else resolves it.</p></div></div>
+  <div class="kpis">
+    <div class="kpi"><span class="v">$1,284,620</span><span class="l">Outstanding A/R</span></div>
+    <div class="kpi"><span class="v">327</span><span class="l">Claims the agent is working</span></div>
+    <div class="kpi"><span class="v">86</span><span class="l">Payers called today</span></div>
+    <div class="kpi good"><span class="v">$37,450</span><span class="l">Payments recovered</span></div>
+    <div class="kpi attn"><span class="v">9</span><span class="l">Need human attention</span></div>
+  </div>
+  <section class="panel"><div class="panel-h"><div><h2>Claims in the waterfall</h2><p>Illustrative snapshot from the client brief; not wired to the simulator</p></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Claim</th><th>Patient</th><th>Payer</th><th class="num">Amount</th><th class="num">Age</th><th>Status</th><th>Reason / next action</th><th>Reference</th></tr></thead><tbody>
+  ${claims.map(r=>`<tr><td class="mono">${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td class="num">${r[3]}</td><td class="num">${r[4]} d</td><td><span class="pill ${r[6]}">${r[5]}</span></td><td class="small" style="max-width:320px">${r[7]}</td><td class="mono muted">${r[8]}</td></tr>`).join('')}</tbody></table></div></section>`;
+};
+
+/* --- Tenant admin --- */
+P.automation = () => {
+  const modes={shadow:'Shadow',supervised:'Supervised auto-submit',wider:'Wider autonomy'};
+  return `<div class="pagehead"><div><div class="eyebrow">Tenant admin · policy v${S.policy.version}</div><h1>Automation rules</h1><p>How much the agent may do without a person. Every change here is configuration, versioned and audited. No code deploy.</p></div></div>
+  ${S.policy.killSwitch?`<div class="banner warn"><div><b>Kill switch is on.</b> Nothing is submitted automatically. Every case stops at "Needs approval".</div></div>`:''}
+  <div class="grid2">
+    <section class="panel"><div class="panel-h"><div><h2>Auto-submit gate</h2><p>Applies to payers in Supervised or Wider mode</p></div></div>
+      <div class="panel-b" style="display:flex;flex-direction:column;gap:14px">
+        <div class="field"><label for="thr">Confidence threshold: <span class="num">${S.policy.threshold.toFixed(2)}</span></label>
+          <input id="thr" type="range" class="slider" min="0.70" max="0.99" step="0.01" value="${S.policy.threshold}">
+          <span class="small muted">Below this score the case waits for staff approval. Denials always go to a licensed human regardless of score.</span></div>
+        <label class="switch" for="kill"><input type="checkbox" id="kill" ${S.policy.killSwitch?'checked':''}> Kill switch: stop all automatic submission</label>
+        <div class="facts"><div class="fact"><div class="k">Expedited timer</div><div class="v">${S.policy.expedited}</div></div><div class="fact"><div class="k">Standard timer</div><div class="v">${S.policy.standard}</div></div><div class="fact"><div class="k">Exception owner</div><div class="v">Maria Chen</div></div></div>
+      </div></section>
+    <section class="panel"><div class="panel-h"><div><h2>Trust ramp by payer</h2><p>Shadow → Supervised → Wider, granted per payer as the exception rate proves out</p></div></div>
+      <div class="tablewrap"><table><thead><tr><th>Payer</th><th>Mode</th><th class="num">Exception rate</th></tr></thead><tbody>
+      ${Object.keys(PAYERS).map((k,i)=>`<tr><td>${esc(PAYERS[k].name)}</td><td><select class="select" data-trust="${k}" aria-label="Mode for ${esc(PAYERS[k].name)}">${Object.entries(modes).map(([m,l])=>`<option value="${m}" ${S.policy.trust[k]===m?'selected':''}>${l}</option>`).join('')}</select></td><td class="num">${[2.4,4.1,3.3,3.1,6.8,11.5][i]}%</td></tr>`).join('')}</tbody></table></div></section>
+  </div>
+  <section class="panel"><div class="panel-h"><div><h2>Rule change log</h2><p>Every change is an audited, versioned event</p></div></div>
+    <div class="tablewrap"><table><thead><tr><th>Version</th><th>When</th><th>By</th><th>Change</th></tr></thead><tbody>${S.policyLog.map(l=>`<tr><td class="mono">v${l.v}</td><td class="num small">${esc(l.ts)}</td><td>${esc(l.by)}</td><td class="small">${esc(l.change)}</td></tr>`).join('')}</tbody></table></div></section>`;
+};
+P.matrix = () => {
+  const cpts=Object.keys(PROC).filter(k=>k!=='22630');
+  return `<div class="pagehead"><div><div class="eyebrow">Tenant admin · knowledge</div><h1>Payer requirements</h1><p>Which payer needs authorization for which CPT, what evidence it asks for, and where each rule came from. The Coverage agent looks rules up here; it never recalls them.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>CPT</th>${Object.values(PAYERS).map(p=>`<th>${esc(p.name.replace('Blue Cross Blue Shield','BCBS').replace('State Medicaid MCO','Medicaid MCO'))}</th>`).join('')}</tr></thead><tbody>
+  ${cpts.map(c=>`<tr><td><span class="mono">${c}</span><span class="sub">${esc(PROC[c].short)}</span></td>${Object.keys(PAYERS).map(p=>{const r=RULES[p][c];return `<td>${r.req?'<span class="pill p-warn">PA required</span>':'<span class="pill p-aqua">Not required</span>'}<span class="sub">${r.req?r.docs.length+' docs · ':''}${esc(r.version)} · ${esc(r.reviewed)}</span></td>`}).join('')}</tr>`).join('')}
+  </tbody></table></div></section>
+  <section class="panel"><div class="panel-h"><div><h2>Payer channel profile</h2><p>Drives the waterfall order and call-disclosure rules</p></div></div>
+  <div class="tablewrap"><table><thead><tr><th>Payer</th><th>Electronic routes</th><th>Portal</th><th>Automated caller allowed</th><th>Rule source</th></tr></thead><tbody>
+  ${Object.entries(PAYERS).map(([k,p])=>`<tr><td>${esc(p.name)}<span class="sub">${esc(p.plan)}</span></td><td>${p.routes.length?p.routes.map(r=>`<span class="tag">${r}</span>`).join(' '):'<span class="muted">None</span>'}</td><td>${esc(p.portal)}</td><td>${p.automatedCaller?'Yes':'<b>No</b> — human caller required'}</td><td class="small">${esc(RULES[k]['72148'].source)}</td></tr>`).join('')}</tbody></table></div></section>`;
+};
+P.connections = () => {
+  const st = {active:['Active','p-ok'], refresh_failed:['Refresh failed','p-bad'], testing:['Testing…','p-info p-live'], expired:['Expired','p-bad']};
+  return `<div class="pagehead"><div><div class="eyebrow">Tenant admin · integration fabric</div><h1>Connections</h1><p>Each external system is a swappable connector with its own credentials in the vault, its own failure handling and its own audit trail.</p></div></div>
+  <div class="grid2">${S.connections.map(c=>`<section class="panel"><div class="panel-h"><div><h2>${esc(c.system)}</h2><p>${esc(c.kind)} · <span class="tag">${c.type}</span></p></div><span class="pill ${st[c.state][1]}">${st[c.state][0]}</span></div>
+    <div class="panel-b" style="display:flex;flex-direction:column;gap:10px"><p class="small">${esc(c.detail)}</p>
+    <div class="row" style="justify-content:space-between"><span class="small muted">Last test ${esc(c.tested)} · ${esc(c.latency)}</span>
+    ${c.state==='refresh_failed'?`<button class="btn small primary" data-conn="${c.id}">Reconnect</button>`:`<button class="btn small" data-conn="${c.id}">Test connection</button>`}</div>
+    ${c.state==='refresh_failed'?'<div class="note">Stored portal session could not refresh. Cigna cases fall back to voice until reconnected. Credentials stay server-side.</div>':''}</div></section>`).join('')}</div>`;
+};
+P.users = () => {
+  const R=['physician','staff','clinical','admin'];
+  return `<div class="pagehead"><div><div class="eyebrow">Tenant admin · identity (Keycloak realm: cascade-spine)</div><h1>Users &amp; roles</h1><p>One person can hold several roles. What each person sees is the union of their roles, and nothing more.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Person</th>${R.map(r=>`<th>${ROLES[r].label}</th>`).join('')}<th>MFA</th><th>Status</th></tr></thead><tbody>
+  ${USERS.filter(u=>!u.roles.includes('master')).map(u=>`<tr><td>${esc(u.name)}<span class="sub">${esc(u.title)} · ${esc(u.email)}</span></td>${R.map(r=>`<td><input type="checkbox" aria-label="${esc(u.name)} ${ROLES[r].label}" data-urole="${u.id}|${r}" ${u.roles.includes(r)?'checked':''}></td>`).join('')}<td>${u.mfa?'On':'<b>Off</b>'}</td><td><span class="pill ${u.status==='Active'?'p-ok':'p-info'}">${u.status}</span></td></tr>`).join('')}
+  </tbody></table></div></section>
+  <form class="panel" id="inviteForm"><div class="panel-h"><div><h2>Invite a user</h2><p>They sign in with SSO or password + MFA before seeing any PHI</p></div></div>
+  <div class="panel-b" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:12px;align-items:end">
+    <div class="field"><label for="i_name">Name</label><input id="i_name" class="input" value="Lena Ortiz"></div>
+    <div class="field"><label for="i_email">Work email</label><input id="i_email" class="input" value="l.ortiz@cascade-spine.example"></div>
+    <div class="field"><label for="i_role">Role</label><select id="i_role" class="input">${R.map(r=>`<option value="${r}" ${r==='staff'?'selected':''}>${ROLES[r].label}</option>`).join('')}</select></div>
+    <button class="btn primary" type="submit">Send invite</button></div></form>`;
+};
+P.audit = () => `<div class="pagehead"><div><div class="eyebrow">Tenant admin · write-once</div><h1>Audit log</h1><p>Every electronic check, portal submission, call, human decision and rule change, with the reference number that proves it. Retained per the practice's HIPAA policy.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Time</th><th>Actor</th><th>Type</th><th>Action</th><th>Target</th><th>Reference</th></tr></thead><tbody>
+  ${S.audit.slice(0,60).map(a=>`<tr><td class="num small muted">${esc(a.ts)}</td><td class="small">${esc(a.actor)}</td><td><span class="tag">${a.actorType}</span></td><td class="small">${esc(a.action)}</td><td class="mono">${esc(a.target)}</td><td class="mono muted">${esc(a.ref)}</td></tr>`).join('')}</tbody></table></div></section>`;
+P.billing = () => `<div class="pagehead"><div><div class="eyebrow">Tenant admin · Stripe</div><h1>Billing</h1><p>Subscription license plus a flat managed-services fee, with one-time onboarding and integration charges. Pass-through usage is itemized so each line traces back to the cases that produced it.</p></div></div>
+  <div class="grid3">
+    <section class="panel"><div class="panel-b"><div class="eyebrow">Plan</div><div style="font-size:20px;font-weight:600">Growth · 18 physicians</div><p class="small muted">Annual license, renews Aug 31, 2027</p></div></section>
+    <section class="panel"><div class="panel-b"><div class="eyebrow">Managed services + cloud</div><div style="font-size:20px;font-weight:600" class="num">$3,000 / month</div><p class="small muted">Hosting, platform, baseline run cost</p></div></section>
+    <section class="panel"><div class="panel-b"><div class="eyebrow">Usage this month (pass-through)</div><div style="font-size:20px;font-weight:600" class="num">$412.60</div><p class="small muted">Itemized below</p></div></section>
+  </div>
+  <section class="panel"><div class="panel-h"><div><h2>Usage, Sep 2026</h2><p>Each line links to the transaction ledger</p></div></div><div class="tablewrap"><table><thead><tr><th>Item</th><th class="num">Quantity</th><th class="num">Amount</th></tr></thead><tbody>
+    <tr><td>Electronic checks (270/271, 278, PAS)</td><td class="num">1,260</td><td class="num">$151.20</td></tr><tr><td>Portal sessions (browser agent)</td><td class="num">231</td><td class="num">$69.30</td></tr><tr><td>Voice minutes</td><td class="num">612</td><td class="num">$122.40</td></tr><tr><td>Model API (document extraction)</td><td class="num">3.1M tokens</td><td class="num">$69.70</td></tr></tbody></table></div></section>
+  <section class="panel"><div class="panel-h"><div><h2>Invoices</h2></div></div><div class="tablewrap"><table><thead><tr><th>Invoice</th><th>Date</th><th>Description</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>
+    <tr><td class="mono">INV-0012</td><td>Oct 1</td><td>Managed services, Oct</td><td class="num">$3,000.00</td><td><span class="pill p-info">Open</span></td></tr>
+    <tr><td class="mono">INV-0011</td><td>Sep 30</td><td>Pass-through usage, Sep</td><td class="num">$412.60</td><td><span class="pill p-info">Open</span></td></tr>
+    <tr><td class="mono">INV-0004</td><td>Aug 31</td><td>Annual license, Growth</td><td class="num">$42,000.00</td><td><span class="pill p-ok">Paid · ACH</span></td></tr>
+    <tr><td class="mono">INV-0003</td><td>Aug 20</td><td>Onboarding (53.5 h) + net-new Cigna portal connector (12 h)</td><td class="num">$3,675.00</td><td><span class="pill p-ok">Paid · card</span></td></tr></tbody></table></div>
+  <p class="small muted" style="padding:0 16px 14px">Figures are illustrative and follow the pricing shape in the discovery documents. The commercial model is still an open decision; see the solution blueprint.</p></section>`;
+
+/* --- Master admin --- */
+const TENANTS=[
+  ['Cascade Spine & Rehab','Growth','Multi-tenant SaaS',18,'1,214','78%','3.9%','Healthy','p-ok'],
+  ['Northfield Orthopedics','Scale','Multi-tenant SaaS',46,'3,980','74%','5.2%','Healthy','p-ok'],
+  ['Lakeside Imaging Center','Starter','Multi-tenant SaaS',6,'702','83%','2.7%','Portal alert','p-warn'],
+  ['Summit Pain & Spine','Enterprise','Dedicated (customer VPC)',112,'9,415','69%','6.0%','Healthy','p-ok'],
+  ['Harbor Physical Therapy','Starter','Multi-tenant SaaS',4,'—','—','—','Shadow mode','p-info'],
+];
+P.tenants = () => `<div class="pagehead"><div><div class="eyebrow">Platform operator</div><h1>Tenants</h1><p>Volume, uptime and exception rates across every practice. This console never shows patient data.</p></div></div>
+  <div class="banner info"><div><b>No PHI at this level.</b> The platform-operator role has no patient, case-content or document scopes. Case IDs and counts only.</div></div>
+  <div class="kpis"><div class="kpi"><span class="v">5</span><span class="l">Tenants</span></div><div class="kpi"><span class="v">15,311</span><span class="l">Requests, 30 days</span></div><div class="kpi good"><span class="v">99.94%</span><span class="l">Platform uptime</span></div><div class="kpi"><span class="v">23</span><span class="l">Connectors in registry</span></div><div class="kpi attn"><span class="v">2</span><span class="l">Connector alerts</span></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Tenant</th><th>Tier</th><th>Deployment</th><th class="num">Physicians</th><th class="num">Requests 30d</th><th class="num">Touchless</th><th class="num">Exception rate</th><th>Health</th></tr></thead><tbody>
+  ${TENANTS.map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td><td class="small">${t[2]}</td><td class="num">${t[3]}</td><td class="num">${t[4]}</td><td class="num">${t[5]}</td><td class="num">${t[6]}</td><td><span class="pill ${t[8]}">${t[7]}</span></td></tr>`).join('')}</tbody></table></div></section>`;
+P.registry = () => {
+  const R=[['athenahealth','EHR','API · FHIR R4 + SMART','2.3.1',3,'Healthy','p-ok'],['eClinicalWorks','EHR','API · FHIR R4','1.4.0',1,'Healthy','p-ok'],['Epic','EHR','API · FHIR R4 + CDS Hooks','0.9.0 beta',1,'Sandbox only','p-info'],['Generic CSV / SFTP','EHR / PM','SFTP','1.2.0',2,'Healthy','p-ok'],
+    ['Availity','Clearinghouse','API · X12 over REST','3.0.2',5,'Healthy','p-ok'],['TriZetto Gateway EDI','Clearinghouse','SFTP · X12 batch','1.1.0',1,'Healthy','p-ok'],['UHC / Optum PAS','Payer API','API · Da Vinci CRD/DTR/PAS','1.6.0',4,'Healthy','p-ok'],['Humana PAS','Payer API','API · PAS + CDex','1.2.3',3,'Healthy','p-ok'],
+    ['CignaforHCP','Payer portal','Browser automation','2.0.4',2,'UI change detected Sep 30','p-warn'],['MCO web portal (generic)','Payer portal','Browser automation','1.3.0',2,'Healthy','p-ok'],['Retell AI voice','Voice','API + SIP','1.8.0',4,'Healthy','p-ok'],['eFax outbound','Documents','API','1.0.2',3,'Healthy','p-ok']];
+  return `<div class="pagehead"><div><div class="eyebrow">Platform operator · open for extension</div><h1>Connector registry</h1><p>A new EHR or payer becomes a new connector implementing the same contract. The orchestration core never changes to fit a client.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Connector</th><th>Kind</th><th>Interface</th><th>Version</th><th class="num">Tenants</th><th>Health</th></tr></thead><tbody>
+  ${R.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="small">${r[2]}</td><td class="mono">${r[3]}</td><td class="num">${r[4]}</td><td><span class="pill ${r[6]}">${r[5]}</span></td></tr>`).join('')}</tbody></table></div></section>
+  <div class="note"><b>Connector contract (every connector implements it):</b> <span class="mono">describe() · test() · checkEligibility() · checkRequirement() · fetchDocuments() · submit() · getStatus() · onEvent()</span>. Agents reach connectors through an internal MCP/tool facade; customers and payers never depend on MCP.</div>`;
+};
+P.onboarding = () => {
+  const steps=['Questionnaire','Registry match','Credentials','Validate','Shadow','Live'];
+  const P2=[['Harbor Physical Therapy',4],['Riverbend Neurology',1],['Westgate Imaging',0]];
+  return `<div class="pagehead"><div><div class="eyebrow">Platform operator</div><h1>Onboarding</h1><p>A new practice becomes a working tenant. Known systems provision in minutes; an unknown one becomes a new connector that joins the registry for everyone after.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Prospect</th><th>Progress</th><th></th></tr></thead><tbody>
+  ${P2.map(([n,i])=>`<tr><td>${n}</td><td><div class="steps">${steps.map((s,j)=>`<span class="${j<i?'done':j===i?'now':''}">${s}</span>`).join('')}</div></td><td>${i===1?`<button class="btn small primary" data-act="runMatch">Run registry match</button>`:''}</td></tr>`).join('')}</tbody></table></div></section>
+  ${S.onboardMatch?`<section class="panel"><div class="panel-h"><div><h2>Registry match · Riverbend Neurology</h2><p>From the guided questionnaire (25 discovery questions)</p></div></div><div class="tablewrap"><table><thead><tr><th>System named by the practice</th><th>Match</th><th>Effort</th></tr></thead><tbody>
+    <tr><td>eClinicalWorks (EHR)</td><td><span class="pill p-ok">eClinicalWorks 1.4.0</span></td><td>Auto-provision</td></tr>
+    <tr><td>Availity (clearinghouse)</td><td><span class="pill p-ok">Availity 3.0.2</span></td><td>Auto-provision</td></tr>
+    <tr><td>Aetna, UHC, BCBS (payers)</td><td><span class="pill p-ok">Covered via Availity + UHC PAS</span></td><td>Auto-provision</td></tr>
+    <tr><td>Ambetter portal</td><td><span class="pill p-warn">No connector</span></td><td>Net-new portal connector, 8–16 h · then added to the registry</td></tr></tbody></table></div>
+    <div class="panel-b"><p class="small">Estimated onboarding: 34 h base + 0.25 h × 9 physicians + 3 h × 3 electronic routes + 4 h × 1 portal = 49.25 h, plus 15% contingency.</p></div></section>`:''}`;
+};
+
+/* --- Blueprint pages --- */
+P.architecture = () => {
+  const L=(name,sub,boxes)=>`<div class="layer"><div class="ln">${name}<small>${sub}</small></div><div class="boxes">${boxes}</div></div>`;
+  const B=(t,s,cls)=>`<div class="box ${cls||''}">${t}${s?`<small>${s}</small>`:''}</div>`;
+  return `<div class="pagehead"><div><div class="eyebrow">Blueprint</div><h1>Architecture</h1><p>A modular monolith with isolated workers. The practice's EHR and clearinghouse stay the systems of record; ClearAuth reads from and writes back to them.</p></div></div>
+  <section class="panel"><div class="panel-b"><div class="layers">
+    ${L('Experience','one portal, shaped by role',B('ClearAuth portal','React + TS · role-based views')+B('Ops dashboard & queues')+B('Clinical review workspace')+B('Tenant admin console')+B('Platform console','no PHI')+B('EHR-embedded launch','SMART app / CDS Hooks card','ext'))}
+    ${L('Edge & identity','who may act',B('API gateway','rate limits, request IDs')+B('Keycloak','OIDC, MFA, SAML SSO, realm per tenant')+B('Policy check','RBAC + tenant + purpose'))}
+    ${L('Execution core','closed for modification',B('Case service','canonical PA case + state machine','core')+B('Rules & policy engine','payer matrix, thresholds, trust ramp','core')+B('Scheduler & SLA timers','rechecks, deadlines, expiry','core')+B('HITL task service','queues, approvals, attestations','core')+B('Notification service','email + web push, no PHI')+B('Billing & metering','Stripe'))}
+    ${L('Agent runtime','LLM work, rules it cannot override',B('Orchestrator')+B('Coverage')+B('Clinical')+B('Compliance')+B('Decision','confidence score')+B('Submission','waterfall')+B('Follow-Up')+B('Tool router','internal MCP facade over connectors'))}
+    ${L('Integration fabric','open for extension',B('EHR / PM','FHIR R4, SMART, HL7, REST')+B('Clearinghouse','X12 270/271, 276/277, 278')+B('Payer APIs','Da Vinci CRD · DTR · PAS · CDex')+B('Portal agent','Playwright browser workers')+B('Voice','Retell + SIP')+B('Documents & fax')+B('File / SFTP','fast-start onboarding'))}
+    ${L('Data & trust','PHI boundary',B('PostgreSQL','cases, config · row-level security per tenant')+B('FHIR store','HAPI or Medplum, source provenance')+B('Object store','documents, recordings · KMS')+B('Outbox + event bus')+B('Append-only audit & reference ledger')+B('Secrets vault','per-connector credentials')+B('Observability','OpenTelemetry, PHI-scrubbed'))}
+    ${L('External systems','not ours',B('athenahealth / eCW / Epic','','ext')+B('Availity / TriZetto','','ext')+B('UHC, Aetna, Humana, Cigna…','','ext')+B('Payer IVRs & reps','','ext')+B('LLM API under BAA','','ext'))}
+  </div></div></section>
+  <section class="panel"><div class="panel-h"><div><h2>Request path: GET AUTHORIZATION</h2><p>The order in which components act on one MRI order</p></div></div>
+  <div class="panel-b"><ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13.5px">
+    <li>EHR fires <span class="mono">order-sign</span> (or the physician clicks the button). Gateway authenticates the SMART token; Case service opens a case with an idempotency key.</li>
+    <li>Coverage agent calls the clearinghouse connector for 270/271, then CRD or the auth-required API. Rules engine supplies the payer matrix version used.</li>
+    <li>Clinical and Compliance agents fill the DTR questionnaire from FHIR resources and fetched documents. Only payer-required items are packed.</li>
+    <li>Decision agent scores confidence. Rules engine applies threshold, trust mode and kill switch. Below the gate, HITL service creates an approval task.</li>
+    <li>Submission agent runs the waterfall: PAS / 278 → portal worker → voice → human task. Every attempt writes a ledger entry.</li>
+    <li>Scheduler holds the decision timer and rechecks. Follow-Up agent handles pends via CDex, writes the outcome back to the EHR, emits events for notifications and billing.</li>
+  </ol></div></section>`;
+};
+const ENTITIES = [
+  ['Tenancy & identity',[
+    ['Tenant','cfg',['tenant_id pk','name','tier','deployment_mode','region','status'],()=>({tenant_id:'tn_cascade',name:'Cascade Spine & Rehab',tier:'growth',deployment_mode:'multi_tenant',region:'us-east-1',status:'live'})],
+    ['User','cfg',['user_id pk','tenant_id fk','keycloak_sub','name','email','roles[]','mfa_enrolled'],()=>USERS[5]],
+    ['PolicyConfig','cfg',['tenant_id fk','version','threshold','kill_switch','trust_by_payer{}','timers'],()=>S.policy],
+  ]],
+  ['Clinical context',[
+    ['Patient','phi',['patient_id pk','tenant_id fk','source_ids[]','mrn','name','dob'],()=>PATIENTS[0]],
+    ['Coverage','phi',['coverage_id pk','patient_id fk','payer_id fk','member_id','plan','active','verified_at'],()=>({coverage_id:'cv_1',patient_id:'pt1',payer_id:'uhc',member_id:PATIENTS[0].member,plan:'Choice Plus',active:true,verified_at:'2026-09-28T10:14Z',source:'271 TRN 8841-2207'})],
+    ['Order','phi',['order_id pk','patient_id fk','provider_id fk','cpt','icd10[]','scheduled_date','fhir_ref'],()=>({order_id:'or_1042',patient_id:'pt1',provider_id:'u_rao',cpt:'72148',icd10:['M54.16'],scheduled_date:'2026-10-09',fhir_ref:'ServiceRequest/athena-88120'})],
+  ]],
+  ['Prior-authorization core',[
+    ['PACase','phi',['case_id pk','tenant_id fk','order_id fk','coverage_id fk','state','confidence','idempotency_key','deadline_at','version'],()=>{const c={...findCase('CA-1042')};delete c.events;return c;}],
+    ['PacketDocument','phi',['doc_id pk','case_id fk','type','required_by_rule','status','source','sha256'],()=>findCase('CA-1046').docs],
+    ['SubmissionAttempt','phi',['attempt_id pk','case_id fk','channel','connector_id fk','outcome','external_ref','started_at'],()=>findCase('CA-1050').attempts],
+    ['Decision','phi',['decision_id pk','case_id fk','type','auth_number','valid_from','valid_to','units','reason','payer_ref'],()=>findCase('CA-1051').decision],
+    ['Task','phi',['task_id pk','case_id fk','kind','assigned_role','assignee','due_at','status','resolution'],()=>({task_id:'tk_88',case_id:'CA-1043',kind:'clinical_review',assigned_role:'clinical',assignee:'u_okafor',due_at:'2026-10-02T17:00Z',status:'open'})],
+  ]],
+  ['Knowledge & connectivity',[
+    ['Payer','cfg',['payer_id pk','name','routes[]','portal','automated_caller_ok','recording_consent'],()=>PAYERS.uhc],
+    ['PayerRule','cfg',['rule_id pk','payer_id fk','cpt','pa_required','docs_required[]','version','source','effective_from'],()=>RULES.aetna['72148']],
+    ['Connector','cfg',['connector_id pk','system','kind','interface','version','contract_version'],()=>({connector_id:'cx_availity',system:'Availity',kind:'clearinghouse',interface:'api',version:'3.0.2'})],
+    ['TenantConnection','sec',['connection_id pk','tenant_id fk','connector_id fk','credential_ref','state','last_tested_at'],()=>S.connections[4]],
+  ]],
+  ['Trust & operations',[
+    ['AuditEvent','phi',['event_id pk','tenant_id','actor','actor_type','action','target','ref','ts','prev_hash'],()=>S.audit.slice(0,3)],
+    ['LedgerEntry','phi',['ref_id pk','case_id fk','attempt_id fk','kind','external_ref','recording_uri'],()=>({ref_id:'lg_7731',case_id:'CA-1050',kind:'voice_call',external_ref:'Call ref 0930-4471',recording_uri:'s3://phi/tn_cascade/calls/0930-4471.wav'})],
+    ['Notification','cfg',['notification_id pk','user_id fk','event_type','case_id','channel','read_at'],()=>S.notifs.slice(0,2)],
+    ['UsageRecord','cfg',['usage_id pk','tenant_id fk','kind','quantity','case_id','stripe_item'],()=>({usage_id:'us_1',tenant_id:'tn_cascade',kind:'voice_minute',quantity:23,case_id:'CA-1050',stripe_item:'si_voice'})],
+  ]],
+];
+P.datamodel = () => `<div class="pagehead"><div><div class="eyebrow">Blueprint</div><h1>Data model</h1><p>Every protected table carries <span class="mono">tenant_id</span> and is fenced by row-level security. Anything that can affect a decision is versioned. Click a sample to see the live record this prototype is using.</p></div></div>
+  <div class="row"><span class="tag phi">PHI</span><span class="small muted">patient data</span><span class="tag cfg">CFG</span><span class="small muted">configuration</span><span class="tag sec">SEC</span><span class="small muted">secret reference</span></div>
+  ${ENTITIES.map(([g,list])=>`<section style="display:flex;flex-direction:column;gap:10px"><h2 style="font-size:15px">${g}</h2><div class="entities">${list.map(([n,t,f])=>`<div class="entity"><h3>${n}<span class="tag ${t}">${t.toUpperCase()}</span></h3><ul>${f.map(x=>{const [a,b]=x.split(' ');return `<li><span>${esc(a)}</span><em>${b||''}</em></li>`}).join('')}</ul><div class="foot"><span>${n==='PACase'?S.cases.length+' rows here':n==='AuditEvent'?S.audit.length+' rows here':''}</span><button class="btn small" data-inspect="${n}">Sample record</button></div></div>`).join('')}</div></section>`).join('')}
+  ${S.inspect?`<section class="panel"><div class="panel-h"><h2 class="mono">${esc(S.inspect)} · live sample</h2><button class="btn small" data-act="closeInspect">Close</button></div><div class="panel-b"><pre class="json">${esc(JSON.stringify(ENTITIES.flatMap(g=>g[1]).find(e=>e[0]===S.inspect)[3](),null,2))}</pre></div></section>`:''}
+  <section class="panel"><div class="panel-h"><div><h2>Key relationships</h2></div></div><div class="panel-b"><ul style="margin:0;padding-left:18px;font-size:13.5px;display:flex;flex-direction:column;gap:4px">
+    <li>Tenant 1—n User, Patient, PACase, TenantConnection, PolicyConfig (versions)</li>
+    <li>Patient 1—n Coverage, Order · Order 1—1 PACase (enforced by idempotency key)</li>
+    <li>PACase 1—n PacketDocument, SubmissionAttempt, Task, AuditEvent · PACase 1—0..n Decision (appeals add more)</li>
+    <li>SubmissionAttempt n—1 TenantConnection n—1 Connector · every attempt 1—1 LedgerEntry</li>
+    <li>PayerRule n—1 Payer · PACase stores the rule version it was decided under</li>
+  </ul></div></section>`;
+P.lifecycle = () => {
+  const F=(arr)=>`<div class="flow">${arr.map((s,i)=>`${i?'<span class="a">→</span>':''}<span class="s">${s}</span>`).join('')}</div>`;
+  const T=[['RECEIVED','ELIGIBILITY','Orchestrator','order arrives, idempotency key stamped'],['ELIGIBILITY','REQUIREMENT_CHECK / ADMIN_EXCEPTION','Coverage','270/271 active or inactive'],['REQUIREMENT_CHECK','DOCUMENTATION / NO_AUTH_REQUIRED','Coverage','CRD, 278 inquiry or matrix lookup'],['DOCUMENTATION','DECISION / CLINICAL_REVIEW','Clinical + Compliance','DTR auto-fill complete or evidence missing'],['CLINICAL_REVIEW','DECISION / WITHDRAWN','Clinical reviewer (human)','attests evidence or rejects'],['DECISION','SUBMITTING / NEEDS_APPROVAL','Decision + rules engine','confidence vs threshold, trust mode, kill switch'],['NEEDS_APPROVAL','SUBMITTING / WITHDRAWN','Operations (human)','approves or returns'],['SUBMITTING','SUBMITTED','Submission','first channel that succeeds'],['SUBMITTED','PENDED / APPROVED / PARTIAL / DENIED','Follow-Up','payer response or timer'],['PENDED','SUBMITTED','Follow-Up','requested document resupplied'],['DENIED','APPEAL_SUBMITTED / P2P_SCHEDULED','Clinical reviewer (human)','every denial goes to a licensed person']];
+  return `<div class="pagehead"><div><div class="eyebrow">Blueprint</div><h1>Case lifecycle</h1><p>One state machine moves every case. Internal states are many; staff see five plain statuses.</p></div></div>
+  <section class="panel"><div class="panel-b" style="display:flex;flex-direction:column;gap:12px">
+    <div class="eyebrow">Happy path</div>${F(['RECEIVED','ELIGIBILITY','REQUIREMENT_CHECK','DOCUMENTATION','DECISION','SUBMITTING','SUBMITTED','APPROVED'])}
+    <div class="eyebrow">Branches</div>${F(['REQUIREMENT_CHECK','NO_AUTH_REQUIRED'])}${F(['DOCUMENTATION','CLINICAL_REVIEW','DECISION'])}${F(['DECISION','NEEDS_APPROVAL','SUBMITTING'])}${F(['SUBMITTED','PENDED','SUBMITTED'])}${F(['SUBMITTED','DENIED','APPEAL_SUBMITTED'])}
+  </div></section>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>From</th><th>To</th><th>Moved by</th><th>Trigger</th></tr></thead><tbody>${T.map(r=>`<tr><td class="mono">${r[0]}</td><td class="mono">${r[1]}</td><td>${r[2]}</td><td class="small">${r[3]}</td></tr>`).join('')}</tbody></table></div></section>
+  <section class="panel"><div class="panel-h"><div><h2>What staff see</h2></div></div><div class="panel-b row">
+    <span class="pill p-aqua">No authorization required</span><span class="pill p-info">Submitted – pending</span><span class="pill p-ok">Approved</span><span class="pill p-warn">Clinical review required</span><span class="pill p-warn">Expiring soon</span><span class="small muted">plus "Needs approval" while a payer is in Shadow mode</span></div></section>`;
+};
+P.rbac = () => {
+  const rows=[['Place order / GET AUTHORIZATION',1,0,0,0,0],['See own orders and outcomes',1,1,1,1,0],['Work exception queue',0,1,0,1,0],['Approve held submissions (Shadow)',0,1,0,0,0],['Attest clinical evidence',0,0,1,0,0],['Approve appeals, request peer-to-peer',0,0,1,0,0],['Edit thresholds, trust ramp, kill switch',0,0,0,1,0],['Manage users and connections',0,0,0,1,0],['Read tenant audit log',0,0,0,1,0],['Manage tenants and connector registry',0,0,0,0,1],['See any PHI',1,1,1,1,0]];
+  return `<div class="pagehead"><div><div class="eyebrow">Blueprint</div><h1>Roles &amp; permissions</h1><p>Keycloak realm per tenant, roles mapped to token scopes. The portal and the API both enforce them; the UI only hides what the API already refuses.</p></div></div>
+  <section class="panel"><div class="tablewrap"><table><thead><tr><th>Permission</th><th>Physician</th><th>Operations</th><th>Clinical reviewer</th><th>Tenant admin</th><th>Platform operator</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${r[0]}</td>${r.slice(1).map(v=>`<td>${v?'<span class="check">✓</span>':'<span class="dash">—</span>'}</td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`;
+};
+P.buildplan = () => {
+  const Ph=(t,w,...items)=>`<div class="phase"><div><h3>${t}</h3><div class="when">${w}</div></div><ul>${items.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  return `<div class="pagehead"><div><div class="eyebrow">Blueprint</div><h1>Build plan</h1><p>ClearAuth first, VICE second on the same core, then productize. Each release ships something a practice can use.</p></div></div>
+  <section class="panel"><div class="panel-b phases">
+    ${Ph('Sprint 0','Week 0 · now','Turn this prototype into the agreed UX; sign-off on states and roles','Synthetic fixtures (Patient, Coverage, ServiceRequest) and a simulated payer','Start clearinghouse contracting and payer enrollment: the calendar critical path')}
+    ${Ph('MVP1 · core','Weeks 1–2','Canonical case + state machine, outbox, audit','Keycloak realm per tenant, RBAC, vault','REST + CSV/SFTP intake, ops dashboard, case detail')}
+    ${Ph('MVP1 · electronic','Weeks 3–5','Availity lane (270/271, 278), one EHR connector','Packet builder + DTR-style auto-fill, pended loop','EHR write-back, connection test UI')}
+    ${Ph('MVP1 · fallbacks','Weeks 6–8','Browser agent for 1–2 portals, Retell voice for one payer flow','Clinical review + approval gates, notifications','Shadow pilot, UAT, security review, go-live')}
+    ${Ph('MVP2 · VICE','Weeks 9–16','A/R case type, 276/277 status, prioritization','Voice claim-status calls, callbacks, reason classification','835 reconciliation, recovered-dollar analytics')}
+    ${Ph('MVP3 · platform','Weeks 17–24','Tenant provisioning, onboarding wizard, connector registry','Second EHR, FHIR CRD/DTR/PAS path, SSO/SAML','Usage metering + Stripe, SLOs, DR runbook')}
+  </div></section>`;
+};
+
+/* ---------------- Case drawer ---------------- */
+function renderDrawer(){
+  const o=document.getElementById('overlay');
+  if(!S.openCase){ o.innerHTML=''; return; }
+  const c=findCase(S.openCase); if(!c){ o.innerHTML=''; return; }
+  if(S.role==='master'){ o.innerHTML=''; S.openCase=null; return; }
+  const p=patient(c.patientId), payer=PAYERS[c.payer], pr=PROC[c.cpt], si=stageIndex(c);
+  const stopStates=['CLINICAL_REVIEW','NEEDS_APPROVAL','ADMIN_EXCEPTION'];
+  const stages = STAGES.map((s,i)=>{ let cls=''; if(i<si) cls='done'; else if(i===si){ cls = WORKING.includes(c.state)||c.state==='SUBMITTED'||c.state==='PENDED' ? 'now' : stopStates.includes(c.state)?'stop' : c.state==='DENIED'?'fail':'done'; } return `<div class="stage ${cls}"><span class="bar"></span><span>${s}</span></div>`; }).join('');
+  const chOrder=[['electronic','Electronic','PAS / X12 278 / API'],['portal','Portal','browser agent'],['voice','Voice','IVR + rep call'],['human','Human','last resort']];
+  const channels = chOrder.map(([k,l,d])=>{ const a=c.attempts.filter(x=>x.channel===k).slice(-1)[0]; const cls=!a?'':a.outcome.startsWith('Skipped')?'skip':a.outcome.startsWith('Failed')?'failed':'used'; return `<div class="ch ${cls}"><b>${l}</b><span class="st">${a?esc(a.outcome):d}</span></div>`; }).join('');
+  let outcome='';
+  if(c.decision && ['APPROVED','PARTIAL'].includes(c.state)) outcome=`<div class="outcome ${isExpiring(c)?'warn':'ok'}"><span class="big">${esc(pr.short)} — ${c.state==='PARTIAL'?'PARTIALLY APPROVED':'APPROVED'}</span><span class="mono">Auth ${esc(c.decision.authNo)} · Valid ${fd(c.decision.from)}–${fd(c.decision.to)} · Units ${esc(c.decision.units)} · Ref ${esc(c.decision.payerRef)}</span>${isExpiring(c)?`<span>Approval ends ${fd(c.decision.to)} but the procedure is ${fd(c.scheduled)}.</span>`:''}${c.extensionRequested?'<span>Extension requested; tracking response.</span>':''}</div>`;
+  else if(c.state==='NO_AUTH_REQUIRED') outcome=`<div class="outcome info"><span class="big">No authorization required</span><span>Logged to the chart with source, date and reference number. No portal, no call.</span></div>`;
+  else if(c.state==='CLINICAL_REVIEW') outcome=`<div class="outcome warn"><span class="big">CLINICAL REVIEW REQUIRED</span><span>Missing: 6 weeks conservative treatment documentation. Human review needed.</span></div>`;
+  else if(c.state==='ADMIN_EXCEPTION') outcome=`<div class="outcome warn"><span class="big">Administrative exception</span><span>${esc(c.exception)}</span></div>`;
+  else if(c.state==='NEEDS_APPROVAL') outcome=`<div class="outcome warn"><span class="big">Ready to submit · waiting for approval</span><span>Confidence ${c.confidence?.toFixed(2)} · ${esc(reasonText(c))}</span></div>`;
+  else if(c.state==='DENIED') outcome=`<div class="outcome bad"><span class="big">Denied · appeal packet ready</span><span>${esc(c.decision?.reason||'')} · ${esc(c.decision?.payerRef||'')}</span></div>`;
+  else if(c.state==='WITHDRAWN') outcome=`<div class="outcome"><span class="big">Withdrawn</span><span>Returned to the ordering physician.</span></div>`;
+  else if(['SUBMITTED','PENDED','APPEAL_SUBMITTED','P2P_SCHEDULED'].includes(c.state)) outcome=`<div class="outcome info"><span class="big">${esc(status(c).label)}</span><span>${c.deadline?'Decision due by '+fd(c.deadline)+'. ':''}The Follow-Up agent is tracking it; nothing needed from you.</span></div>`;
+  else outcome=`<div class="outcome info"><span class="big">The agent is working on it</span><span>Watch the stages above. This takes seconds when the payer has an electronic route.</span></div>`;
+
+  const btns=[];
+  const B=(a,l,cls)=> can(c,a) ? btns.push(`<button class="btn ${cls||''}" data-caseact="${a}">${l}</button>`) : null;
+  if(c.state==='NEEDS_APPROVAL'){ B('approveSubmit','Approve &amp; submit','go'); B('returnPhysician','Return to physician'); }
+  if(c.state==='ADMIN_EXCEPTION'){ B('rerunElig','Coverage updated · re-run eligibility','primary'); }
+  if(isExpiring(c)){ B('requestExtension','Request date extension','primary'); }
+  if(c.state==='CLINICAL_REVIEW'){ B('attachEvidence','Attach PT notes from chart &amp; return to agent','go'); B('notSupported','Not supported · notify physician','danger'); }
+  if(c.state==='DENIED'){ B('approveAppeal','Approve appeal packet &amp; submit','go'); B('scheduleP2P','Request peer-to-peer'); }
+  const actionNeeded = ['NEEDS_APPROVAL','ADMIN_EXCEPTION','CLINICAL_REVIEW','DENIED'].includes(c.state)||isExpiring(c);
+  const who = status(c).group==='clinical'?'a clinical reviewer':'operations staff';
+  const actions = btns.length ? `<div class="row">${btns.join('')}</div>` : actionNeeded ? `<div class="note">Waiting on ${who}. Switch the signed-in user to act on it.</div>` : '';
+  const voice = c.attempts.find(a=>a.transcript);
+
+  o.innerHTML = `<div class="scrim" data-act="closeCase"></div>
+  <aside class="drawer" role="dialog" aria-label="Case ${c.id}">
+    <div class="drawer-h"><div style="min-width:0"><div class="eyebrow"><span class="mono">${c.id}</span> · ${esc(payer.name)} ${esc(payer.plan)}</div><h2>${esc(p.name)} · ${esc(pr.short)}</h2><div class="row" style="margin-top:6px">${pill(c)}${c.live?'<span class="small muted">live</span>':''}</div></div>
+      <button class="btn small close" data-act="closeCase">Close</button></div>
+    <div class="drawer-b">
+      <div class="stages" aria-label="Waterfall progress">${stages}</div>
+      ${outcome}
+      ${c.findings.length?`<section class="panel"><div class="panel-h"><h2>Agent findings</h2><p>Facts and gaps only; no medical judgment</p></div><div class="panel-b"><ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13px">${c.findings.map(f=>`<li>${esc(f)}</li>`).join('')}</ul></div></section>`:''}
+      ${actions}
+      <section class="panel"><div class="panel-b facts">
+        <div class="fact"><div class="k">Patient</div><div class="v">${esc(p.name)}<br><span class="muted small">${esc(p.mrn)} · DOB ${esc(p.dob)}</span></div></div>
+        <div class="fact"><div class="k">Order</div><div class="v"><span class="mono">${c.cpt}</span> ${esc(pr.name)}<br><span class="muted small">${esc(c.icd)} ${esc(ICD[c.icd]||'')}</span></div></div>
+        <div class="fact"><div class="k">Procedure date</div><div class="v">${fd(c.scheduled)}<br><span class="muted small">Ordered by ${esc(user(c.orderedBy).name)}</span></div></div>
+        <div class="fact"><div class="k">Coverage</div><div class="v">${esc(payer.name)}<br><span class="muted small mono">${esc(p.member)}</span></div></div>
+        <div class="fact"><div class="k">Confidence</div><div class="v num">${c.confidence!=null?c.confidence.toFixed(2):'—'} <span class="muted small">gate ${S.policy.threshold.toFixed(2)} · ${S.policy.trust[c.payer]}</span></div></div>
+        <div class="fact"><div class="k">Idempotency key</div><div class="v mono">${esc(c.idem)}</div></div>
+      </div></section>
+      <section><div class="eyebrow" style="margin-bottom:8px">Submission waterfall</div><div class="channels">${channels}</div></section>
+      ${c.docs.length?`<section><div class="eyebrow" style="margin-bottom:8px">Clinical packet · minimum necessary</div><div class="doclist">${c.docs.map(d=>`<div class="doc"><span>${esc(d.name)}<span class="sub small muted" style="display:block">${esc(d.source)}</span></span><span class="pill ${d.status==='missing'?'p-warn':d.status==='resupplied'||d.status==='prepared'?'p-info':'p-ok'}">${d.status}</span></div>`).join('')}</div></section>`:''}
+      ${voice?`<section><div class="eyebrow" style="margin-bottom:8px">Call transcript · ${esc(voice.ref)} · recorded, two-party consent checked</div><div class="transcript">
+        <div><b>Agent:</b> I'm an automated assistant calling on behalf of ${esc(user(c.orderedBy).name)} regarding a prior authorization.</div>
+        <div><b>Rep:</b> Okay. Member ID and date of birth?</div><div><b>Agent:</b> ${esc(p.member)}, ${esc(p.dob)}. CPT ${c.cpt}, diagnosis ${esc(c.icd)}.</div>
+        <div><b>Rep:</b> I've entered the request. Reference number ${esc(voice.ref.replace('Call ref ',''))}. Decision within 3 business days.</div></div></section>`:''}
+      <section><div class="eyebrow" style="margin-bottom:8px">Activity · write-once audit</div><div class="timeline">${c.events.slice().reverse().map(e=>`<div class="tl ${e.kind==='user'?'user':/APPROVED|Written back|no authorization/i.test(e.text)?'ok':/INACTIVE|CLINICAL|failed|DENIED|Shadow|approval/i.test(e.text)?'warn':'agent'}"><span class="t">${esc(e.ts.replace(/^\w+ \d+ /,''))}<br>${esc(e.ts.split(' ').slice(0,2).join(' '))}</span><span class="m"></span><div><div>${esc(e.text)}</div><div class="who">${esc(e.who)}${e.ref?` · <span class="ref">${esc(e.ref)}</span>`:''}</div></div></div>`).join('')}</div></section>
+    </div></aside>`;
+}
+
+/* ---------------- Render root ---------------- */
+function render(){
+  renderSide(); renderTop();
+  const page = P[S.route] || P[ROLES[S.role].home];
+  const main=document.getElementById('main');
+  const focusId = document.activeElement && document.activeElement.id;
+  const sel = focusId==='caseSearch' ? document.activeElement.selectionStart : null;
+  main.innerHTML = page();
+  if(focusId==='caseSearch'){ const el=document.getElementById('caseSearch'); if(el){ el.focus(); el.setSelectionRange(sel,sel);} }
+  renderDrawer();
+}
+let toastT;
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>t.hidden=true,3200); }
+function allowedRoute(r){ return NAV[S.role].some(n=>n[0]===r) || BLUEPRINT_NAV.some(n=>n[0]===r); }
+
+/* ---------------- Events ---------------- */
+document.addEventListener('click', e=>{
+  const t=e.target.closest('[data-go],[data-case],[data-act],[data-caseact],[data-qf],[data-cf],[data-notif],[data-conn],[data-inspect]');
+  if(!t){ if(S.notifOpen && !e.target.closest('.npanel')){ S.notifOpen=false; render(); } return; }
+  if(t.dataset.go){ S.route=t.dataset.go; S.notifOpen=false; render(); window.scrollTo(0,0); return; }
+  if(t.dataset.case){ S.openCase=t.dataset.case; render(); return; }
+  if(t.dataset.qf){ S.queueFilter=t.dataset.qf; render(); return; }
+  if(t.dataset.cf){ S.filter=t.dataset.cf; render(); return; }
+  if(t.dataset.inspect){ S.inspect=t.dataset.inspect; render(); return; }
+  if(t.dataset.caseact){ const c=findCase(S.openCase); ACTIONS[t.dataset.caseact](c); render(); return; }
+  if(t.dataset.notif){ const n=S.notifs.find(x=>x.id===t.dataset.notif); n.read=true; S.notifOpen=false; if(n.caseId) S.openCase=n.caseId; else if(S.role==='admin') S.route='connections'; render(); return; }
+  if(t.dataset.conn){ const c=S.connections.find(x=>x.id===t.dataset.conn); const wasFailed=c.state==='refresh_failed'; c.state='testing'; render();
+    setTimeout(()=>{ c.state='active'; c.tested=now(); c.latency=(200+Math.floor(Math.random()*500))+' ms'; S.audit.unshift({ts:c.tested, actor:me().name, actorType:'User', action:(wasFailed?'Reconnected ':'Tested ')+c.system+' connection · OK', target:c.system, ref:'conn '+c.id}); render(); toast(c.system+(wasFailed?' reconnected.':' responded in '+c.latency+'.')); },1100); return; }
+  const a=t.dataset.act;
+  if(a==='toggleNotif'){ S.notifOpen=!S.notifOpen; render(); return; }
+  if(a==='closeCase'){ S.openCase=null; render(); return; }
+  if(a==='closeInspect'){ S.inspect=null; render(); return; }
+  if(a==='runMatch'){ S.onboardMatch=true; render(); toast('Registry match complete: 3 of 4 systems already supported.'); return; }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape' && S.openCase){ S.openCase=null; render(); }
+  if(e.key==='Enter' && e.target.matches('tr[data-case]')){ S.openCase=e.target.dataset.case; render(); }
+});
+document.addEventListener('change', e=>{
+  const t=e.target;
+  if(t.id==='roleSel'){ S.role=t.value; S.route=ROLES[S.role].home; S.openCase=null; S.notifOpen=false; render(); toast('Signed in as '+me().name+' · '+ROLES[S.role].label); return; }
+  if(t.dataset.trust){ const k=t.dataset.trust, old=S.policy.trust[k]; S.policy.trust[k]=t.value; S.policy.version++; const lab={shadow:'Shadow',supervised:'Supervised',wider:'Wider'};
+    S.policyLog.unshift({v:S.policy.version, ts:now(), by:me().name, change:PAYERS[k].name+' moved '+lab[old]+' → '+lab[t.value]}); auditCfg('Trust mode '+PAYERS[k].name+': '+lab[old]+' → '+lab[t.value],'policy'); render(); toast('Saved as policy v'+S.policy.version+'.'); return; }
+  if(t.id==='thr'){ const old=S.policy.threshold; S.policy.threshold=Number(t.value); S.policy.version++; S.policyLog.unshift({v:S.policy.version, ts:now(), by:me().name, change:'Confidence threshold '+old.toFixed(2)+' → '+S.policy.threshold.toFixed(2)}); auditCfg('Confidence threshold → '+S.policy.threshold.toFixed(2),'policy'); render(); toast('Threshold saved as policy v'+S.policy.version+'.'); return; }
+  if(t.id==='kill'){ S.policy.killSwitch=t.checked; S.policy.version++; S.policyLog.unshift({v:S.policy.version, ts:now(), by:me().name, change:'Kill switch '+(t.checked?'ON':'OFF')}); auditCfg('Kill switch '+(t.checked?'ON':'OFF'),'policy'); render(); toast(t.checked?'Kill switch on. Automatic submission stopped.':'Kill switch off.'); return; }
+  if(t.dataset.urole){ const [uid,r]=t.dataset.urole.split('|'); const u=user(uid); if(t.checked){ if(!u.roles.includes(r)) u.roles.push(r);} else u.roles=u.roles.filter(x=>x!==r); S.audit.unshift({ts:now(), actor:me().name, actorType:'User', action:(t.checked?'Granted ':'Removed ')+ROLES[r].label+' role · '+u.name, target:'keycloak', ref:'realm cascade-spine'}); toast('Role updated for '+u.name+'.'); render(); return; }
+});
+document.addEventListener('input', e=>{ if(e.target.id==='caseSearch'){ S.search=e.target.value; render(); } if(e.target.id==='thr'){ const l=e.target.previousElementSibling; if(l) l.querySelector('span').textContent=Number(e.target.value).toFixed(2); } });
+document.addEventListener('submit', e=>{
+  e.preventDefault();
+  if(e.target.id==='orderForm'){
+    const pt=document.getElementById('o_pt').value, cpt=document.getElementById('o_cpt').value, icd=document.getElementById('o_icd').value, sched=document.getElementById('o_date').value||'2026-10-14';
+    const dup = S.cases.find(c=>c.patientId===pt && c.cpt===cpt && !['WITHDRAWN'].includes(c.state));
+    if(dup){ toast('An authorization for this patient and CPT already exists ('+dup.id+'). Opening it instead of creating a duplicate.'); S.openCase=dup.id; render(); return; }
+    S.seq++; const c=mk({n:S.seq, pt, cpt, icd, sched, state:'RECEIVED', created:'Oct 1'}); c.orderedBy='u_rao'; c.payer=patient(pt).payer;
+    S.route='orders'; S.openCase=c.id; render(); runCase(c,'intake'); return;
+  }
+  if(e.target.id==='inviteForm'){
+    const name=document.getElementById('i_name').value.trim(), email=document.getElementById('i_email').value.trim(), role=document.getElementById('i_role').value;
+    if(!name||!email){ toast('Add a name and work email to send the invite.'); return; }
+    USERS.push({id:'u_'+rnd(4), name, email, roles:[role], title:'Invited', mfa:false, status:'Invited'});
+    S.audit.unshift({ts:now(), actor:me().name, actorType:'User', action:'Invited '+name+' as '+ROLES[role].label, target:'keycloak', ref:'realm cascade-spine'});
+    render(); toast('Invite sent to '+email+'.'); return;
+  }
+});
+
+seed();
+const hash=(location.hash||'').slice(1);
+if(hash && (P[hash])){ for(const r in NAV){ if(NAV[r].some(n=>n[0]===hash)){ S.role=r; break; } } S.route=hash; }
+render();
+</script>

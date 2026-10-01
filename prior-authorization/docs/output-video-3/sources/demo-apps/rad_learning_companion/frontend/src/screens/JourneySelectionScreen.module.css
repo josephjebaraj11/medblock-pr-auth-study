@@ -1,0 +1,189 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  transform: scale(0.8);
+  transform-origin: center;
+}
+
+.topNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+  width: 1550px;
+}
+
+.contentBox {
+  width: 1550px;
+  /* REMOVED fixed height to allow content to grow */
+  background: white;
+  border-radius: 28px;
+  border: 2px #E9E9E9 solid;
+  padding: 40px;
+  box-sizing: border-box;
+  display: flex; /* Use a simple flex column layout */
+  flex-direction: column;
+}
+
+.backButton,
+.detailsButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 100px;
+  font-family: var(--font-family-text);
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  line-height: 20px;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.backButton {
+  background: transparent;
+  border: 1px solid #C4C7C5;
+  padding: 0 16px 0 12px;
+  color: #444746;
+}
+
+.detailsButton {
+  padding: 6px 16px;
+  background: #C2E7FF;
+  color: #004A77;
+  border: none;
+}
+
+.detailsIcon {
+  width: 20px;
+  height: 20px;
+  fill: #004A77;
+}
+
+.contentHeader {
+  margin-bottom: 24px;
+}
+
+.title {
+  color: black;
+  font-size: var(--font-size-xxxl);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-medium);
+  line-height: 40px;
+  margin-bottom: 8px;
+}
+
+.subtext {
+  color: #555555;
+  font-size: var(--font-size-lg);
+  font-family: var(--font-family-display);
+  font-weight: var(--font-weight-regular);
+  line-height: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.subtext a {
+  text-decoration: underline;
+  cursor: pointer;
+  color: #555555;
+}
+
+.subtext a:hover {
+  color: #0B57D0;
+}
+
+/* This is the middle area that will grow */
+.journeysContainer {
+  flex-grow: 1; /* Allow this to take up space if needed, but it won't scroll */
+  display: flex; /* Use flexbox for alignment */
+  justify-content: center; /* Center items horizontally */
+  align-items: center; /* Align items vertically */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 40px;
+}
+
+.sourceFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: 24px; /* Controls space above the footer text */
+}
+
+.imageSource {
+  font-size: var(--font-size-md);
+  color: #5f6368;
+  font-style: italic;
+  font-family: var(--font-family-text);
+}
+
+/* The info icon tooltip trigger */
+.contentHeader span[data-tooltip-id] {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  cursor: help;
+}
+
+.loadingSpinner {
+  width: 32px;
+  height: 32px;
+  border: 4px solid #d1e5ff;
+  border-top-color: #0B57D0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.statusContainer {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  min-height: 400px; /* Give loading/error states a minimum height */
+}
+
+.statusText {
+  font-size: var(--font-size-md);
+  color: #444746;
+  font-weight: 500;
+  margin: 0;
+}
+
+.errorContainer {
+  background-color: #fcefee;
+  color: #c5221f;
+  border-radius: 16px;
+  border: 1px solid #ea4335;
+  padding: 30px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.errorContainer .statusText:first-child {
+  font-size: 2.5rem;
+}

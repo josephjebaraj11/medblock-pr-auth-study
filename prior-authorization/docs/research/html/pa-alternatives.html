@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Alternatives — Decision Diagrams</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64; --line:#e2e2e0; --accent:#3457d5; --accent2:#0f766e; --warn:#b45309; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; --accent2:#2dd4bf; --warn:#f0b429; --bad:#f87171; } }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:2.5rem 1.5rem 1.5rem; max-width:960px; margin:0 auto;}
+  h1{font-size:1.7rem; margin:0 0 .3rem;}
+  .sub{color:var(--muted); font-size:.95rem;}
+  main{max-width:960px; margin:0 auto; padding:0 1.5rem;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;}
+  h2{font-size:1.15rem; margin-top:0;}
+  .mermaid{background:transparent; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.5rem;}
+  th,td{border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top;}
+  th{background:rgba(52,87,213,.08); font-weight:600;}
+  .diagram-note{font-size:.8rem; color:var(--muted); margin-top:.5rem;}
+  .matrix{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.75rem; table-layout:fixed;}
+  .matrix th,.matrix td{border:1px solid var(--line); padding:.7rem; vertical-align:top;}
+  .matrix thead th{background:rgba(52,87,213,.08); text-align:center;}
+  .matrix .rowhead{background:rgba(52,87,213,.04); font-weight:600; width:9rem;}
+  .matrix ul{margin:0; padding-left:1.1rem;}
+  .matrix li{margin:.2rem 0;}
+  .matrix .empty{color:var(--muted); font-style:italic;}
+  .matrix .keycell{background:rgba(180,83,9,.1);}
+  .corner{background:transparent !important; border:none !important;}
+  a{color:var(--accent);}
+  .callout{border-left:4px solid var(--accent); padding:.6rem 1rem; background:rgba(52,87,213,.06); border-radius:0 8px 8px 0; font-weight:500;}
+  nav.crumbs{max-width:960px; margin:1rem auto 0; padding:0 1.5rem; font-size:.85rem;}
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">&larr; All research</a></nav>
+<header>
+  <h1>Alternatives to Prior Authorization</h1>
+  <div class="sub">Visual companion to <a href="../pa-alternatives.md">pa-alternatives.md</a> — does anything actually eliminate PA, or does everything just narrow or speed it up?</div>
+</header>
+<main>
+
+<section>
+  <p class="callout">Bottom line: only one mechanism — value-based, risk-sharing contracts — changes the underlying <em>reason</em> PA exists. Everything else narrows or speeds up the same process.</p>
+</section>
+
+<section>
+  <h2>1. Decision tree: does this approach eliminate PA?</h2>
+  <div class="mermaid">
+flowchart LR
+  VBC[Value-based /<br/>risk-sharing care] -->|provider bears<br/>the cost risk| KEEP[Payer no longer<br/>needs to review]
+  GOLD[Gold-carding] -->|trusted providers<br/>exempted| PARTIAL[PA still exists,<br/>fewer people face it]
+  PLEDGE[Insurer pledges] -->|named codes<br/>dropped| PARTIAL
+  CMS[CMS-0057-F] -->|same rules,<br/>now electronic| SAME[PA unchanged,<br/>just faster]
+  RTPB[Real-time<br/>benefit checks] -->|you learn<br/>about it sooner| SAME
+
+  KEEP --> WIN[True alternative]
+  PARTIAL --> NARROW[Narrows PA]
+  SAME --> SPEED[Speeds up PA]
+
+  style VBC fill:#0f766e25,stroke:#0f766e,stroke-width:2px
+  style KEEP fill:#0f766e25,stroke:#0f766e
+  style WIN fill:#0f766e25,stroke:#0f766e,stroke-width:2px
+</div>
+  <div class="diagram-note">Read each row left to right: the approach, how it works, and what it actually achieves. Only the top row reaches "true alternative" — and even then, only inside the contract's scope.</div>
+</section>
+
+<section>
+  <h2>2. CMS-0057-F compliance timeline</h2>
+  <div class="mermaid">
+timeline
+  title CMS-0057-F compliance timeline
+  2024 : Rule finalized
+  2026 : Decision timeframes begin
+       : Denial-reason transparency required
+       : Public PA reporting starts
+  2027 : Patient Access API required
+       : Provider Access API required
+       : Payer-to-Payer API required
+       : Prior Authorization API required
+</div>
+</section>
+
+<section>
+  <h2>3. Coverage of each approach — how much of US care does it touch?</h2>
+  <p>Two questions decide everything: does the approach <strong>structurally change</strong> PA, and does it reach <strong>a lot of care or a little</strong>?</p>
+  <table class="matrix">
+    <thead>
+      <tr>
+        <th class="corner"></th>
+        <th>Narrow reach<br/><span style="font-weight:400">few providers or services</span></th>
+        <th>Broad reach<br/><span style="font-weight:400">most of the market</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="rowhead">Structurally reduces or eliminates PA</td>
+        <td>
+          <ul>
+            <li><strong>Value-based / risk-sharing care</strong> — removes the payer's reason to review</li>
+            <li>Gold-carding — ~3% of Texas providers qualify</li>
+          </ul>
+        </td>
+        <td class="empty keycell">Empty — and this is the whole finding. Nothing both eliminates PA <em>and</em> reaches the broad market.</td>
+      </tr>
+      <tr>
+        <td class="rowhead">Speeds up or narrows only</td>
+        <td class="empty">—</td>
+        <td>
+          <ul>
+            <li>CMS-0057-F — digitizes, same scope</li>
+            <li>Real-time benefit checks — earlier visibility</li>
+            <li>Insurer pledges — named codes only, reversible</li>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="diagram-note">Placement is this document's qualitative synthesis based on the evidence in <code>pa-alternatives.md</code> §7. The top-right cell being empty is the answer to the question this report asks.</div>
+</section>
+
+<section>
+  <h2>Key takeaways</h2>
+  <table>
+    <tr><th>Approach</th><th>Eliminates or reduces?</th><th>Adoption</th></tr>
+    <tr><td>Gold-carding</td><td>Reduces, for a small qualifying subset</td><td>6 states; ~3% of TX providers qualify</td></tr>
+    <tr><td>Value-based / risk-sharing</td><td><strong>Closest to true elimination</strong>, within contract scope</td><td>Mature in Medicare ACOs; minority of commercial care</td></tr>
+    <tr><td>Real-time benefit checks</td><td>Speeds up / routes around only</td><td>Widely deployed via Surescripts</td></tr>
+    <tr><td>CMS-0057-F</td><td>Digitizes, doesn't reduce scope</td><td>Finalized; APIs due Jan 2027</td></tr>
+    <tr><td>Insurer pledges</td><td>Eliminates for named codes only</td><td>Voluntary, reversible</td></tr>
+  </table>
+  <p><a href="../pa-alternatives.md">Read the full markdown report &rarr;</a></p>
+</section>
+
+</main>
+<script src="diagrams.js"></script>
+</body>
+</html>

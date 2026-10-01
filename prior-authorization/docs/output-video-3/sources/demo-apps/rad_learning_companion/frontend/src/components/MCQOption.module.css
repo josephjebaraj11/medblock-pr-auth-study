@@ -1,0 +1,56 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+.optionButton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  background-color: transparent;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  text-align: left;
+  font-size: var(--font-size-md);
+  font-family: var(--font-family-text);
+  color: #333;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.optionButton:hover:not(:disabled) {
+  background-color: #f0f2f5;
+  border-color: #0B57D0;
+}
+
+.optionButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.optionButton.selected {
+  border-color: #0B57D0;
+  background-color: #e8f0fe;
+}
+
+.optionButton.incorrect {
+  background-color: #F8D7DA;
+  border-color: #F5C6CB;
+  color: #721C24;
+  text-decoration: line-through;
+  cursor: not-allowed;
+  opacity: 1;
+}

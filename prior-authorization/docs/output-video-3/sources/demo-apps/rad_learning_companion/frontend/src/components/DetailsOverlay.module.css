@@ -1,0 +1,143 @@
+/*
+# Copyright 2025 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+*/
+
+.dialogOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialogBox {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 90%;
+  max-width: 600px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 24px;
+  animation: slideUp 0.4s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.dialogCloseBtn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: background-color 0.2s;
+  color: #5f6368;
+}
+
+.dialogCloseBtn:hover {
+  background-color: #f0f0f0;
+}
+
+.dialogTitleText {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xl);
+  color: #202124;
+  text-align: left;
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.dialogBodyScrollable {
+  overflow-y: auto;
+  padding-top: 16px;
+  padding-right: 16px;
+  text-align: left;
+}
+
+.dialogBodyScrollable p {
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  margin-bottom: 16px;
+  color: #444746;
+}
+
+.dialogBodyScrollable b {
+  font-weight: var(--font-weight-bold);
+  color: #202124;
+}
+
+.dialogBodyScrollable a {
+  color: #0B57D0;
+  text-decoration: underline;
+  font-weight: var(--font-weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dialogBodyScrollable a:hover {
+  text-decoration: underline;
+}
+
+.inlineLogo {
+  height: 16px;
+  width: auto;
+  vertical-align: middle;
+  margin-left: 2px;
+}
+
+.dialogBodyScrollable ul {
+  list-style-type: disc;
+  padding-left: 20px;
+  margin-top: -10px;
+}
+
+.dialogBodyScrollable li {
+  margin-bottom: 12px;
+  padding-left: 4px;
+  font-size: var(--font-size-sm);
+  line-height: 1.6;
+  color: #444746;
+}

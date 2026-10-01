@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cascade Healthcare Revenue Automation Platform — ClearAuth AI + VICE Roadmap</title>
+<style>
+:root{
+  --ink:#14213d; --muted:#60708a; --line:#dfe6ef; --panel:#ffffff; --soft:#f5f8fc;
+  --brand:#2357d8; --brand2:#5d34d6; --green:#0f8a5f; --amber:#a96800; --red:#b63b3b;
+  --shadow:0 10px 30px rgba(20,33,61,.08);
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:#eef3f9;color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.48}
+a{color:var(--brand);text-decoration:none} a:hover{text-decoration:underline}
+.shell{max-width:1450px;margin:0 auto;background:#fff;min-height:100vh;box-shadow:0 0 60px rgba(20,33,61,.08)}
+.hero{padding:52px 56px 34px;background:linear-gradient(135deg,#0e1d3f 0%,#163a78 55%,#4e2cb6 100%);color:#fff;position:relative;overflow:hidden}
+.hero:after{content:"";position:absolute;width:460px;height:460px;border-radius:50%;right:-160px;top:-170px;background:rgba(255,255,255,.07)}
+.kicker{text-transform:uppercase;letter-spacing:.13em;font-size:12px;font-weight:800;opacity:.8}.hero h1{font-size:42px;line-height:1.05;max-width:1050px;margin:12px 0 16px}.hero p{font-size:18px;max-width:1040px;color:#dbe7ff;margin:0 0 22px}
+.hero-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:1100px}.hero-stat{padding:14px 16px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.08);border-radius:12px}.hero-stat b{display:block;font-size:20px}.hero-stat span{font-size:12px;color:#d7e3fb}
+.sticky{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);padding:10px 26px;display:flex;gap:8px;flex-wrap:wrap;backdrop-filter:blur(8px)}
+.sticky a{font-size:12px;font-weight:700;color:#34445f;padding:7px 10px;border-radius:8px}.sticky a:hover{background:var(--soft);text-decoration:none;color:var(--brand)}
+main{padding:30px 44px 56px} section{scroll-margin-top:76px;margin:0 0 42px} h2{font-size:28px;line-height:1.15;margin:0 0 12px}h3{font-size:19px;margin:0 0 8px}.lead{font-size:16px;color:#4c5b74;max-width:1120px;margin:0 0 20px}
+.note{border-left:4px solid var(--brand);background:#f2f6ff;padding:14px 16px;border-radius:0 10px 10px 0;color:#33425d;margin:14px 0}.warn{border-left-color:var(--amber);background:#fff8eb}.good{border-left-color:var(--green);background:#effaf6}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px rgba(20,33,61,.035)}.card h3{display:flex;align-items:center;gap:8px}.card p{color:#53627b;margin:6px 0 0}.badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;border-radius:999px;padding:4px 8px;background:#eaf0ff;color:#244fba}.badge.green{background:#e8f8f1;color:#087553}.badge.amber{background:#fff3d8;color:#925b00}.badge.red{background:#ffeaea;color:#9d3131}.badge.gray{background:#eef1f5;color:#53627b}
+ul.tight{padding-left:18px;margin:8px 0 0}ul.tight li{margin:5px 0;color:#46556e}
+.table-wrap{overflow:auto;border:1px solid var(--line);border-radius:13px;background:#fff}.tbl{width:100%;border-collapse:collapse;font-size:13px}.tbl th,.tbl td{padding:11px 12px;border-bottom:1px solid #e8edf4;vertical-align:top;text-align:left}.tbl th{background:#f3f6fb;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#52617a;position:sticky;top:0}.tbl tr:last-child td{border-bottom:0}.tbl strong{color:#1a2946}.small{font-size:12px;color:#6a7890}.mini{font-size:11px;color:#6c7990}
+.arch{display:grid;gap:10px;padding:18px;background:#f7f9fd;border:1px solid var(--line);border-radius:16px}.arch-row{display:grid;grid-template-columns:150px 1fr;gap:12px;align-items:stretch}.arch-label{font-size:12px;font-weight:800;color:#5a6981;padding:11px 8px}.arch-boxes{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:8px}.arch-box{background:#fff;border:1px solid #dbe3ef;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:700;color:#2b3b58;min-height:45px;display:flex;align-items:center;justify-content:center;text-align:center}.arch-box.core{background:#edf3ff;border-color:#b9caf8;color:#214eaf}.arch-box.agent{background:#f3efff;border-color:#cfbfff;color:#5430a8}.arch-box.data{background:#eefaf6;border-color:#b8e4d2;color:#0c7151}.arch-box.int{background:#fff8e9;border-color:#efd49a;color:#835300}
+.timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}.milestone{border-radius:14px;border:1px solid var(--line);overflow:hidden;background:#fff;box-shadow:var(--shadow)}.milestone .mh{padding:13px 16px;background:linear-gradient(90deg,#edf3ff,#f6f2ff);border-bottom:1px solid var(--line)}.milestone .mh b{font-size:14px}.milestone .mh span{display:block;font-size:12px;color:#65748b;margin-top:2px}.milestone .mb{padding:16px}.outcome{margin-top:12px;padding:10px 11px;background:#eef9f4;border-radius:9px;color:#176a4e;font-size:12px;font-weight:700}.dependency{margin-top:8px;padding:9px 10px;background:#fff7e7;border-radius:9px;color:#855400;font-size:11px}
+.release{border:1px solid var(--line);border-radius:16px;background:#fff;overflow:hidden;margin:18px 0 24px}.release-head{display:grid;grid-template-columns:160px 1fr auto;gap:16px;align-items:center;padding:18px 20px;background:#f3f6fb;border-bottom:1px solid var(--line)}.release-head .rnum{font-size:12px;text-transform:uppercase;font-weight:800;color:#5e6d84}.release-head .rtitle{font-size:22px;font-weight:800}.release-head .rout{font-size:12px;font-weight:800;color:#087553;background:#e8f8f1;padding:7px 10px;border-radius:999px}.release-body{padding:18px 20px}
+.pod{display:grid;grid-template-columns:140px repeat(6,1fr);gap:5px;align-items:stretch;font-size:11px}.pod > div{padding:9px 8px;border:1px solid #e1e7f0;border-radius:7px;background:#fff;text-align:center}.pod .head{font-weight:800;background:#f3f6fb}.pod .podname{text-align:left;font-weight:800;background:#f7f9fc}.pod .on{background:#eaf2ff;border-color:#c4d4ff;color:#234d9f;font-weight:700}.pod .research{background:#fff4df;border-color:#f1d59b;color:#855500;font-weight:700}.pod .pilot{background:#eaf9f3;border-color:#bae5d3;color:#087553;font-weight:700}
+.priority{display:grid;grid-template-columns:100px 1.2fr 1.8fr 1fr;gap:0;border:1px solid var(--line);border-radius:12px;overflow:hidden}.priority > div{padding:11px 12px;border-bottom:1px solid #e6ebf2}.priority > div:nth-last-child(-n+4){border-bottom:0}.priority .hdr{background:#f3f6fb;font-size:11px;text-transform:uppercase;font-weight:800;color:#5d6c84}.priority .p0{font-weight:900;color:#9b2f2f}.priority .p1{font-weight:900;color:#986000}.priority .p2{font-weight:900;color:#366178}
+.score{font-weight:800}.easy{color:#0b7c57}.med{color:#a16500}.hard{color:#a53535}
+details{border:1px solid var(--line);border-radius:12px;background:#fff;margin:10px 0}summary{cursor:pointer;padding:13px 15px;font-weight:800;color:#2c3c59}details > div{padding:0 15px 15px;color:#52617a;font-size:13px}
+.callout{display:grid;grid-template-columns:1fr 1fr;gap:14px}.big-value{font-size:34px;font-weight:900;color:var(--brand);line-height:1}.caption{font-size:11px;color:#718097;text-transform:uppercase;letter-spacing:.06em;font-weight:800;margin-bottom:5px}
+footer{padding:24px 44px 40px;color:#77849a;font-size:11px;border-top:1px solid var(--line);background:#fafbfd}
+@media(max-width:1050px){.grid4,.grid3,.timeline{grid-template-columns:1fr 1fr}.hero-grid{grid-template-columns:1fr 1fr}.pod{grid-template-columns:120px repeat(3,1fr)}.pod .m4,.pod .m5,.pod .m6{display:none}.arch-row{grid-template-columns:110px 1fr}.arch-boxes{grid-auto-flow:row;grid-template-columns:1fr 1fr}.priority{grid-template-columns:80px 1fr 1fr}.priority .hide-sm{display:none}}
+@media(max-width:700px){.hero{padding:34px 24px}.hero h1{font-size:32px}.hero-grid,.grid2,.grid3,.grid4,.timeline,.callout{grid-template-columns:1fr}main{padding:24px 18px}.sticky{padding:8px}.release-head{grid-template-columns:1fr}.arch-row{grid-template-columns:1fr}.arch-label{padding:2px 0}.arch-boxes{grid-template-columns:1fr}.priority{grid-template-columns:70px 1fr}.priority .hide-xs{display:none}.pod{grid-template-columns:110px 1fr 1fr}.pod .m3,.pod .m4,.pod .m5,.pod .m6{display:none}}
+@media print{body{background:#fff}.shell{box-shadow:none}.sticky{display:none}.hero{print-color-adjust:exact;-webkit-print-color-adjust:exact}.card,.milestone,.release{break-inside:avoid}details>div{display:block!important}summary{list-style:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header class="hero">
+  <div class="kicker">Business-owner roadmap • Enterprise architecture • Integration plan • Research updated Aug 30, 2026</div>
+  <h1>Cascade Healthcare Revenue Automation Platform</h1>
+  <p><strong>Start lean with ClearAuth AI.</strong> Reuse the same execution platform for VICE. Then productize the platform for SMB and enterprise customers without replacing their EHR, clearinghouse, payer portals, or phone systems.</p>
+  <div class="hero-grid">
+    <div class="hero-stat"><b>0–2 months</b><span>ClearAuth AI production pilot</span></div>
+    <div class="hero-stat"><b>3–4 months</b><span>VICE production pilot on shared platform</span></div>
+    <div class="hero-stat"><b>5–6 months</b><span>Reusable multi-tenant platform + SMB launch / enterprise pilot</span></div>
+    <div class="hero-stat"><b>2 PODs</b><span>POD 1 product; POD 2 starts integration/next-agent discovery after month 1</span></div>
+  </div>
+</header>
+<nav class="sticky">
+  <a href="#decision">Executive decision</a><a href="#benchmarks">Market benchmark</a><a href="#architecture">Architecture</a><a href="#mvp1">MVP1 ClearAuth</a><a href="#mvp2">MVP2 VICE</a><a href="#mvp3">MVP3 Platform</a><a href="#integrations">Integrations</a><a href="#pods">2-POD delivery</a><a href="#onboarding">Onboarding</a><a href="#northstar">North star</a><a href="#sources">Sources</a>
+</nav>
+<main>
+<section id="decision">
+  <h2>1. Executive decision: what InfiniAI should build for Cascade AI</h2>
+  <p class="lead">Do not build two separate agents. Build a small <strong>Healthcare Revenue Execution Platform</strong> with ClearAuth and VICE as the first two agent products. The differentiation is a single case/workflow model that chooses the best channel — electronic transaction/API first, portal/browser second, voice third — and escalates only true exceptions.</p>
+  <div class="grid4">
+    <div class="card"><span class="badge green">Differentiator #1</span><h3>Electronic-first execution</h3><p>Use clearinghouse/API/FHIR whenever possible because it is faster, cheaper, structured and auditable. Use portals and voice only when the electronic lane cannot resolve the case.</p></div>
+    <div class="card"><span class="badge green">Differentiator #2</span><h3>One workflow, many channels</h3><p>The case remains the same even if execution moves from API → portal → phone → human. This avoids point-bot fragmentation.</p></div>
+    <div class="card"><span class="badge green">Differentiator #3</span><h3>Progressive onboarding</h3><p>Customer can start with CSV/SFTP or REST in days, then graduate to bidirectional FHIR/HL7/API integrations without redesigning the product.</p></div>
+    <div class="card"><span class="badge green">Differentiator #4</span><h3>Observable autonomy</h3><p>Every decision, submission, payer response, call, retry, document and human action becomes part of the audit trail and operational analytics.</p></div>
+  </div>
+  <div class="note good"><strong>Source alignment:</strong> the attached requirement explicitly describes the desired operating model as “give the AI the outstanding A/R and tell it: collect the money,” with electronic claim-status first, portals/APIs second, phone only when needed, and humans receiving exceptions. ClearAuth follows the same pattern for prior authorization.</div>
+</section>
+
+<section id="benchmarks">
+  <h2>2. What the benchmark companies do today</h2>
+  <p class="lead">Public information supports a useful division of strengths. The exact proprietary internals are not public; the “InfiniAI lesson” column below is an architecture inference from their published capabilities, not a claim about private implementation.</p>
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>Platform</th><th>What it solves</th><th>Published capabilities</th><th>Published integration model</th><th>InfiniAI lesson</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Infinx Healthcare Revenue OS</strong><br><span class="badge">Closest full-platform benchmark</span></td><td>End-to-end patient access + RCM work that otherwise requires staff to bounce across EHRs, clearinghouses, payer portals, documents and specialists.</td><td>Patient Access Plus, prior-auth determination/initiation/follow-up agents, eligibility, document capture, coding, A/R/denials, payment posting, work queues, HITL/workforce orchestration, analytics.</td><td>Provider side: API/webhooks, HL7, FHIR, X12, secure file/SFTP, RPA. Payer side: API, EDI/clearinghouse, payer portals and specialist fallback. Public agent catalog shows Availity, Optum, Cohere, Carelon, UHC and other payer-specific automations.</td><td>Build the shared OS layers first: integration fabric, workflow execution, HITL, analytics and security. Agent-specific logic should be configuration on top.</td></tr>
+      <tr><td><strong>Operator Labs</strong><br><span class="badge amber">Best voice benchmark</span></td><td>Phone-based payer work where A/R teams lose time navigating IVRs, waiting on hold and documenting outcomes.</td><td>AI places payer calls, navigates IVR/holds, speaks to representatives, captures denial reasons and reference numbers, requests reprocessing, schedules callbacks, structured writeback, queue prioritization, analytics and escalation.</td><td>Native EHR/PM integrations publicly list Epic, athenahealth, Oracle/Cerner, eClinicalWorks, NextGen and Allscripts; custom REST; lightweight file exchange to start; OAuth 2.0 and SMART on FHIR where applicable.</td><td>Voice should be a <em>channel adapter</em>, not its own workflow product. Structured outcomes and automatic callbacks matter as much as speech quality.</td></tr>
+      <tr><td><strong>Waystar</strong><br><span class="badge">Scale + connectivity benchmark</span></td><td>Broad healthcare payment lifecycle: financial clearance, prior auth, claims, payer payments, denials/appeals, patient financial care and clinical integrity.</td><td>Auth Initiate, Auth Status, Auth Accelerate, attachments, medical necessity, automated claim monitoring, denial/appeal workflows, and 2026 AltitudeAI agentic capabilities including autonomous claim resolution.</td><td>Public authorization material highlights API-driven automation, Epic integration and FHIR readiness for CRD/DTR/PAS. Waystar’s larger platform has extensive payer connectivity, but detailed transport for every product is not uniformly public.</td><td>Long-term moat is not the LLM. It is the payer/provider connectivity graph, normalized data, workflow rules and outcome learning across transactions.</td></tr>
+    </tbody>
+  </table></div>
+  <div class="grid3" style="margin-top:16px">
+    <div class="card"><h3>Market pattern</h3><p>Infinx explicitly describes an OS with eight shared layers: AI/automation, experts, payer integration, provider integration, security, workflow, HITL/workforce orchestration and analytics.</p></div>
+    <div class="card"><h3>Voice pattern</h3><p>Operator Labs demonstrates that successful payer voice automation requires queue selection, IVR/hold handling, structured outcomes, writeback, callbacks and exceptions — not only conversational AI.</p></div>
+    <div class="card"><h3>2027 tailwind</h3><p>CMS-0057-F pushes impacted payers toward FHIR-based prior authorization APIs beginning in 2027, making a FHIR-ready connector architecture strategically important now.</p></div>
+  </div>
+</section>
+
+<section id="architecture">
+  <h2>3. Recommended enterprise architecture</h2>
+  <p class="lead">A single platform should support ClearAuth and VICE while keeping agent logic independent of the customer’s EHR, clearinghouse, payer and voice vendor. The core design goal is <strong>adapter-driven execution with a canonical case model</strong>.</p>
+  <div class="arch">
+    <div class="arch-row"><div class="arch-label">Experience</div><div class="arch-boxes"><div class="arch-box core">Operations Dashboard</div><div class="arch-box core">Human Review / Exceptions</div><div class="arch-box core">Customer Admin + Integration Setup</div><div class="arch-box core">Analytics / ROI</div></div></div>
+    <div class="arch-row"><div class="arch-label">Agent Products</div><div class="arch-boxes"><div class="arch-box agent">ClearAuth AI<br>Prior Authorization</div><div class="arch-box agent">VICE<br>A/R + Collections</div><div class="arch-box agent">Future: Eligibility</div><div class="arch-box agent">Future: Denials / Appeals</div></div></div>
+    <div class="arch-row"><div class="arch-label">Execution Core</div><div class="arch-boxes"><div class="arch-box core">Workflow / State Machine</div><div class="arch-box core">Rules + Policy Engine</div><div class="arch-box core">Scheduler / Retry / SLA</div><div class="arch-box core">Human-in-the-Loop</div><div class="arch-box core">Agent Runtime / Tool Router</div></div></div>
+    <div class="arch-row"><div class="arch-label">Integration Fabric</div><div class="arch-boxes"><div class="arch-box int">EHR / PM / HIS<br>FHIR • HL7 • REST</div><div class="arch-box int">Clearinghouse<br>X12 • REST • SOAP • SFTP</div><div class="arch-box int">Payer APIs / FHIR PAS</div><div class="arch-box int">Payer Portals<br>Browser Automation</div><div class="arch-box int">Voice<br>Retell • SIP</div><div class="arch-box int">Documents / Fax</div></div></div>
+    <div class="arch-row"><div class="arch-label">Data + Trust</div><div class="arch-boxes"><div class="arch-box data">Canonical Case Store</div><div class="arch-box data">Audit / Provenance</div><div class="arch-box data">Credential Vault</div><div class="arch-box data">Metrics / Events</div><div class="arch-box data">RBAC / Tenant Isolation</div><div class="arch-box data">Observability</div></div></div>
+  </div>
+  <div class="note"><strong>Architecture rule:</strong> external integrations stay native (FHIR/HL7/X12/REST/SFTP/SOAP/SIP). If InfiniAI wants MCP, expose each connector internally as an MCP/tool facade for the agent runtime. Do not make MCP a customer or payer dependency.</div>
+</section>
+
+<section id="mvp1">
+  <h2>4. MVP1 — ClearAuth AI: first production release in 8 weeks</h2>
+  <p class="lead">MVP1 should prove the entire authorization execution loop for a narrow production lane: <strong>order → determine auth requirement → submit → track → request missing information → exception → writeback</strong>. It should not attempt every payer or every EHR.</p>
+
+  <h3>Features to build first — and why</h3>
+  <div class="priority">
+    <div class="hdr">Priority</div><div class="hdr">Capability</div><div class="hdr hide-xs">Why it is first</div><div class="hdr hide-sm">MVP1 target</div>
+    <div class="p0">P0</div><div><strong>Canonical Authorization Case + state machine</strong></div><div class="hide-xs">Without a stable case/state model, API, portal and voice paths become separate bots and cannot hand work between each other.</div><div class="hide-sm">Single lifecycle from RECEIVED → NEEDS_AUTH? → SUBMITTED → PENDED/APPROVED/DENIED → COMPLETE.</div>
+    <div class="p0">P0</div><div><strong>Connector SDK / adapter contract</strong></div><div class="hide-xs">This is the reuse point for all future customers and VICE. Each EHR/payer connector should map native formats into the same commands/events.</div><div class="hide-sm">REST, SFTP/file and one payer/clearinghouse adapter.</div>
+    <div class="p0">P0</div><div><strong>Workflow + scheduler + retries + SLA timers</strong></div><div class="hide-xs">Prior auth is asynchronous. Status checks and follow-ups are core product behavior, not background scripts.</div><div class="hide-sm">Configurable polling/callback dates and retry policies.</div>
+    <div class="p0">P0</div><div><strong>Auth-required / routing rules</strong></div><div class="hide-xs">The product must determine which channel to use and avoid unnecessary submissions.</div><div class="hide-sm">Rules by payer/plan/CPT/specialty with source/version tracking.</div>
+    <div class="p0">P0</div><div><strong>Operations dashboard + exception work queue</strong></div><div class="hide-xs">Customer confidence comes from seeing what AI is doing, what is blocked, and what needs a human.</div><div class="hide-sm">Counts, aging/SLA, status, reason, owner, next action.</div>
+    <div class="p0">P0</div><div><strong>Audit, PHI controls and credential vault</strong></div><div class="hide-xs">Healthcare automation cannot be retrofitted with audit/security after go-live.</div><div class="hide-sm">Immutable action history, least-privilege secrets, tenant boundaries.</div>
+    <div class="p1">P1</div><div><strong>Document packet builder</strong></div><div class="hide-xs">Supporting documentation is where auths frequently pend. A structured packet unlocks electronic, portal and human paths.</div><div class="hide-sm">Order + notes + history + attachments with completeness checks.</div>
+    <div class="p1">P1</div><div><strong>Browser portal fallback</strong></div><div class="hide-xs">Not every payer is reachable through a usable API; portal automation extends payer coverage before deep integrations exist.</div><div class="hide-sm">1–2 high-volume portal workflows only.</div>
+    <div class="p1">P1</div><div><strong>Retell voice fallback</strong></div><div class="hide-xs">Needed when electronic/portal channels cannot answer requirement/status questions. Keep it late enough that the workflow/data model already exists.</div><div class="hide-sm">1–2 payer call flows + structured call outcome.</div>
+    <div class="p2">P2</div><div><strong>Predictive analytics / advanced AI</strong></div><div class="hide-xs">Do not optimize before production outcomes exist. Start with deterministic rules, traceable extraction and clear exceptioning.</div><div class="hide-sm">After pilot data.</div>
+  </div>
+
+  <div class="release">
+    <div class="release-head"><div class="rnum">Production Release 1 • Month 0–2</div><div class="rtitle">ClearAuth AI — “Get Authorization” end-to-end</div><div class="rout">Pilot production</div></div>
+    <div class="release-body">
+      <div class="timeline">
+        <div class="milestone"><div class="mh"><b>Milestone 1 — Build the execution core</b><span>Weeks 1–2</span></div><div class="mb"><ul class="tight"><li>Canonical auth case + workflow states</li><li>Dashboard: queue, case detail, manual action</li><li>REST ingestion + CSV/SFTP intake</li><li>Rules/policy service and payer routing model</li><li>Audit events, tenant model, secrets vault</li><li>Simulated payer + synthetic end-to-end tests</li></ul><div class="outcome">Outcome: customer can send orders and watch the AI workflow execute, even before deep integrations are ready.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 2 — Electronic integrations</b><span>Weeks 3–5</span></div><div class="mb"><ul class="tight"><li>Availity REST authorization lane <em>or</em> customer’s chosen clearinghouse lane</li><li>One provider-system integration: customer REST/FHIR, athena/eCW, or customer export</li><li>Document retrieval + packet assembly</li><li>Status polling, pended/missing-info workflow</li><li>Writeback via API/webhook/file where available</li><li>Integration health + credential test UI</li></ul><div class="outcome">Outcome: first real electronic prior-auth cases move through the platform with traceable status and exceptions.</div><div class="dependency">Commercial onboarding, payer enrollment and production credentials can take longer than coding; start contracting/credentialing in Week 1.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 3 — Fallbacks + production hardening</b><span>Weeks 6–8</span></div><div class="mb"><ul class="tight"><li>Browser automation for 1–2 high-volume payer portals</li><li>Retell AI payer-call fallback for selected flow</li><li>Structured call transcript/outcome + reference number</li><li>Human approval gate for clinical-review / sensitive actions</li><li>Operational analytics and SLA alerts</li><li>UAT, runbooks, security review, production rollout</li></ul><div class="outcome">Outcome: “electronic first → portal → voice → human exception” works as one production workflow.</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid3">
+    <div class="card"><div class="caption">MVP1 business value</div><div class="big-value">One queue</div><p>Staff stop manually checking multiple systems for routine cases. Exceptions are visible with reason and next action.</p></div>
+    <div class="card"><div class="caption">MVP1 technical value</div><div class="big-value">Reusable core</div><p>The workflow engine, integration framework, audit, dashboard, retry engine and analytics are reused directly by VICE.</p></div>
+    <div class="card"><div class="caption">MVP1 sales value</div><div class="big-value">Proof</div><p>InfiniAI can demonstrate a complete production execution loop instead of presenting only a voice demo or portal bot.</p></div>
+  </div>
+
+  <div class="note warn"><strong>Do not put into the first 8 weeks unless a launch customer requires it:</strong> every major EHR, every payer portal, full denial/appeal automation, payment posting, enterprise SSO, marketplace, generalized “AI copilot,” custom model training, or broad predictive analytics. These belong after the core workflow proves itself.</div>
+</section>
+
+<section id="mvp2">
+  <h2>5. MVP2 — VICE: production release in months 3–4</h2>
+  <p class="lead">VICE should reuse the same platform and add an A/R case type plus high-volume payer execution. The key product behavior is: <strong>ingest outstanding A/R → prioritize → check electronically → call when needed → take permitted action → schedule follow-up → measure recovered revenue.</strong></p>
+  <div class="release">
+    <div class="release-head"><div class="rnum">Production Release 2 • Month 3–4</div><div class="rtitle">VICE — Virtual Insurance Collection Employee</div><div class="rout">A/R pilot production</div></div>
+    <div class="release-body">
+      <div class="timeline">
+        <div class="milestone"><div class="mh"><b>Milestone 1 — A/R intelligence + electronic status</b><span>Weeks 9–11</span></div><div class="mb"><ul class="tight"><li>A/R claim case model and aging/deadline fields</li><li>CSV/SFTP/API inventory ingest from PM/billing system</li><li>Prioritization by dollars, age, filing/appeal deadlines and payer</li><li>276/277 / clearinghouse or REST claim-status connector</li><li>Outcome normalization: pending, denied, paid, missing info, no record</li></ul><div class="outcome">Outcome: VICE works the highest-value accounts electronically before staff touch them.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 2 — Payer voice execution</b><span>Weeks 12–14</span></div><div class="mb"><ul class="tight"><li>Retell voice adapter on shared workflow engine</li><li>IVR navigation, hold handling, provider/claim verification</li><li>Claim status, denial reason, reprocessing request, reference number</li><li>Automatic callbacks (“call again in N days”)</li><li>Escalation with structured summary and call evidence</li></ul><div class="outcome">Outcome: Operator-Labs-like phone execution for selected payer workflows, but embedded in InfiniAI’s broader case platform.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 3 — Resolution + recovery analytics</b><span>Weeks 15–16</span></div><div class="mb"><ul class="tight"><li>Document request / proof collection</li><li>Simple reprocessing/corrected-claim action hooks where allowed</li><li>Human gate for appeals, negotiation and non-routine cases</li><li>Writeback to PM/EHR/RCM system</li><li>Recovered dollars, touches saved, payer performance, unresolved reasons</li></ul><div class="outcome">Outcome: business owner sees dollars moved, not only calls completed.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="mvp3">
+  <h2>6. MVP3 — productize for SMB, then enterprise pilot: months 5–6</h2>
+  <p class="lead">By this point the product has two real agent products. Release 3 should turn the implementation into a repeatable platform: configuration-driven tenants, connector catalog, onboarding workflow, policy packs, audit and enterprise controls.</p>
+  <div class="release">
+    <div class="release-head"><div class="rnum">Production Release 3 • Month 5–6</div><div class="rtitle">InfiniAI Revenue Execution Platform</div><div class="rout">SMB GA candidate + enterprise pilot</div></div>
+    <div class="release-body">
+      <div class="timeline">
+        <div class="milestone"><div class="mh"><b>Milestone 1 — Repeatable onboarding</b><span>Weeks 17–19</span></div><div class="mb"><ul class="tight"><li>Tenant provisioning and customer configuration</li><li>Workflow templates: ClearAuth, VICE</li><li>Credential/connectivity test wizard</li><li>Payer-plan-provider mapping configuration</li><li>CSV/SFTP and generic REST “fast start” packages</li><li>Role-based admin and operations access</li></ul><div class="outcome">Outcome: small practice can onboard without a custom code branch.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 2 — Connector catalog + deeper EHR</b><span>Weeks 20–22</span></div><div class="mb"><ul class="tight"><li>Standard connector registry/versioning</li><li>Add highest-demand EHR connector(s): Epic, Oracle Health, athenahealth or eCW based on pipeline</li><li>TriZetto/Optum connector track if demanded by customers</li><li>FHIR CRD/DTR/PAS compatibility path</li><li>Centralized portal automation health and change detection</li></ul><div class="outcome">Outcome: integrations become installable capabilities rather than project-specific code.</div></div></div>
+        <div class="milestone"><div class="mh"><b>Milestone 3 — Enterprise controls</b><span>Weeks 23–24</span></div><div class="mb"><ul class="tight"><li>SSO/SAML readiness, stronger RBAC and segregation</li><li>Audit exports and compliance reporting</li><li>Observability, SLOs, rate limits and failure dashboards</li><li>Usage/metering and tenant cost visibility</li><li>HA/DR runbook and operational support model</li><li>Enterprise pilot checklist</li></ul><div class="outcome">Outcome: credible transition from “agent implementation” to reusable healthcare automation platform.</div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="integrations">
+  <h2>7. Integration strategy — what is easy, what takes time</h2>
+  <p class="lead">The most important commercial decision is to separate <strong>code readiness</strong> from <strong>production onboarding readiness</strong>. Many healthcare integrations are straightforward technically but depend on contracts, customer IT, payer enrollment, app registration and credentials.</p>
+  <div class="table-wrap"><table class="tbl">
+    <thead><tr><th>Integration</th><th>Publicly available mechanism</th><th>What it enables</th><th>Delivery difficulty</th><th>Recommended phase</th><th>Planning note</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Generic customer file exchange</strong></td><td>SFTP + CSV/JSON/X12/flat file</td><td>Orders, A/R inventory, status imports/exports, bulk writeback</td><td><span class="score easy">Easy</span></td><td>MVP1 M1</td><td>Fastest onboarding lane when APIs are unavailable. Build schema validation and reconciliation from day one.</td></tr>
+      <tr><td><strong>Generic customer REST</strong></td><td>REST + OAuth/API keys + webhooks</td><td>Real-time intake/writeback, document references, status events</td><td><span class="score easy">Easy</span></td><td>MVP1 M1</td><td>Make this InfiniAI’s default integration contract even when underlying customer system differs.</td></tr>
+      <tr><td><strong>Availity</strong></td><td>REST APIs; authorization/referral, claim status, attachments; FHIR CRD/PAS offerings</td><td>Auth required, prior-auth create/status, attachments, claim status, eligibility-related workflows</td><td><span class="score med">Medium</span></td><td>MVP1 M2</td><td>Good first aggregator because one connection can reach many payer transactions. Production access still requires commercial onboarding and payer-specific support/enrollment.</td></tr>
+      <tr><td><strong>Optum / Change Healthcare APIs</strong></td><td>REST + OAuth; prior auth can carry X12 278 in JSON or JSON model</td><td>Prior-auth inquiry/submission and other eligibility/claims services</td><td><span class="score med">Medium</span></td><td>MVP1 M2 / MVP3</td><td>Technically developer-friendly; production credentials and payer coverage determine real schedule.</td></tr>
+      <tr><td><strong>Gateway EDI legacy eligibility</strong></td><td>SOAP 1.1 web service with raw X12 270 payload support</td><td>Eligibility inquiry/response</td><td><span class="score med">Medium</span></td><td>Only if launch customer needs it</td><td>Stable legacy integration but not the preferred new-platform abstraction. Wrap behind InfiniAI connector contract.</td></tr>
+      <tr><td><strong>TriZetto / Gateway clearinghouse</strong></td><td>X12 EDI, secure file/SFTP in common legacy integrations; modern ePA supports FHIR CRD/DTR/PAS and translation to legacy 278</td><td>837 claims, 835 remits, 270/271 eligibility, 276/277 claim status, 278 prior auth and more</td><td><span class="score hard">Medium–Hard</span></td><td>MVP2/MVP3</td><td>High value, but enrollment/testing can be the critical path. TriZetto has publicly cited payer enrollment windows of days to weeks depending on transaction/plan.</td></tr>
+      <tr><td><strong>Epic</strong></td><td>FHIR R4, SMART/OAuth, Epic APIs; 2026 prior-auth APIs supporting CRD/DTR/PAS-related workflows</td><td>Orders, patient/coverage/clinical docs, prior-auth data, bidirectional workflow integration</td><td><span class="score hard">Medium–Hard</span></td><td>MVP3 unless launch customer is Epic</td><td>Public API specs exist; actual customer configuration, scopes, interface testing and writeback design drive timeline.</td></tr>
+      <tr><td><strong>athenahealth</strong></td><td>REST + FHIR R4 + OAuth 2.0</td><td>Orders/clinical data/documents and practice workflow integration</td><td><span class="score med">Medium</span></td><td>MVP1 or MVP3 based on customer</td><td>Good SMB/mid-market candidate. Confirm exact writeback resources needed for auth status.</td></tr>
+      <tr><td><strong>Oracle Health / Cerner</strong></td><td>FHIR R4 + EHR REST APIs + SMART/OAuth</td><td>Patient, coverage, documents, orders and clinical context</td><td><span class="score hard">Medium–Hard</span></td><td>MVP3</td><td>Strong API surface; customer tenant/app registration and enterprise IT coordination make schedule less predictable.</td></tr>
+      <tr><td><strong>eClinicalWorks</strong></td><td>Provider-facing FHIR R4, SMART on FHIR, backend/bulk APIs</td><td>Clinical/order/context retrieval; selected writeback depends on supported resource/action</td><td><span class="score med">Medium</span></td><td>MVP1/MVP3 based on pipeline</td><td>Useful small-practice target; validate customer FHIR activation and exact writeback need.</td></tr>
+      <tr><td><strong>Payer portals</strong></td><td>Browser automation / RPA</td><td>Auth submission/status, claim status, attachments when no useful API exists</td><td><span class="score hard">Hard to maintain</span></td><td>MVP1 M3</td><td>Fast coverage expansion but brittle: MFA, CAPTCHA, UI changes and payer policy changes require monitoring and exception handling.</td></tr>
+      <tr><td><strong>Retell AI</strong></td><td>API/webhooks + SIP/telephony + call transfer + analytics</td><td>Outbound/inbound payer calls, IVR/hold navigation, human transfer, structured post-call results</td><td><span class="score easy">Easy–Medium</span></td><td>MVP1 M3 + MVP2</td><td>Use as voice infrastructure, not the system of record. Persist InfiniAI’s own structured call outcome and audit events.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3 style="margin-top:20px">Healthcare transaction map to support progressively</h3>
+  <div class="grid4">
+    <div class="card"><span class="badge">270 / 271</span><h3>Eligibility</h3><p>Inquiry / response. Useful for ClearAuth pre-checks and VICE context. Can arrive through clearinghouse APIs or EDI.</p></div>
+    <div class="card"><span class="badge">278</span><h3>Prior authorization</h3><p>Legacy HIPAA service-review transaction. Modern FHIR PAS implementations can translate to/from X12 278 depending on intermediary/payer.</p></div>
+    <div class="card"><span class="badge">276 / 277</span><h3>Claim status</h3><p>Core VICE electronic-first status path before phone follow-up.</p></div>
+    <div class="card"><span class="badge">837 / 835</span><h3>Claims / remittance</h3><p>Useful later for corrected claim/resubmission, payment posting and recovery analytics. Do not make this required for MVP1.</p></div>
+  </div>
+
+  <div class="note warn"><strong>Critical-path warning:</strong> do not promise that every named production integration will be “live” inside a coding sprint. Promise the connector, sandbox/UAT readiness and a production target subject to vendor/customer enrollment. This protects the 8-week release while still showing a credible integration roadmap.</div>
+</section>
+
+<section id="pods">
+  <h2>8. Two-POD delivery model</h2>
+  <p class="lead">Start with one strong POD. Introduce POD 2 in month 2 so it can investigate the next agent and build connectors while POD 1 finishes production hardening. This gives parallelism without duplicating architecture decisions in week 1.</p>
+  <div class="pod">
+    <div class="head">Team</div><div class="head">Month 1</div><div class="head">Month 2</div><div class="head m3">Month 3</div><div class="head m4">Month 4</div><div class="head m5">Month 5</div><div class="head m6">Month 6</div>
+    <div class="podname">POD 1 — Product / Core</div><div class="on">ClearAuth core + UI</div><div class="pilot">ClearAuth integrations + prod</div><div class="on m3">Shared platform + VICE core</div><div class="pilot m4">VICE hardening + prod</div><div class="on m5">Multi-tenant platform</div><div class="pilot m6">SMB GA / enterprise pilot</div>
+    <div class="podname">POD 2 — Integrations / Next agent</div><div class="research">Part-time discovery only</div><div class="research">VICE workflow + voice + connector spikes</div><div class="on m3">VICE voice + claim status</div><div class="on m4">EHR/clearinghouse expansion</div><div class="on m5">Epic/Oracle/TriZetto priority connectors</div><div class="on m6">Enterprise integration kit</div>
+    <div class="podname">Shared — SME / Security / QA</div><div class="on">Workflow rules + test data</div><div class="pilot">UAT + compliance gate</div><div class="on m3">A/R scenarios + call QA</div><div class="pilot m4">Recovery validation</div><div class="on m5">Onboarding/security</div><div class="pilot m6">SLO / DR / enterprise acceptance</div>
+  </div>
+  <div class="grid2" style="margin-top:16px">
+    <div class="card"><h3>Suggested POD 1</h3><ul class="tight"><li>Product owner / healthcare BA</li><li>Architect / tech lead</li><li>2 backend/workflow engineers</li><li>1 frontend engineer</li><li>1 QA automation engineer</li><li>Shared DevOps/security</li></ul></div>
+    <div class="card"><h3>Suggested POD 2 from month 2</h3><ul class="tight"><li>Integration lead</li><li>1 healthcare integration engineer</li><li>1 browser/RPA engineer</li><li>1 voice/agent engineer</li><li>1 QA engineer</li><li>Shared SME + platform architect</li></ul></div>
+  </div>
+</section>
+
+<section id="onboarding">
+  <h2>9. Customer onboarding experience</h2>
+  <p class="lead">The fastest path to revenue is a tiered onboarding model. Do not require a deep EHR integration before the customer sees value.</p>
+  <div class="grid4">
+    <div class="card"><span class="badge green">Track A • Fast Start</span><h3>File-first</h3><p><strong>Target: days to 2 weeks.</strong> SFTP/CSV/standard extracts in; dashboard + actions out. Best for pilot and smaller practices.</p></div>
+    <div class="card"><span class="badge">Track B • Connected</span><h3>REST / FHIR</h3><p><strong>Target: 2–6 weeks.</strong> Bidirectional API integration, webhooks, documents and writeback. Exact timing depends on customer IT and vendor registration.</p></div>
+    <div class="card"><span class="badge amber">Track C • Clearinghouse</span><h3>EDI + enrollment</h3><p><strong>Target: variable.</strong> X12/API connectivity can be quick technically, but payer enrollment and transaction approval can take weeks.</p></div>
+    <div class="card"><span class="badge red">Track D • Enterprise</span><h3>Deep workflow</h3><p><strong>Target: multi-week.</strong> Epic/Oracle interfaces, SSO, custom policies, security review, dedicated UAT and release governance.</p></div>
+  </div>
+  <h3 style="margin-top:18px">Recommended onboarding flow</h3>
+  <div class="table-wrap"><table class="tbl"><thead><tr><th>Step</th><th>Customer experience</th><th>InfiniAI platform behavior</th><th>Exit criteria</th></tr></thead><tbody>
+    <tr><td><strong>1. Scope</strong></td><td>Choose one specialty, location, workflow and payer mix.</td><td>Generate tenant + workflow template.</td><td>Volume, systems, payers, credentials and “done” outcomes agreed.</td></tr>
+    <tr><td><strong>2. Connect</strong></td><td>Pick Fast Start or native connector.</td><td>Connectivity wizard validates file/API/EHR/clearinghouse.</td><td>Test case ingested and acknowledgements visible.</td></tr>
+    <tr><td><strong>3. Configure</strong></td><td>Review policies, payer mapping and human gates.</td><td>Rules are versioned and testable before production.</td><td>Representative scenarios pass.</td></tr>
+    <tr><td><strong>4. Shadow</strong></td><td>AI runs alongside staff without autonomous submission for selected cases.</td><td>Compare recommendations/status with current process.</td><td>Accuracy and exceptions accepted.</td></tr>
+    <tr><td><strong>5. Go live</strong></td><td>Routine cases execute automatically; staff receives exceptions.</td><td>SLA monitoring, audit, rollback and support runbook active.</td><td>Production KPI baseline captured.</td></tr>
+    <tr><td><strong>6. Expand</strong></td><td>Add payer, specialty, site or second agent.</td><td>Reuse connector + workflow templates.</td><td>Expansion does not require a separate code branch.</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="kpis">
+  <h2>10. Production outcomes to show the business owner</h2>
+  <p class="lead">Use targets as pilot acceptance measures, not guarantees. Baseline them against the customer’s current process during discovery.</p>
+  <div class="grid3">
+    <div class="card"><span class="badge green">Release 1</span><h3>ClearAuth proof</h3><ul class="tight"><li>% cases processed without staff touch in supported payer lanes</li><li>time from order received → submitted</li><li>approval/pended/denied status visibility</li><li>% missing-document cases detected before submission</li><li>human exceptions by reason</li><li>100% auditable actions and source/reference IDs</li></ul></div>
+    <div class="card"><span class="badge green">Release 2</span><h3>VICE proof</h3><ul class="tight"><li>accounts worked/day and backlog reduction</li><li>electronic vs portal vs voice touches</li><li>hold time absorbed by AI</li><li>callbacks executed on time</li><li>claims reprocessed / moved to next state</li><li>recovered or protected dollars attributed to workflow</li></ul></div>
+    <div class="card"><span class="badge green">Release 3</span><h3>Platform proof</h3><ul class="tight"><li>days to onboard a new tenant</li><li>% customer configuration with no code</li><li>connector reuse across ClearAuth + VICE</li><li>tenant-level uptime/error/SLA views</li><li>time to add a payer workflow</li><li>support effort per customer</li></ul></div>
+  </div>
+</section>
+
+<section id="northstar">
+  <h2>11. North-star capability map</h2>
+  <p class="lead">This is the full platform direction after the first 6 months. It is intentionally broader than the initial roadmap and should be prioritized from real customer demand.</p>
+  <div class="grid3">
+    <div class="card"><h3>Agent portfolio</h3><ul class="tight"><li>ClearAuth: determination, initiate, status, follow-up</li><li>VICE: claim status, denial follow-up, reprocessing, collections</li><li>Eligibility / benefits verification</li><li>Denial prevention + appeal package agent</li><li>Payment posting / ERA reconciliation</li><li>Coverage discovery</li><li>Document intake / classification / extraction</li></ul></div>
+    <div class="card"><h3>Workflow OS</h3><ul class="tight"><li>Visual workflow designer + versioning</li><li>Policy/rules engine</li><li>SLA timers, scheduler, retries, callbacks</li><li>Event-driven orchestration</li><li>HITL gates and skill-based queues</li><li>Batch + real-time execution</li><li>Agent/tool registry</li></ul></div>
+    <div class="card"><h3>Integration fabric</h3><ul class="tight"><li>FHIR R4 + SMART/OAuth</li><li>HL7 v2 interface engine</li><li>X12 transactions and translation</li><li>REST/SOAP connector SDK</li><li>SFTP/file ingestion</li><li>Browser automation</li><li>SIP/voice adapters</li><li>Fax/eFax/document channel</li><li>Optional internal MCP wrappers</li></ul></div>
+    <div class="card"><h3>Payer intelligence</h3><ul class="tight"><li>Payer/plan/procedure rule catalog</li><li>auth requirements and documentation rules</li><li>portal/API/phone routing preference</li><li>payer-specific scripts / workflows</li><li>deadline/timely filing logic</li><li>change detection and rule versioning</li></ul></div>
+    <div class="card"><h3>Enterprise trust</h3><ul class="tight"><li>HIPAA/BAA operating model</li><li>SOC 2 controls and evidence</li><li>SSO/SAML, SCIM, RBAC</li><li>tenant isolation + encryption</li><li>PHI redaction / retention controls</li><li>immutable audit/provenance</li><li>approval gates and policy overrides</li></ul></div>
+    <div class="card"><h3>Operations + analytics</h3><ul class="tight"><li>live queues and agent activity</li><li>touchless rate / human exception rate</li><li>payer performance and turnaround</li><li>recovered/protected revenue</li><li>agent quality and failure taxonomy</li><li>connector health + portal change alerts</li><li>cost/usage per tenant/workflow</li></ul></div>
+    <div class="card"><h3>Customer platform</h3><ul class="tight"><li>self-service tenant setup</li><li>integration credential wizard</li><li>workflow templates by specialty</li><li>payer mapping and policies</li><li>test harness / sandbox</li><li>release promotion dev→UAT→prod</li><li>customer support / audit exports</li></ul></div>
+    <div class="card"><h3>AI quality layer</h3><ul class="tight"><li>structured output validation</li><li>confidence gating</li><li>golden test conversations</li><li>document extraction evaluation</li><li>workflow replay</li><li>LLM/model portability</li><li>prompt/policy versioning</li></ul></div>
+    <div class="card"><h3>Scale / commercial</h3><ul class="tight"><li>multi-tenant usage metering</li><li>per-case / per-call / recovery pricing options</li><li>connector marketplace/catalog</li><li>partner/RCM service model</li><li>white-label options</li><li>enterprise SLAs and DR</li><li>regional deployment / data residency</li></ul></div>
+  </div>
+</section>
+
+<section id="research-notes">
+  <h2>12. Competitive research notes that materially change the roadmap</h2>
+  <details open><summary>Infinx — why it is the closest model</summary><div>Infinx publicly positions Healthcare Revenue OS as a multi-agent operating system rather than a single automation. Its stated layers include AI/automation, RCM experts, payer integration, provider integration, security/compliance, workflow execution, human-in-the-loop/workforce orchestration and analytics. Its provider integration page explicitly lists API/webhooks, HL7, FHIR-ready patterns, secure file exchange and RPA; its payer connectivity page lists APIs, EDI/clearinghouses, portals, SFTP/batch and normalized writeback. This strongly supports building InfiniAI’s shared platform services before multiplying agents.</div></details>
+  <details><summary>Operator Labs — what to copy, and what not to copy</summary><div>Copy the execution behaviors: queue prioritization, IVR navigation, hold handling, structured call outcomes, automatic callbacks, escalation and writeback. Do not make the product voice-centric. The attached client goal and broader competitors imply electronic-first orchestration; voice is the fallback channel for cases that APIs/EDI/portals cannot resolve.</div></details>
+  <details><summary>Waystar — where the long-term moat comes from</summary><div>Waystar’s scale and 2026 agentic roadmap show the advantage of combining workflow automation with a large normalized transaction/connectivity layer. For InfiniAI, the practical version is a canonical data model plus reusable adapters and payer intelligence, not an attempt to recreate a national clearinghouse in six months.</div></details>
+  <details><summary>FHIR timing — why we should be ready but not block MVP1 on it</summary><div>CMS-0057-F requires impacted payer prior-authorization APIs beginning primarily January 1, 2027, and recommends FHIR R4 with Da Vinci CRD/DTR/PAS implementation guides. Epic has already published 2026 prior-auth API functionality, and TriZetto and Availity are publicly offering FHIR prior-auth capabilities. Therefore the connector architecture should be FHIR-native-ready now, but MVP1 should still support today’s mixed world of REST, X12, portals, SOAP/SFTP and voice.</div></details>
+</section>
+
+<section id="sources">
+  <h2>13. Research sources</h2>
+  <p class="lead">Primary sources are preferred. Vendor performance statements are vendor-reported and should be validated during diligence. Research checked August 30, 2026.</p>
+  <div class="grid2">
+    <div class="card"><h3>Competitive platforms</h3><ul class="tight small">
+      <li><a href="https://www.infinx.com/" target="_blank">Infinx Healthcare Revenue OS</a></li>
+      <li><a href="https://www.infinx.com/payer-connections/" target="_blank">Infinx payer connectivity</a></li>
+      <li><a href="https://www.infinx.com/provider-ehr-integrations/" target="_blank">Infinx provider/EHR integrations</a></li>
+      <li><a href="https://www.infinx.com/revenue-cycle-ai-and-automation-agent-list/" target="_blank">Infinx agent catalog</a></li>
+      <li><a href="https://www.operatorlabs.ai/" target="_blank">Operator Labs</a></li>
+      <li><a href="https://www.operatorlabs.ai/solutions/insurance-follow-up" target="_blank">Operator Labs insurance follow-up</a></li>
+      <li><a href="https://www.operatorlabs.ai/product/ehr-pm-systems" target="_blank">Operator Labs EHR/PM integrations</a></li>
+      <li><a href="https://www.operatorlabs.ai/product/data-insights" target="_blank">Operator Labs analytics</a></li>
+      <li><a href="https://www.waystar.com/" target="_blank">Waystar platform</a></li>
+      <li><a href="https://www.waystar.com/our-platform/financial-clearance/authorizations/" target="_blank">Waystar Authorization Manager</a></li>
+      <li><a href="https://investors.waystar.com/news-releases/news-release-details/waystar-launches-new-agentic-solutions-transforming-ai-action" target="_blank">Waystar Aug 26, 2026 agentic launch</a></li>
+    </ul></div>
+    <div class="card"><h3>Integration / standards sources</h3><ul class="tight small">
+      <li><a href="https://www.availity.com/api-marketplace/" target="_blank">Availity API Marketplace</a></li>
+      <li><a href="https://developer.availity.com/portal/catalogue-products/healthcare-hipaa-transactions-1" target="_blank">Availity HIPAA transaction APIs</a></li>
+      <li><a href="https://developer.optum.com/eligibilityandclaims/reference/overview-prior-auth" target="_blank">Optum Prior Authorization API</a></li>
+      <li><a href="https://services.gatewayedi.com/eligibility/service.asmx?op=DoInquiryByX12Data" target="_blank">Gateway EDI SOAP eligibility service</a></li>
+      <li><a href="https://www.trizettoprovider.com/interoperability-solutions/trizetto-provider-electronic-prior-authorization" target="_blank">TriZetto electronic prior authorization</a></li>
+      <li><a href="https://fhir.epic.com/Documentation?docId=appfhirversion" target="_blank">Epic on FHIR — 2026 prior authorization APIs</a></li>
+      <li><a href="https://docs.oracle.com/en/industries/health/millennium-platform-apis/index.html" target="_blank">Oracle Health Millennium APIs</a></li>
+      <li><a href="https://docs.athenahealth.com/" target="_blank">athenahealth APIs</a></li>
+      <li><a href="https://www.eclinicalworks.com/resources/certified-ehr-technology/" target="_blank">eClinicalWorks FHIR APIs</a></li>
+      <li><a href="https://www.retellai.com/industry/healthcare-industry" target="_blank">Retell AI healthcare voice platform</a></li>
+      <li><a href="https://www.cms.gov/newsroom/fact-sheets/cms-interoperability-prior-authorization-final-rule-cms-0057-f" target="_blank">CMS-0057-F fact sheet</a></li>
+    </ul></div>
+  </div>
+  <div class="note"><strong>Client-source basis:</strong> “Client Original Requirements” attached PDF, especially the VICE electronic-first → portal/API → phone → exception model and the ClearAuth prior-authorization workflow.</div>
+</section>
+</main>
+<footer>
+  <strong>InfiniAI planning artifact.</strong> This roadmap intentionally optimizes for production value every ~2 months rather than feature count. Integration estimates are planning ranges; vendor contracting, payer enrollment, customer security review and access approval can alter calendar timing. Competitive internals not disclosed publicly are not asserted as fact.
+</footer>
+</div>
+</body>
+</html>

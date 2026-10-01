@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PA Best Solution — Recommended Architecture</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<style>
+  :root{ --bg:#f7f7f5; --panel:#ffffff; --ink:#1c1d1f; --muted:#5b5e64; --line:#e2e2e0; --accent:#3457d5; --accent2:#0f766e; --warn:#b45309; --bad:#b91c1c; }
+  @media (prefers-color-scheme: dark){ :root{ --bg:#15161a; --panel:#1d1f24; --ink:#eceef1; --muted:#9aa0aa; --line:#2b2e35; --accent:#7c9bff; --accent2:#2dd4bf; --warn:#f0b429; --bad:#f87171; } }
+  *{box-sizing:border-box}
+  body{background:var(--bg); color:var(--ink); font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; margin:0; padding:0 0 4rem;}
+  header{padding:2.5rem 1.5rem 1.5rem; max-width:960px; margin:0 auto;}
+  h1{font-size:1.7rem; margin:0 0 .3rem;}
+  .sub{color:var(--muted); font-size:.95rem;}
+  main{max-width:960px; margin:0 auto; padding:0 1.5rem;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:1.5rem; margin-bottom:1.5rem;}
+  h2{font-size:1.15rem; margin-top:0;}
+  .mermaid{background:transparent; overflow-x:auto;}
+  table{border-collapse:collapse; width:100%; font-size:.85rem; margin-top:.5rem;}
+  th,td{border:1px solid var(--line); padding:.5rem .6rem; text-align:left; vertical-align:top;}
+  th{background:rgba(52,87,213,.08); font-weight:600;}
+  .diagram-note{font-size:.8rem; color:var(--muted); margin-top:.5rem;}
+  a{color:var(--accent);}
+  .callout{border-left:4px solid var(--accent2); padding:.6rem 1rem; background:rgba(15,118,110,.08); border-radius:0 8px 8px 0; font-weight:500;}
+  nav.crumbs{max-width:960px; margin:1rem auto 0; padding:0 1.5rem; font-size:.85rem;}
+</style>
+</head>
+<body>
+<nav class="crumbs"><a href="index.html">&larr; All research</a></nav>
+<header>
+  <h1>The Best Solution for Prior Authorization</h1>
+  <div class="sub">Visual companion to <a href="../pa-best-solution.md">pa-best-solution.md</a> — the recommended architecture, agent flow, and rollout sequence, synthesized from all four research files.</div>
+</header>
+<main>
+
+<section>
+  <p class="callout">Automate on FHIR standards, wrap it in a multi-agent architecture, gate every denial behind a human, start narrow, and treat the CMS January 2027 deadline as the forcing function.</p>
+</section>
+
+<section>
+  <h2>1. Recommended end-to-end architecture</h2>
+  <div class="mermaid">
+flowchart TD
+  Order[Order placed in EHR] --> Cov[Coverage Agent:<br/>calls CRD API]
+  Cov -->|PA required| Doc[Documentation Agent:<br/>auto-fills from chart]
+  Doc --> Clin[Clinical Agent]
+  Doc --> Comp[Compliance Agent]
+  Clin --> Dec[Decision Agent:<br/>confidence score]
+  Comp --> Dec
+  Dec --> Gate{High confidence<br/>and not a denial?}
+  Gate -->|Yes| Sub[Submission Agent]
+  Gate -->|No| Human((Human reviewer))
+  Human --> Sub
+  Sub --> Payer[Payer adjudication]
+  Payer --> Result[Decision]
+  Result -->|Pended| Follow[Follow-Up Agent]
+  Follow --> Payer
+  Result -->|Final| Feedback[Feeds back into<br/>policy knowledge base]
+
+  style Human fill:#b4530920,stroke:#b45309,stroke-width:2px
+  style Gate fill:#3457d520,stroke:#3457d5
+</div>
+</section>
+
+<section>
+  <h2>2. Agent swimlane</h2>
+  <div class="mermaid">
+sequenceDiagram
+  participant Clinician
+  participant Coverage
+  participant Clinical
+  participant Compliance
+  participant Decision
+  participant Human
+  participant Submission
+  participant Payer
+
+  Clinician->>Coverage: Order placed
+  Coverage->>Payer: CRD check
+  Payer-->>Coverage: PA required
+  Coverage->>Clinical: Gather evidence
+  Coverage->>Compliance: Validate paperwork
+  Clinical-->>Decision: Evidence
+  Compliance-->>Decision: Completeness
+  Decision->>Decision: Score confidence
+  alt High confidence
+    Decision->>Submission: Auto-submit
+  else Low confidence or denial
+    Decision->>Human: Route for review
+    Human->>Submission: Approve or correct
+  end
+  Submission->>Payer: PAS submission
+  Payer-->>Submission: Decision
+  Submission-->>Clinician: Status update
+</div>
+</section>
+
+<section>
+  <h2>3. Rollout sequence</h2>
+  <div class="mermaid">
+flowchart LR
+  P1[Phase 1<br/>Pilot one payer,<br/>one simple case type] --> P2[Phase 2<br/>Measure vs<br/>manual baseline]
+  P2 --> P3[Phase 3<br/>Expand payer<br/>by payer]
+  P3 --> P4[Phase 4<br/>Full compliance<br/>by Jan 2027]
+  style P4 fill:#0f766e20,stroke:#0f766e
+</div>
+</section>
+
+<section>
+  <h2>4. Two failure modes to avoid</h2>
+  <div class="mermaid">
+flowchart TD
+  subgraph UNDER[Failure mode 1: under-engineered]
+    direction TB
+    N1[No-code tool] --> N2[Consumer integrations,<br/>no BAA]
+    N2 --> N3[No human gate<br/>on auto-approval]
+    N3 --> N4[n8n incident:<br/>care delayed]
+  end
+
+  subgraph OVER[Failure mode 2: over-claimed]
+    direction TB
+    O1[Well-funded vendor] --> O2[Scripted automation<br/>marketed as deep AI]
+    O2 --> O3[Rules do not<br/>generalize across payers]
+    O3 --> O4[Olive AI shutdown:<br/>860M dollars raised]
+  end
+
+  style N4 fill:#b91c1c25,stroke:#b91c1c
+  style O4 fill:#b91c1c25,stroke:#b91c1c
+</div>
+  <div class="diagram-note">Opposite ends of the same spectrum: too little engineering rigor on the left, too much marketing on the right. Both end in a failed deployment.</div>
+</section>
+
+<section>
+  <h2>Summary decision table</h2>
+  <table>
+    <tr><th>Decision</th><th>Recommendation</th></tr>
+    <tr><td>Integration standard</td><td>HL7 FHIR + Da Vinci CRD/DTR/PAS/CDex</td></tr>
+    <tr><td>Architecture</td><td>Multi-agent, confidence-tiered, human review on every denial</td></tr>
+    <tr><td>Build vs. buy</td><td>Buy production SaaS if speed matters; build on AWS/Microsoft accelerators only with a team to harden compliance</td></tr>
+    <tr><td>Rollout</td><td>Pilot narrow &rarr; measure &rarr; expand</td></tr>
+    <tr><td>Regulatory anchor</td><td>CMS-0057-F, FHIR PA API by Jan 1, 2027</td></tr>
+  </table>
+  <p><a href="../pa-best-solution.md">Read the full markdown report &rarr;</a></p>
+</section>
+
+</main>
+<script src="diagrams.js"></script>
+</body>
+</html>

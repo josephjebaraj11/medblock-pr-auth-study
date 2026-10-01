@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Semantic surface/content tokens, carried over from the Nexauth AI site.
+   * Values are space-separated RGB channels so Tailwind's `<alpha-value>`
+   * modifier works (`bg-surface-raised/60`).
+   */
+  :root {
+    color-scheme: light;
+
+    --surface: 255 255 255;
+    --surface-subtle: 245 248 252;
+    --surface-raised: 255 255 255;
+    --surface-inset: 245 248 252;
+    --surface-mint: 241 250 244;
+    --surface-inverse: 10 19 34;
+
+    --line: 207 220 235;
+    --line-subtle: 232 239 247;
+
+    --content: 17 29 46;
+    --content-secondary: 42 64 92;
+    --content-muted: 82 111 147;
+    --content-brand: 10 79 166;
+    --content-danger: 153 27 27;
+
+    --tint-brand: 239 246 255;
+    --tint-brand-on: 13 66 133;
+    --tint-accent: 233 248 239;
+    --tint-accent-on: 9 82 42;
+    --tint-aqua: 239 252 251;
+    --tint-aqua-on: 19 84 86;
+    --tint-signal: 255 247 237;
+    --tint-signal-on: 143 67 9;
+    --tint-danger: 254 242 242;
+    --tint-danger-on: 153 27 27;
+
+    --shadow: 10 19 34;
+    --ring: 11 99 206;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --surface: 10 19 34;
+    --surface-subtle: 14 25 41;
+    --surface-raised: 22 35 58;
+    --surface-inset: 27 44 66;
+    --surface-mint: 10 31 26;
+    --surface-inverse: 17 29 46;
+
+    --line: 42 64 92;
+    --line-subtle: 27 44 66;
+
+    --content: 255 255 255;
+    --content-secondary: 207 220 235;
+    --content-muted: 169 190 214;
+    --content-brand: 141 189 250;
+    --content-danger: 252 165 165;
+
+    --tint-brand: 18 41 74;
+    --tint-brand-on: 141 189 250;
+    --tint-accent: 12 44 27;
+    --tint-accent-on: 106 207 153;
+    --tint-aqua: 10 46 48;
+    --tint-aqua-on: 109 220 216;
+    --tint-signal: 51 32 12;
+    --tint-signal-on: 240 168 104;
+    --tint-danger: 60 18 18;
+    --tint-danger-on: 252 165 165;
+
+    --shadow: 0 0 0;
+    --ring: 109 220 216;
+  }
+
+  * {
+    @apply border-line;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-surface-subtle text-content antialiased;
+    font-feature-settings: "cv05" 1, "ss01" 1;
+  }
+
+  /* One visible focus treatment everywhere, rather than per-component. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-offset-2;
+    --tw-ring-color: rgb(var(--ring));
+    --tw-ring-offset-color: rgb(var(--surface));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .type-display {
+    @apply font-display tracking-tight;
+  }
+
+  /* Skip link: offscreen until focused. */
+  .skip-link {
+    @apply absolute left-4 z-50 -translate-y-24 rounded-lg bg-brand-600 px-4 py-2
+           text-sm font-semibold text-white transition-transform focus:translate-y-4;
+  }
+}

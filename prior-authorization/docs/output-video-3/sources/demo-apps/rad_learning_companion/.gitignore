@@ -1,0 +1,6 @@
+.env
+.venv/
+.idea/*
+.DS_Store
+/frontend/node_modules/
+/frontend/package-lock.json
