@@ -38,12 +38,12 @@ async function visit(path, expectText, label) {
   return body;
 }
 
-/* ============ Provider / clinic staff ============ */
-await pickRole("Provider / Clinic Staff");
-await visit("/provider", "Pending with payers", "provider-dashboard");
-await visit("/provider/requests", "Requests", "provider-requests");
-await visit("/provider/worklist", "Worklist", "provider-worklist");
-await visit("/provider/requests/req-1047", "NA-1047", "provider-case-1047");
+/* ============ Staff / Operations ============ */
+await pickRole("Staff / Operations");
+await visit("/ops", "Pending with payers", "ops-dashboard");
+await visit("/ops/requests", "Requests", "ops-requests");
+await visit("/ops/worklist", "Worklist", "ops-worklist");
+await visit("/ops/requests/req-1047", "NA-1047", "ops-case-1047");
 
 // Tabs on the case page
 for (const tab of ["AI assist", "Documents", "Channels", "Messages", "Audit"]) {
@@ -54,7 +54,7 @@ for (const tab of ["AI assist", "Documents", "Channels", "Messages", "Audit"]) {
 }
 
 // J6 — resupply a requested document on the pended case
-await page.goto(BASE + "/provider/requests/req-1052", { waitUntil: "networkidle" });
+await page.goto(BASE + "/ops/requests/req-1052", { waitUntil: "networkidle" });
 await page.waitForTimeout(900);
 const resupply = page.getByRole("button", { name: /Resupply requested document/i });
 if (await resupply.count()) {
@@ -67,7 +67,7 @@ if (await resupply.count()) {
 }
 
 // J8 — extension on the expiring approval
-await page.goto(BASE + "/provider/requests/req-1044", { waitUntil: "networkidle" });
+await page.goto(BASE + "/ops/requests/req-1044", { waitUntil: "networkidle" });
 await page.waitForTimeout(900);
 const extend = page.getByRole("button", { name: /Request date extension/i });
 if (await extend.count()) {
@@ -79,7 +79,7 @@ if (await extend.count()) {
 }
 
 // J4 — release a held submission
-await page.goto(BASE + "/provider/requests/req-1065", { waitUntil: "networkidle" });
+await page.goto(BASE + "/ops/requests/req-1065", { waitUntil: "networkidle" });
 await page.waitForTimeout(900);
 const release = page.getByRole("button", { name: /Release .* submit/i });
 if (await release.count()) {
@@ -91,7 +91,7 @@ if (await release.count()) {
 }
 
 /* ============ Wizard — J1 ============ */
-await page.goto(BASE + "/provider/new", { waitUntil: "networkidle" });
+await page.goto(BASE + "/ops/new", { waitUntil: "networkidle" });
 await page.waitForTimeout(1200);
 await page.getByRole("button", { name: /Owen Brooks/i }).first().click();
 await page.waitForTimeout(1200);
@@ -148,7 +148,7 @@ if (/Prior authorization is required/i.test(body)) {
 }
 
 /* ============ J10 — duplicate prevention ============ */
-await page.goto(BASE + "/provider/new", { waitUntil: "networkidle" });
+await page.goto(BASE + "/ops/new", { waitUntil: "networkidle" });
 await page.waitForTimeout(1200);
 await page.getByRole("button", { name: /Sofia Marino/i }).first().click();
 await page.waitForTimeout(1200);
@@ -182,13 +182,23 @@ await page.waitForTimeout(5000);
   } else note("J10-duplicate-blocked", false, "no continue");
 }
 
-/* ============ Ordering physician ============ */
-await pickRole("Ordering Physician");
-await visit("/physician", "My orders", "physician-orders");
-await visit("/physician/review", "Clinical review", "physician-review");
+/* ============ Scope gating — Operations must not reach admin ============ */
+await page.goto(BASE + "/admin/tenants", { waitUntil: "networkidle" });
+await page.waitForTimeout(900);
+note(
+  "ops-blocked-from-admin",
+  !(await page.locator("body").innerText()).includes("No PHI on this screen"),
+  page.url(),
+);
+await visit("/portal", "One portal", "one-portal-ops");
+
+/* ============ Clinical reviewer (licensed) ============ */
+await pickRole("Clinical Reviewer");
+await visit("/clinical", "Clinical review", "clinical-queue");
+await visit("/clinical/cases", "Requests", "clinical-all-cases");
 
 // J3 — attest on NA-1047
-await page.goto(BASE + "/physician/orders/req-1047", { waitUntil: "networkidle" });
+await page.goto(BASE + "/clinical/req-1047", { waitUntil: "networkidle" });
 await page.waitForTimeout(1200);
 const attest = page.getByRole("button", { name: /Attest evidence/i });
 if (await attest.count()) {
@@ -200,7 +210,7 @@ if (await attest.count()) {
 }
 
 // J7 — appeal a denied case
-await page.goto(BASE + "/physician/orders/req-1048", { waitUntil: "networkidle" });
+await page.goto(BASE + "/clinical/req-1048", { waitUntil: "networkidle" });
 await page.waitForTimeout(1200);
 const appeal = page.getByRole("button", { name: /Approve .* file appeal/i });
 if (await appeal.count()) {
@@ -212,50 +222,30 @@ if (await appeal.count()) {
   note("J7-appeal-filed", false, "appeal button not found");
 }
 
-/* ============ Payer intake ============ */
-await pickRole("Payer Intake Reviewer");
-await visit("/payer/queue", "Intake queue", "payer-queue");
-const triage = page.getByRole("button", { name: /^Triage$/i });
-if (await triage.count()) {
-  await triage.first().click();
-  await page.waitForTimeout(2500);
-  note("payer-triage", true);
-} else {
-  note("payer-triage", false, "no triage button");
-}
+// Scope gating: the clinical persona must not reach admin or ops-create screens.
+await page.goto(BASE + "/admin/billing", { waitUntil: "networkidle" });
+await page.waitForTimeout(900);
+note(
+  "clinical-blocked-from-billing",
+  !(await page.locator("body").innerText()).includes("Annual license"),
+  page.url(),
+);
 
-/* ============ Payer clinical ============ */
-await pickRole("Payer Clinical Reviewer");
-await visit("/payer/clinical", "Clinical review", "payer-clinical");
+/* ============ One portal — reachable from every persona ============ */
+await visit("/portal", "One portal", "one-portal-clinical");
+
+/* ============ Admin (tenant + platform reach merged) ============ */
+await pickRole("Admin");
+await visit("/admin", "Overview", "admin-overview");
 body = await page.locator("body").innerText();
-const caseMatch = body.match(/NA-\d+/);
-if (caseMatch) {
-  await page.getByRole("link", { name: caseMatch[0] }).first().click();
-  await page.waitForTimeout(1800);
-  const b = await page.locator("body").innerText();
-  note("payer-case-detail", b.includes("Issue determination"), caseMatch[0]);
-  if (SHOT) await page.screenshot({ path: `${SHOT}/payer-determination.png`, fullPage: true });
+note("admin-one-persona-two-reaches", /One admin persona, two reaches/i.test(body));
 
-  // Record an approval
-  await page.getByLabel(/Rationale/i).fill("Criteria met on the submitted documentation.");
-  await page.waitForTimeout(300);
-  const rec = page.getByRole("button", { name: /Record determination/i });
-  if (await rec.count()) {
-    await rec.click();
-    await page.waitForTimeout(3000);
-    note("payer-approve", !/error/i.test(await page.locator("body").innerText()));
-  } else note("payer-approve", false, "no record button");
-} else {
-  note("payer-case-detail", false, "no case in queue");
-}
+await visit("/admin/tenants", "Tenants", "admin-tenants");
+body = await page.locator("body").innerText();
+note("admin-tenants-multi", /Northside/i.test(body) && /Harbor Point/i.test(body));
+note("admin-tenants-no-phi", /No PHI on this screen/i.test(body));
+note("admin-tenants-realm", /nexauth-northside/i.test(body));
 
-/* ============ Patient ============ */
-await pickRole("Patient");
-await visit("/patient", "My authorizations", "patient-portal");
-
-/* ============ Admin ============ */
-await pickRole("Platform Admin");
-await visit("/admin", "Platform overview", "admin-overview");
 await visit("/admin/connectors", "Connectors", "admin-connectors");
 await visit("/admin/connectors/ci-athena-prod", "athenahealth", "admin-connector-detail");
 
@@ -291,11 +281,91 @@ if (await kill.count()) {
 }
 
 await visit("/admin/users", "Users", "admin-users");
-await visit("/admin/audit", "Audit log", "admin-audit");
 body = await page.locator("body").innerText();
-note("audit-chain-intact", /Hash chain intact/i.test(body));
+note("admin-users-three-personas", /Staff \/ Operations/.test(body) && /Clinical Reviewer/.test(body) && /Admin/.test(body));
+note("admin-users-dual-persona", /Georgia Bellweather/i.test(body));
 
+/* ============ Billing / payment ============ */
+await visit("/admin/billing", "Billing", "admin-billing");
+body = await page.locator("body").innerText();
+note("billing-plan", /Annual license/i.test(body) && /Managed services/i.test(body));
+note("billing-not-per-pa", /not a price per authorization/i.test(body));
+
+const invoiceToggle = page.getByRole("button", { expanded: false }).filter({ hasText: /NXA-2026/ });
+if (await invoiceToggle.count()) {
+  await invoiceToggle.first().click();
+  await page.waitForTimeout(700);
+  body = await page.locator("body").innerText();
+  note("billing-invoice-lines", /Pass-through/i.test(body) && /voice minutes/i.test(body));
+} else {
+  note("billing-invoice-lines", false, "no invoice row");
+}
+
+const payBtn = page.getByRole("button", { name: /Pay now/i });
+if (await payBtn.count()) {
+  await payBtn.first().click();
+  await page.waitForTimeout(2600);
+  note("billing-pay-invoice", /Payment recorded/i.test(await page.locator("body").innerText()));
+} else {
+  note("billing-pay-invoice", false, "no pay button");
+}
+
+const foldIn = page.getByRole("button", { name: /Fold into flat fee/i });
+if (await foldIn.count()) {
+  await foldIn.click();
+  await page.waitForTimeout(1600);
+  note("billing-passthrough-mode", /folded into the flat monthly fee/i.test(await page.locator("body").innerText()));
+} else {
+  note("billing-passthrough-mode", false, "no mode button");
+}
+
+// Navigate client-side, not with page.goto — a full reload reseeds the
+// in-memory store, and the point of this check is that the payment just made
+// is in the ledger.
+await page.getByRole("link", { name: /^Audit log$/ }).first().click();
+await page.waitForLoadState("networkidle");
+await page.waitForTimeout(1200);
+body = await page.locator("body").innerText();
+note("admin-audit", body.includes("Audit log"));
+note("audit-chain-intact", /Hash chain intact/i.test(body));
+note("audit-records-billing", /invoice\.paid/i.test(body));
+if (SHOT) await page.screenshot({ path: `${SHOT}/admin-audit.png`, fullPage: true });
+
+/* ============ Notifications — email + web push ============ */
 await visit("/notifications", "What needs you", "notifications");
+body = await page.locator("body").innerText();
+note("notif-channels", /Email/.test(body) && /Web push/.test(body));
+note("notif-no-phi-rule", /No clinical detail travels in these/i.test(body));
+
+const enablePush = page.getByRole("button", { name: /Enable web push/i });
+if (await enablePush.count()) {
+  await enablePush.click();
+  await page.waitForTimeout(1800);
+  note("notif-enable-web-push", /Turn off on this device/i.test(await page.locator("body").innerText()));
+} else {
+  // Already enabled for this user.
+  note("notif-enable-web-push", /Turn off on this device/i.test(body));
+}
+
+const emailSwitch = page.getByRole("switch").first();
+if (await emailSwitch.count()) {
+  const before = await emailSwitch.getAttribute("aria-checked");
+  await emailSwitch.click();
+  await page.waitForTimeout(900);
+  const after = await emailSwitch.getAttribute("aria-checked");
+  note("notif-toggle-preference", before !== after, `${before} → ${after}`);
+} else {
+  note("notif-toggle-preference", false, "no switch");
+}
+
+/* ============ One portal, seen as Admin ============ */
+await visit("/portal", "One portal", "one-portal-admin");
+body = await page.locator("body").innerText();
+note("one-portal-statement", /There is only one portal/i.test(body));
+note("one-portal-multitenant", /Keycloak realm per tenant/i.test(body) && /row-level security/i.test(body));
+note("one-portal-personas", /Three personas, one navigation/i.test(body));
+note("one-portal-notifications", /Notifications leave the portal/i.test(body));
+note("one-portal-billing", /Billing is per tenant/i.test(body));
 
 /* ============ Responsive + dark ============ */
 await page.setViewportSize({ width: 390, height: 844 });

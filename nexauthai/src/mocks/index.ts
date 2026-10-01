@@ -14,6 +14,7 @@ export * from "./documents";
 export * from "./requests";
 export * from "./assessments";
 export * from "./workflow";
+export * from "./billing";
 
 import type {
   AIAssessment,
@@ -21,15 +22,19 @@ import type {
   AuditEvent,
   ClinicalDocument,
   Communication,
+  BillingAccount,
   ConnectorInstance,
   Decision,
+  Invoice,
   Notification,
+  NotificationPreference,
   PeerToPeer,
   PolicyConfig,
   PriorAuthRequest,
   QuestionnaireResponse,
   Task,
   User,
+  WebPushSubscription,
 } from "@/types";
 
 import { connectorInstances } from "./connectors";
@@ -43,7 +48,15 @@ import {
   peerToPeers,
   questionnaireResponses,
 } from "./assessments";
-import { auditEvents, notifications, policyConfig, tasks } from "./workflow";
+import {
+  auditEvents,
+  notificationPreferences,
+  notifications,
+  policyConfig,
+  tasks,
+  webPushSubscriptions,
+} from "./workflow";
+import { billingAccounts, invoices } from "./billing";
 import { users } from "./users";
 
 /**
@@ -62,9 +75,13 @@ export interface Store {
   tasks: Task[];
   audit: AuditEvent[];
   notifications: Notification[];
+  notificationPreferences: NotificationPreference[];
+  webPush: WebPushSubscription[];
   connectorInstances: ConnectorInstance[];
   policy: PolicyConfig;
   users: User[];
+  billing: BillingAccount[];
+  invoices: Invoice[];
 }
 
 export const store: Store = {
@@ -79,7 +96,11 @@ export const store: Store = {
   tasks: structuredClone(tasks),
   audit: structuredClone(auditEvents),
   notifications: structuredClone(notifications),
+  notificationPreferences: structuredClone(notificationPreferences),
+  webPush: structuredClone(webPushSubscriptions),
   connectorInstances: structuredClone(connectorInstances),
   policy: structuredClone(policyConfig),
   users: structuredClone(users),
+  billing: structuredClone(billingAccounts),
+  invoices: structuredClone(invoices),
 };

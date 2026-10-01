@@ -1,30 +1,32 @@
 /**
- * Role switcher.
+ * Persona switcher.
  *
  * Not an authentication screen — there is no password and no token. Picking
- * a role sets the active demo user so the rest of the app can render from
- * that role's scopes.
+ * a persona sets the active demo user so the rest of the app can render from
+ * that persona's scopes.
+ *
+ * The statement above the cards is the one thing worth reading here: all
+ * three of these land in the *same* application. Nothing below forks the
+ * build, the deployment or the URL.
  */
 
-import { ArrowRight, Moon, ShieldCheck, Sun } from "lucide-react";
+import { ArrowRight, Building2, Layers, Moon, ShieldCheck, Sun } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui";
 import { useSession } from "@/lib/session";
-import { demoUserByRole, roles, store } from "@/mocks";
+import { demoUserByRole, roles, store, tenants } from "@/mocks";
 import type { RoleId } from "@/types";
 
 const SIDE_LABEL: Record<string, string> = {
-  provider: "Provider side",
-  payer: "Payer side",
-  patient: "Patient",
-  platform: "Platform",
+  operations: "Operations",
+  clinical: "Licensed clinical",
+  admin: "Admin · tenant + platform",
 };
 
 const SIDE_TONE = {
-  provider: "brand",
-  payer: "aqua",
-  patient: "accent",
-  platform: "neutral",
+  operations: "brand",
+  clinical: "accent",
+  admin: "neutral",
 } as const;
 
 export default function Login() {
@@ -39,7 +41,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-surface-subtle">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-16">
-        <div className="mb-10 flex items-start justify-between gap-4">
+        <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <div className="mb-4 flex items-center gap-2.5">
               <span
@@ -54,9 +56,9 @@ export default function Login() {
               AI-assisted prior authorization, from order to decision
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-content-secondary">
-              A clickable prototype. Choose a role to see the product from that
-              person's side of the transaction — there is no sign-in, and every
-              record is synthetic.
+              A clickable prototype. Choose a persona to see the product through
+              that person's scopes — there is no sign-in, and every record is
+              synthetic.
             </p>
           </div>
 
@@ -70,11 +72,41 @@ export default function Login() {
           </button>
         </div>
 
+        {/* The claim this whole design rests on. */}
+        <div className="mb-8 rounded-xl border border-brand-300 bg-tint-brand px-4 py-4">
+          <p className="flex items-center gap-2 text-sm font-semibold text-tint-brand-on">
+            <Layers size={16} aria-hidden />
+            One portal — every tenant, every persona
+          </p>
+          <p className="mt-1.5 text-sm leading-relaxed text-tint-brand-on/90">
+            There is a <strong>single application</strong>. All{" "}
+            {tenants.length} practices below and all three personas sign into
+            the same portal at the same address — no separate build per
+            customer, no separate app per role, no separate operator console.
+            A token carries a tenant and a set of scopes:{" "}
+            <strong>the tenant decides whose data you see</strong>, the{" "}
+            <strong>scopes decide what you may do with it</strong>, and both are
+            checked again server-side on every request.
+          </p>
+          <p className="mt-2.5 flex flex-wrap items-center gap-1.5 text-xs text-tint-brand-on/80">
+            <Building2 size={13} aria-hidden />
+            {tenants.map((t) => (
+              <span
+                key={t.id}
+                className="rounded-full bg-surface-raised/60 px-2 py-0.5 font-medium"
+              >
+                {t.name}
+                {t.deploymentMode !== "multi-tenant" && ` · ${t.deploymentMode}`}
+              </span>
+            ))}
+          </p>
+        </div>
+
         <h2 className="mb-3 text-xs font-semibold uppercase tracking-wider text-content-muted">
-          Choose a role
+          Choose a persona
         </h2>
 
-        <ul className="grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {roles.map((role) => {
             const user = store.users.find((u) => u.id === demoUserByRole[role.id]);
             return (
@@ -84,7 +116,7 @@ export default function Login() {
                   onClick={() => choose(role.id)}
                   className="group flex h-full w-full flex-col rounded-xl border border-line bg-surface-raised p-4 text-left shadow-soft transition-colors hover:border-brand-400 hover:bg-tint-brand/40"
                 >
-                  <div className="mb-2 flex items-center justify-between gap-2">
+                  <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <span className="text-sm font-semibold text-content">{role.label}</span>
                     <Badge tone={SIDE_TONE[role.side]}>{SIDE_LABEL[role.side]}</Badge>
                   </div>
@@ -96,25 +128,25 @@ export default function Login() {
                   {role.canMakeClinicalDetermination && (
                     <p className="mt-2.5 flex items-center gap-1.5 text-xs font-medium text-tint-accent-on">
                       <ShieldCheck size={13} />
-                      Licensed — may issue a determination
+                      Licensed — the only persona that makes medical calls
                     </p>
                   )}
 
-                  <div className="mt-3 flex items-center justify-between border-t border-line-subtle pt-3">
-                    <span className="flex items-center gap-2">
+                  <div className="mt-3 flex items-center justify-between gap-2 border-t border-line-subtle pt-3">
+                    <span className="flex min-w-0 items-center gap-2">
                       <span
-                        className="grid h-6 w-6 place-items-center rounded-full bg-aqua-600 text-[10px] font-semibold text-white"
+                        className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-aqua-600 text-[10px] font-semibold text-white"
                         aria-hidden
                       >
                         {user?.initials}
                       </span>
-                      <span className="text-xs text-content-muted">
+                      <span className="truncate text-xs text-content-muted">
                         {user?.name} · {user?.title}
                       </span>
                     </span>
                     <ArrowRight
                       size={15}
-                      className="text-content-muted transition-transform group-hover:translate-x-0.5"
+                      className="shrink-0 text-content-muted transition-transform group-hover:translate-x-0.5"
                       aria-hidden
                     />
                   </div>
@@ -128,8 +160,8 @@ export default function Login() {
           <p className="text-xs leading-relaxed text-content-secondary">
             <span className="font-semibold text-content">No real patient data.</span>{" "}
             Every patient, member ID, NPI, payer policy and clinical note in this
-            prototype is invented. The payer-side roles are an assumption — the
-            source material this was built from is entirely provider-side. See{" "}
+            prototype is invented. Payers are counterparties reached through
+            connectors, not tenants — so there is no payer seat here. See{" "}
             <code className="rounded bg-surface px-1 py-0.5 font-mono text-[11px]">
               docs/00-source-analysis.md
             </code>

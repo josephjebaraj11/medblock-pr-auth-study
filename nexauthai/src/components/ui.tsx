@@ -415,17 +415,20 @@ export function Callout({
   title,
   children,
   icon,
+  className,
 }: {
   tone?: Tone;
   title?: ReactNode;
   children: ReactNode;
   icon?: ReactNode;
+  className?: string;
 }) {
   return (
     <div
       className={clsx(
         "rounded-lg px-4 py-3 text-sm ring-1 ring-inset",
         TONE_CLASS[tone],
+        className,
       )}
     >
       <div className="flex gap-2.5">

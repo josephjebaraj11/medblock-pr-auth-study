@@ -18,34 +18,34 @@ import type { TenantId } from "./core";
  * ------------------------------------------------------------------ */
 
 /**
- * The six roles the prototype switches between.
+ * The three personas the portal switches between.
  *
- * `payer-intake` and `payer-clinical` are payer-side. The source folder is
- * entirely provider-side, so those two roles and their screens are an
- * assumption grounded in the research reports (Cohere Health, Anterior,
- * Microsoft's payer-side accelerator) rather than in client requirements.
- * See docs/00-source-analysis.md, gap G1.
+ * The source material names four — Staff/Operations, Clinical reviewer,
+ * Tenant Admin and Master Admin — and the last two are merged here into a
+ * single `admin` persona whose reach is scoped by whether the signed-in user
+ * is bound to one tenant or to the platform. See `User.adminScope`.
+ *
+ * There is no separate physician, payer or patient persona. A practice sees
+ * two end-user personas plus an admin; the physician's "GET AUTHORIZATION"
+ * action lives in Operations, the payer is a counterparty reached through
+ * connectors, and patient access is a 2027 CMS obligation, not a seat.
  */
-export type RoleId =
-  | "provider-staff"
-  | "ordering-physician"
-  | "payer-intake"
-  | "payer-clinical"
-  | "patient"
-  | "platform-admin";
+export type RoleId = "staff-operations" | "clinical-reviewer" | "admin";
 
 export interface Role {
   id: RoleId;
   label: string;
-  /** Which side of the transaction this role sits on. */
-  side: "provider" | "payer" | "patient" | "platform";
+  /** Which surface of the single portal this persona lands on. */
+  side: "operations" | "clinical" | "admin";
   description: string;
   /** OAuth-style scopes. The real API checks these; the prototype mirrors them. */
   scopes: Scope[];
   /** Where this role lands after signing in. */
   landingPath: string;
-  /** Whether holders of this role may make medical-necessity determinations. */
+  /** Whether holders of this role may make medical-necessity judgements. */
   canMakeClinicalDetermination: boolean;
+  /** Short line used on the switcher, summarising what this persona touches. */
+  sees: string;
 }
 
 export type Scope =
@@ -67,7 +67,19 @@ export type Scope =
   | "connector:write"
   | "user:manage"
   | "audit:read"
-  | "patient:read:self";
+  | "tenant:manage"
+  | "billing:manage"
+  | "platform:admin";
+
+/**
+ * How far an admin's reach extends.
+ *
+ * `tenant` is the practice's own admin: users, rules, connections, billing
+ * and the audit log for one tenant. `platform` is the operator (us): the
+ * same screens, plus every tenant and the shared connector registry — and
+ * still no PHI scope anywhere. One persona, two reaches.
+ */
+export type AdminScope = "tenant" | "platform";
 
 export interface User {
   id: string;
@@ -75,12 +87,13 @@ export interface User {
   name: string;
   email: string;
   roleIds: RoleId[];
-  /** Links a payer-side user to the payer they work for. */
-  payerId?: string;
-  /** Links a provider-side user to their provider record, where clinical. */
+  /** Links a clinical user to their provider record. */
   providerId?: string;
-  /** Links the patient role to the patient record it may read. */
-  patientId?: string;
+  /**
+   * Only meaningful when the user holds `admin`. A tenant admin sees one
+   * tenant; a platform admin sees all of them. Both use the same screens.
+   */
+  adminScope?: AdminScope;
   title: string;
   initials: string;
   mfaEnrolled: boolean;
@@ -103,9 +116,7 @@ export interface Task {
     | "rfi-response"
     | "appeal-review"
     | "peer-to-peer"
-    | "expiring-approval"
-    | "intake-completeness"
-    | "clinical-determination";
+    | "expiring-approval";
   title: string;
   /** Why this reached a human, in one line. */
   reason: string;
@@ -304,7 +315,9 @@ export interface Notification {
     | "case.appeal-outcome"
     | "case.p2p-scheduled"
     | "connection.state-changed"
-    | "policy.changed";
+    | "policy.changed"
+    | "billing.invoice-issued"
+    | "tenant.onboarding-step";
   /** Deliberately generic — no patient name, no diagnosis, no CPT. */
   title: string;
   body: string;
@@ -343,4 +356,129 @@ export interface PolicyConfig {
   changedAt: string;
   changedByUserId: string;
   changeNote?: string;
+}
+
+/* ------------------------------------------------------------------ *
+ * Notification preferences
+ * ------------------------------------------------------------------ */
+
+export type NotificationChannel = "in-app" | "email" | "web-push";
+
+export type NotificationEventType = Notification["eventType"];
+
+/**
+ * Per-user, per-event delivery choice.
+ *
+ * In-app is always on — it is the queue itself. Email and web push are the
+ * two outbound channels, and each is opt-out per event type. The payload
+ * rule does not change with the channel: an email and a push message carry
+ * the same ID-only body the in-app row does.
+ */
+export interface NotificationPreference {
+  userId: string;
+  eventType: NotificationEventType;
+  email: boolean;
+  webPush: boolean;
+}
+
+/** Browser push registration state, per user and device. */
+export interface WebPushSubscription {
+  userId: string;
+  /** What the browser's Notification API reports. */
+  permission: "granted" | "denied" | "default";
+  endpointRef?: string;
+  deviceLabel?: string;
+  subscribedAt?: string;
+}
+
+/* ------------------------------------------------------------------ *
+ * Billing
+ * ------------------------------------------------------------------ */
+
+/**
+ * One tenant's commercial arrangement.
+ *
+ * The shape follows the documented model: a tiered annual license plus a
+ * flat monthly managed-services fee, with one-time onboarding and net-new
+ * integration charges invoiced separately, and variable pass-through costs
+ * metered. It is a SaaS subscription, not per-PA pricing.
+ */
+export interface BillingAccount {
+  tenantId: TenantId;
+  /** One Stripe customer per tenant. */
+  stripeCustomerRef: string;
+  plan: "starter" | "growth" | "scale" | "enterprise";
+  /** Contracted physician seats, which is what the license is priced on. */
+  licensedPhysicians: number;
+  annualLicenseUsd: number;
+  managedServicesMonthlyUsd: number;
+  onboardingOneTimeUsd: number;
+  /** Whether variable pass-through usage is itemised or folded into the flat fee. */
+  passThroughMode: "itemised" | "included";
+  currency: "USD";
+  billingEmail: string;
+  paymentMethod: PaymentMethod;
+  renewsAt: string;
+  status: "active" | "past-due" | "trialing" | "cancelled";
+}
+
+export interface PaymentMethod {
+  kind: "card" | "ach" | "invoice-net30";
+  /** Last four only. Full instrument details never reach this app. */
+  last4?: string;
+  brand?: string;
+  expMonth?: number;
+  expYear?: number;
+  /** Stripe payment-method reference; the instrument lives at Stripe. */
+  stripeRef: string;
+}
+
+export interface Invoice {
+  id: string;
+  tenantId: TenantId;
+  stripeInvoiceRef: string;
+  number: string;
+  periodStart: string;
+  periodEnd: string;
+  issuedAt: string;
+  dueAt: string;
+  status: "paid" | "open" | "past-due" | "draft" | "void";
+  subtotalUsd: number;
+  taxUsd: number;
+  totalUsd: number;
+  lines: InvoiceLine[];
+}
+
+export interface InvoiceLine {
+  id: string;
+  kind: "license" | "managed-services" | "onboarding" | "integration" | "pass-through";
+  description: string;
+  quantity: number;
+  unit?: string;
+  unitPriceUsd: number;
+  amountUsd: number;
+  /** Pass-through lines trace back to the transaction ledger. */
+  usageKind?: UsageKind;
+}
+
+export type UsageKind =
+  | "electronic-transaction"
+  | "portal-session"
+  | "voice-minute"
+  | "model-tokens"
+  | "fax-page";
+
+/**
+ * A metered unit of consumption, always attributed to the case that caused
+ * it — so an invoice line can be audited down to the exact cases behind it.
+ */
+export interface UsageRecord {
+  id: string;
+  tenantId: TenantId;
+  kind: UsageKind;
+  quantity: number;
+  unit: string;
+  unitCostUsd: number;
+  requestId?: string;
+  recordedAt: string;
 }

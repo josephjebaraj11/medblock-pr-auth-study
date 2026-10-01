@@ -10,10 +10,10 @@ The prototype is a frontend with a fake service layer. This document describes t
 
 ```mermaid
 flowchart TB
-  subgraph EXP["Experience — one portal, shaped by role"]
+  subgraph EXP["Experience — ONE portal<br/>every tenant · every persona · shaped by token scopes"]
     UI["NexAuthAI portal<br/>React 19 · TypeScript · Tailwind"]
     SMART["EHR-embedded launch<br/>SMART app · CDS Hooks card"]
-    PATIENT["Patient view<br/>consent-gated, status only"]
+    PATIENT["Patient access API<br/>CMS-0057-F, from 2027<br/>consent-gated, through the practice"]
   end
 
   subgraph EDGE["Edge and identity"]
@@ -26,8 +26,8 @@ flowchart TB
     RULES["Rules and policy engine<br/>payer criteria · thresholds · trust ramp"]
     SCHED["Scheduler and SLA timers<br/>72h / 7d · rechecks · expiry"]
     HITL["Human-task service"]
-    NOTIF["Notification service<br/>no PHI in payload"]
-    BILL["Metering and billing"]
+    NOTIF["Notification service<br/>in-app · email · web push<br/>no PHI in payload"]
+    BILL["Metering and billing<br/>Stripe · usage → case"]
   end
 
   subgraph AGENT["Agent runtime"]
@@ -179,7 +179,7 @@ sequenceDiagram
 | **Events** | Postgres outbox → EventBridge or SQS | At-least-once with no lost or phantom events |
 | **Infra** | AWS (ECS Fargate, RDS Multi-AZ, S3, SQS, KMS, Secrets Manager), Terraform | HIPAA-eligible services only, under a BAA |
 | **Observability** | OpenTelemetry → CloudWatch/Grafana, Sentry | **PHI scrubbed at the collector**, not at the dashboard |
-| **Billing** | Stripe Billing + Invoicing | One Stripe customer per tenant; usage lines trace to the case ledger |
+| **Billing** | Stripe Billing + Invoicing (metered usage where pass-through is itemised) | One Stripe customer per tenant. A tiered annual license plus a flat monthly managed-services fee, with onboarding and net-new integration invoiced once; every pass-through line traces to usage records that each name the case behind the spend. The instrument stays at Stripe — the application sees a brand, a last four and a `pm_…` reference |
 
 ### 3.1 Deployment
 
@@ -222,18 +222,23 @@ NexAuthAI operates as a **business associate** of each provider organisation. Th
 
 Cross-tenant read attempts must **fail at both the API and the database** in automated tests. One layer is a bug away from being the only layer.
 
+All four layers sit inside **one deployment of one application**. Isolation is never achieved by giving a customer their own portal: a dedicated or air-gapped tenant runs the same codebase in its own VPC with its own realm and keys, which changes where it runs and not what it is.
+
 ### 4.3 RBAC and ABAC
 
-**RBAC** handles the coarse grain: Keycloak realm roles map to token scopes (`request:read`, `clinical:decide`, `policy:write`, `connector:write`, `audit:read`).
+**One portal, three personas.** Staff / Operations, Clinical Reviewer (licensed) and Admin all sign into the same application; the navigation, the routes and the rows each call returns are derived from the token, not from a per-role build. One person may hold several personas and gets the union of their scopes.
+
+**RBAC** handles the coarse grain: Keycloak realm roles map to token scopes (`request:read`, `clinical:attest`, `policy:write`, `connector:write`, `tenant:manage`, `billing:manage`, `audit:read`).
 
 **ABAC** handles what roles cannot express:
 
-- An ordering physician sees **their own** orders (`request:read:own` — attribute: `orderingProviderId == user.providerId`).
-- A payer user sees only submissions **to their own payer** (`payerId == user.payerId`).
-- A patient sees only **their own** record (`patientId == user.patientId`).
+- The **admin reach**: `tenant:manage` plus `adminScope == "tenant"` returns one tenant; `adminScope == "platform"` returns all of them. Same endpoint, same screen, different row set — this is how Tenant Admin and Master Admin became one persona rather than two.
+- A **clinical** user's attestation and appeal approval require `isLicensedReviewer == true` on the linked `Provider` record, not merely the scope.
 - Each **agent role** gets only the tools and fields it needs — field-level policy, Cedar-style. The Coverage agent cannot read clinical notes; the Clinical agent cannot call the submission tool.
 
-The platform-operator role has **no PHI scopes at all** — which the prototype implements literally, by omitting `request:read` from that role's scope list.
+The **Admin persona has no PHI scopes at all**, on either reach — which the prototype implements literally, by omitting `request:read` from that persona's scope list. A platform admin can see that a tenant's exception rate is climbing and cannot open a single case behind it.
+
+**Nothing in the portal issues a determination.** Approve, deny and partially approve are the payer's acts, arriving through a connector and recorded as the payer's; the service layer refuses to attribute one to a user. Every denial unconditionally raises a task for the licensed Clinical Reviewer.
 
 ### 4.4 SOC 2 readiness
 

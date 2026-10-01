@@ -23,8 +23,18 @@ import type {
 } from "@/types";
 
 export const PROVIDER_TENANT = "t-northside";
-export const PAYER_TENANT = "t-meridian";
 
+/**
+ * Tenants.
+ *
+ * Every one of these is a provider organisation. Payers are counterparties
+ * reached through connectors, not tenants of the platform — so there is no
+ * payer tenant here and no payer-side seat in the portal.
+ *
+ * All four are served by the same deployment and the same application. What
+ * separates them is a Keycloak realm, a `tenant_id` on every row and a
+ * PostgreSQL row-level-security policy underneath — never a second portal.
+ */
 export const tenants: Tenant[] = [
   {
     id: PROVIDER_TENANT,
@@ -35,26 +45,16 @@ export const tenants: Tenant[] = [
     region: "us-east-1",
     status: "active",
     createdAt: "2026-03-02T09:00:00Z",
-  },
-  {
-    id: PAYER_TENANT,
-    name: "Meridian Health Plan",
-    kind: "payer",
-    tier: "enterprise",
-    deploymentMode: "dedicated",
-    region: "us-east-1",
-    status: "active",
-    createdAt: "2026-05-18T09:00:00Z",
-  },
-  {
-    id: "t-cascade",
-    name: "Cascade Valley Rehab",
-    kind: "provider",
-    tier: "starter",
-    deploymentMode: "multi-tenant",
-    region: "us-west-2",
-    status: "onboarding",
-    createdAt: "2026-09-21T09:00:00Z",
+    health: {
+      physicians: 24,
+      activeUsers: 31,
+      casesLast30d: 412,
+      touchlessRate: 0.68,
+      exceptionRate: 0.17,
+      connectionsDegraded: 2,
+      primaryEhr: "Epic",
+      realm: "nexauth-northside",
+    },
   },
   {
     id: "t-harbor",
@@ -65,6 +65,58 @@ export const tenants: Tenant[] = [
     region: "us-east-1",
     status: "active",
     createdAt: "2026-06-11T09:00:00Z",
+    health: {
+      physicians: 61,
+      activeUsers: 74,
+      casesLast30d: 1_186,
+      touchlessRate: 0.74,
+      exceptionRate: 0.12,
+      connectionsDegraded: 0,
+      primaryEhr: "athenahealth",
+      realm: "nexauth-harbor",
+    },
+  },
+  {
+    id: "t-cascade",
+    name: "Cascade Valley Rehab",
+    kind: "provider",
+    tier: "starter",
+    deploymentMode: "multi-tenant",
+    region: "us-west-2",
+    status: "onboarding",
+    createdAt: "2026-09-21T09:00:00Z",
+    health: {
+      physicians: 8,
+      activeUsers: 6,
+      casesLast30d: 37,
+      touchlessRate: 0.0,
+      exceptionRate: 0.0,
+      connectionsDegraded: 1,
+      primaryEhr: "eClinicalWorks",
+      realm: "nexauth-cascade",
+    },
+  },
+  {
+    id: "t-stillwater",
+    name: "Stillwater Health Network",
+    kind: "provider",
+    tier: "enterprise",
+    // A health system that required its own deployment. Same codebase, same
+    // portal, its own VPC and its own realm.
+    deploymentMode: "dedicated",
+    region: "us-east-2",
+    status: "active",
+    createdAt: "2026-05-18T09:00:00Z",
+    health: {
+      physicians: 213,
+      activeUsers: 248,
+      casesLast30d: 3_940,
+      touchlessRate: 0.71,
+      exceptionRate: 0.14,
+      connectionsDegraded: 1,
+      primaryEhr: "Oracle Health",
+      realm: "nexauth-stillwater",
+    },
   },
 ];
 

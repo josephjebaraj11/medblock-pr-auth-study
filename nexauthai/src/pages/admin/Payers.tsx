@@ -81,7 +81,7 @@ export default function AdminPayers() {
   return (
     <>
       <PageHeader
-        eyebrow="Platform admin"
+        eyebrow="Admin"
         title="Payers &amp; rules"
         description="What each payer can actually do, which policies apply, and how much the agent is trusted to do unattended."
       />

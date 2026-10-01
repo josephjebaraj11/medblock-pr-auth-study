@@ -24,7 +24,7 @@ export default function ProviderDashboard() {
 
   useEffect(() => {
     let active = true;
-    Promise.all([paService.list(), paService.listTasks("provider-staff")]).then(
+    Promise.all([paService.list(), paService.listTasks("staff-operations")]).then(
       ([rows, taskRows]) => {
         if (!active) return;
         setRequests(rows);
@@ -44,12 +44,12 @@ export default function ProviderDashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="Provider / clinic staff"
+        eyebrow="Staff / Operations"
         title={`Good afternoon, ${user?.name.split(" ")[0]}`}
         description="Everything the agent could resolve on its own has been resolved. What's below is what needs a person."
         actions={
           <Button variant="primary" icon={<Plus size={15} />}>
-            <Link to="/provider/new">New request</Link>
+            <Link to="/ops/new">New request</Link>
           </Button>
         }
       />
@@ -62,7 +62,7 @@ export default function ProviderDashboard() {
         <>
           <section aria-label="Key figures" className="mb-6">
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-              <Stat label="Pending with payers" value={kpis.pending} to="/provider/requests?status=pending" />
+              <Stat label="Pending with payers" value={kpis.pending} to="/ops/requests?status=pending" />
               <Stat label="Approved" value={kpis.approved} tone="accent" />
               <Stat label="Denied" value={kpis.denied} tone="danger" />
               <Stat
@@ -80,7 +80,7 @@ export default function ProviderDashboard() {
                 label="Needs a person"
                 value={kpis.needsHuman}
                 tone={kpis.needsHuman > 0 ? "signal" : "neutral"}
-                to="/provider/worklist"
+                to="/ops/worklist"
               />
             </div>
           </section>
@@ -93,7 +93,7 @@ export default function ProviderDashboard() {
                   description="Cases the waterfall could not close on its own, each with the reason it stopped."
                   action={
                     <Link
-                      to="/provider/worklist"
+                      to="/ops/worklist"
                       className="flex items-center gap-1 text-xs font-semibold text-content-brand hover:underline"
                     >
                       Full worklist
@@ -103,7 +103,7 @@ export default function ProviderDashboard() {
                 />
                 <RequestTable
                   requests={needsAttention}
-                  linkBase="/provider/requests"
+                  linkBase="/ops/requests"
                   showSla={false}
                   emptyMessage="Nothing is waiting on a person right now."
                 />
@@ -115,7 +115,7 @@ export default function ProviderDashboard() {
                   description={`${requests?.length ?? 0} cases across every status.`}
                   action={
                     <Link
-                      to="/provider/requests"
+                      to="/ops/requests"
                       className="flex items-center gap-1 text-xs font-semibold text-content-brand hover:underline"
                     >
                       View all
@@ -125,7 +125,7 @@ export default function ProviderDashboard() {
                 />
                 <RequestTable
                   requests={(requests ?? []).slice(0, 8)}
-                  linkBase="/provider/requests"
+                  linkBase="/ops/requests"
                   showSla={false}
                 />
               </Card>
@@ -192,7 +192,7 @@ export default function ProviderDashboard() {
                     tasks.slice(0, 6).map((t) => (
                       <Link
                         key={t.id}
-                        to={`/provider/requests/${t.requestId}`}
+                        to={`/ops/requests/${t.requestId}`}
                         className="block rounded-lg border border-line px-3 py-2.5 transition-colors hover:border-brand-300 hover:bg-tint-brand/40"
                       >
                         <div className="flex items-start justify-between gap-2">

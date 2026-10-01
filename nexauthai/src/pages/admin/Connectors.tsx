@@ -68,7 +68,7 @@ export default function AdminConnectors() {
   return (
     <>
       <PageHeader
-        eyebrow="Platform admin"
+        eyebrow="Admin"
         title="Connectors"
         description="One unified internal contract; a pluggable adapter behind it for each EHR and payer. Adding a payer is a new adapter, never a change to the engine."
       />

@@ -59,7 +59,7 @@ export default function Worklist() {
   return (
     <>
       <PageHeader
-        eyebrow="Provider / clinic staff"
+        eyebrow="Staff / Operations"
         title="Worklist"
         description="Only exceptions reach this list, each already loaded with the context behind it. If a case is not here, the agent is still working it."
       />
@@ -95,7 +95,7 @@ export default function Worklist() {
               return (
                 <li key={t.id}>
                   <Link
-                    to={`/provider/requests/${t.requestId}`}
+                    to={`/ops/requests/${t.requestId}`}
                     className="block px-4 py-3.5 transition-colors hover:bg-surface-inset/60"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">

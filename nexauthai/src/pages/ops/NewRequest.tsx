@@ -268,7 +268,7 @@ export default function NewRequest() {
   return (
     <>
       <PageHeader
-        eyebrow="Provider / clinic staff"
+        eyebrow="Staff / Operations"
         title="New prior authorization"
         description="The agent runs each check as you go. Where it can answer electronically, it does."
       />
@@ -866,7 +866,7 @@ export default function NewRequest() {
           <div className="flex flex-wrap justify-between gap-2">
             <Button
               icon={<ArrowLeft size={15} />}
-              onClick={() => navigate(`/provider/requests/${created.id}`)}
+              onClick={() => navigate(`/ops/requests/${created.id}`)}
             >
               Open case instead
             </Button>
@@ -955,7 +955,7 @@ export default function NewRequest() {
 
             <div className="flex flex-wrap gap-2 border-t border-line-subtle pt-4">
               <Button variant="primary">
-                <Link to={`/provider/requests/${result.request.id}`}>
+                <Link to={`/ops/requests/${result.request.id}`}>
                   Open {result.request.caseNumber}
                 </Link>
               </Button>

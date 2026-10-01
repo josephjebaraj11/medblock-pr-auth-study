@@ -102,6 +102,8 @@ The most important structural fact: **this folder has already been through one r
 | **Patient** | end-to-end flow §patient journey; `pa-integrations.md` §5 | Benefits indirectly today. From Jan 2027, CMS **Patient Access API** must expose PA status/history to patient apps |
 | **Payer-side reviewers** | `pa-tech-landscape.md` (Microsoft accelerator), `pa-competitors.md` (Cohere Health, Anterior) | ⚠️ **Present in the research, absent from every client/consulting document.** See §6, Gap G1. |
 
+> **What was built from this table.** Three personas, not seven. The client's own persona table (end-to-end flow §identity) names four — Staff/Operations, Clinical reviewer, Tenant Admin, Master Admin — and the two admins are one persona with two reaches, because the difference between them is scope and not screens. The ordering physician has no seat: their one action, *GET AUTHORIZATION*, is placed by Operations or arrives from the EHR at `order-sign`. The payer-side reviewers and the patient portal were modelled in an earlier draft and have been **withdrawn** (G1, G4): payers are counterparties reached through connectors, and patient access is a 2027 obligation served through the practice. See `01-personas-and-journeys.md` §3.
+
 ---
 
 ## 4. Pain points, workflow and rules found in the material
@@ -206,10 +208,10 @@ Cross-checks neatly against VICE's reason classification (Vision & Scope §3A): 
 
 | # | Gap | Impact |
 |---|---|---|
-| **G1** | **No payer-side requirements anywhere.** Every client and consulting document is provider-side. Payer intake reviewers, clinical reviewers/medical directors, work queues, reason codes and decision forms appear only in the *research* (Microsoft's accelerator, Cohere Health, Anterior). The brief asks for four payer-side screens. | **Largest design gap.** Everything I build for payer roles is **[Assumption]**, grounded in `pa-tech-landscape.md` and `pa-competitors.md` rather than client requirements. |
+| **G1** | **No payer-side requirements anywhere.** Every client and consulting document is provider-side. Payer intake reviewers, clinical reviewers/medical directors, work queues, reason codes and decision forms appear only in the *research* (Microsoft's accelerator, Cohere Health, Anterior). The brief asks for four payer-side screens. | **Largest design gap — resolved by removal.** An earlier draft built payer intake and clinical-reviewer screens as **[Assumption]**, grounded in `pa-tech-landscape.md` and `pa-competitors.md` rather than client requirements. They are out of the product. Determinations now arrive through a connector and are recorded as the payer's act, which makes the no-AI-denial rule stronger: there is no code path that produces a determination at all. |
 | **G2** | **All 107 discovery questions are unanswered.** Status = Open, Client Response = empty, for every row. | No EHR named, no clearinghouse named, no payer list, no CPT list, no volumes, no baseline, no acceptance thresholds, no deployment mode. **Every concrete choice in the prototype is a placeholder.** |
 | **G3** | **No real payer policy content.** No actual medical-necessity criteria, no CPT→documentation mappings, no questionnaire definitions. | The AI criteria-matching must use synthetic, clearly-labelled criteria. |
-| **G4** | **No patient-portal requirements.** Patient appears only as indirect beneficiary + a 2027 Patient Access API obligation. The brief asks for a read-only patient portal. | **[Assumption]** — I scope it to status + timeline only, consent-gated, which is what the flow doc implies. |
+| **G4** | **No patient-portal requirements.** Patient appears only as indirect beneficiary + a 2027 Patient Access API obligation. The brief asks for a read-only patient portal. | **Resolved by removal.** An earlier draft scoped it to status + timeline only. Patient access to PA status is a CMS-0057-F obligation from 1 Jan 2027, served through the practice and consent-gated — an API surface, not a seat in this portal. Revisit when the obligation is in scope. |
 | **G5** | **Appeals are thin.** Named as an outcome and an obligation ("every denial to a licensed human", appeal packet, peer-to-peer) but no appeal levels, deadlines, or submission mechanics. | **[Assumption]** — I model level 1 / level 2 / external review with a deadline clock. |
 | **G6** | **No signed anything.** Vision & Scope is a "discussion draft, not yet approved". README says no implementation exists. | Everything is proposal-grade. The solution document must not read as though scope is agreed. |
 | **G7** | **Volume/ROI numbers rest on a screenshot.** The AMA figures come from a WhatsApp screenshot of a search result, not the AMA publication. | Use for sizing only; baseline against the pilot practice's own data (DQ-011, DQ-027). |
@@ -220,7 +222,7 @@ Cross-checks neatly against VICE's reason classification (Vision & Scope §3A): 
 Carried forward from the prior blueprint's D1–D9 and the Vision & Scope's own 9 confirmation questions, reduced to what actually blocks work:
 
 1. **Pricing model** (C2) — subscription, metered, or hybrid? Blocks billing design and the commercial sections.
-2. **Does NexAuthAI serve payers as well as providers?** (G1) — the brief implies yes; no source document does. Changes the product's shape, go-to-market and compliance posture fundamentally.
+2. **Does NexAuthAI serve payers as well as providers?** (G1) — the brief implied yes; no source document does. **Answered for now: no.** The product is provider-side; payers are counterparties reached through connectors. Reopening this changes the product's shape, go-to-market and compliance posture fundamentally, so it should be a deliberate client decision rather than an inference.
 3. **Which EHR, which clearinghouse, which payers, which CPT family** (G2, DQ-001/002/008/009) — the whole integration plan is placeholder until these land.
 4. **Acceptance thresholds for leaving Shadow mode** (DQ-028) — who signs, and at what measured accuracy?
 5. **Deployment mode** — multi-tenant SaaS or dedicated/air-gapped (Vision & Scope Q9)?

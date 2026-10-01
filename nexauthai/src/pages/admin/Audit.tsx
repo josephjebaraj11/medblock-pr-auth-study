@@ -64,7 +64,7 @@ export default function AdminAudit() {
   return (
     <>
       <PageHeader
-        eyebrow="Platform admin"
+        eyebrow="Admin"
         title="Audit log"
         description="Every action by a person, an agent, the system or a payer — with a timestamp, an actor and, where it left our boundary, a reference number."
       />

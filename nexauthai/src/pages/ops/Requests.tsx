@@ -16,7 +16,15 @@ const GROUPS: Record<string, PaStatus[]> = {
   closed: ["no-auth-required", "withdrawn", "expired"],
 };
 
-export default function ProviderRequests() {
+/**
+ * The case list.
+ *
+ * Operations works it from `/ops/requests`; the Clinical Reviewer browses the
+ * same list from `/clinical/cases`. One screen, one API call — `linkBase` is
+ * the only thing that differs, because the case detail route each persona
+ * returns to is their own.
+ */
+export default function RequestsList({ linkBase = "/ops/requests" }: { linkBase?: string } = {}) {
   const [params, setParams] = useSearchParams();
   const [requests, setRequests] = useState<PriorAuthRequest[] | null>(null);
 
@@ -60,7 +68,7 @@ export default function ProviderRequests() {
   return (
     <>
       <PageHeader
-        eyebrow="Provider / clinic staff"
+        eyebrow="Staff / Operations"
         title="Requests"
         description="Every authorization case for this practice, whatever stage it is at."
       />
@@ -139,7 +147,7 @@ export default function ProviderRequests() {
         {!requests ? (
           <LoadingBlock label="Loading requests" />
         ) : (
-          <RequestTable requests={filtered} linkBase="/provider/requests" />
+          <RequestTable requests={filtered} linkBase={linkBase} />
         )}
       </Card>
 

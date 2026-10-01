@@ -265,6 +265,14 @@
     letter-spacing: .12em; text-transform: uppercase; background: var(--warn-wash);
     color: var(--warn-ink); padding: 3px 8px; border-radius: 4px; margin-right: 8px;
   }
+  /* Neutral sibling of .assumption, for labelling what something *is* rather
+     than flagging it as unverified. */
+  .tag {
+    display: inline-block; font-family: var(--mono); font-size: 9.5px;
+    letter-spacing: .12em; text-transform: uppercase; background: var(--surface-inset, rgba(127,127,127,.12));
+    color: var(--ink-faint); padding: 3px 8px; border-radius: 4px; margin-left: 6px;
+    white-space: nowrap;
+  }
 
   @media print { .theme-btn { display: none; } }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
@@ -354,6 +362,13 @@
       </p>
     </div>
 
+    <p>
+      Before the stages, two sections set the scene: <a href="#cast">the cast</a> — the
+      people, the agent's internal roles and the connectors — and
+      <a href="#architecture">the architecture</a>, which is the whole system in one
+      picture, with a map from each stage below to the layers it touches.
+    </p>
+
     <div class="toc">
       <p class="kicker" style="margin-bottom:12px">The stages</p>
       <ol>
@@ -363,7 +378,7 @@
         <li><a href="#s4">The assessment and the gate</a></li>
         <li><a href="#s5">Submitting — the waterfall</a></li>
         <li><a href="#s6">Pended — the mid-review demand</a></li>
-        <li><a href="#s7">Inside the payer</a></li>
+        <li><a href="#s7">The determination arrives</a></li>
         <li><a href="#s8">The outcome and the write-back</a></li>
         <li><a href="#s9">The record left behind</a></li>
       </ol>
@@ -382,42 +397,63 @@
         </thead>
         <tbody>
           <tr>
-            <td><strong>Ordering physician</strong></td>
-            <td>Places the order. Clicks <em>Get Authorization</em>. Hears nothing further unless the question is genuinely clinical.</td>
-            <td>Attests evidence, approves appeals, attends peer-to-peer</td>
-          </tr>
-          <tr>
-            <td><strong>Clinic staff</strong></td>
-            <td>Works a queue of exceptions, never a queue of everything.</td>
+            <td><strong>Staff / Operations</strong> <span class="tag">persona</span></td>
+            <td>The practice's queue workers — billing and front desk combined. Places the authorization request, works a queue of exceptions rather than a queue of everything, releases held submissions, answers payer information requests, chases expiring approvals.</td>
             <td>None</td>
           </tr>
           <tr>
-            <td><strong>Payer intake reviewer</strong> <span class="assumption">Assumption</span></td>
-            <td>Completeness check, then triage to a clinical reviewer.</td>
-            <td>None — explicitly cannot decide</td>
+            <td><strong>Clinical reviewer</strong> <span class="tag">persona · licensed</span></td>
+            <td>A licensed clinician. Evidence gaps, denials, appeals and peer-to-peer arrive here and nowhere else.</td>
+            <td><strong>Attests evidence, approves appeals, attends peer-to-peer</strong></td>
           </tr>
           <tr>
-            <td><strong>Payer clinical reviewer</strong> <span class="assumption">Assumption</span></td>
-            <td>Reads the criteria match, then decides.</td>
-            <td><strong>The only role that can approve, deny or partially approve</strong></td>
+            <td><strong>Admin</strong> <span class="tag">persona</span></td>
+            <td>Tenants, users and roles, rules and thresholds, payer matrix, connections, billing, audit. A <em>tenant</em> admin manages one practice; a <em>platform</em> admin manages every tenant and the shared connector registry — same screens, wider reach.</td>
+            <td>None — and <strong>no PHI scope at all</strong></td>
           </tr>
           <tr>
-            <td><strong>Patient</strong> <span class="assumption">Assumption</span></td>
-            <td>Watches status in plain language.</td>
-            <td>None — read-only</td>
+            <td><strong>Ordering physician</strong> <span class="tag">no seat</span></td>
+            <td>Places the order and clicks <em>Get Authorization</em> — from inside the EHR, or by asking Operations. Hears nothing further unless the question is genuinely clinical, which is the whole promise, so there is no screen for them to log into.</td>
+            <td>Via the clinical reviewer persona, if they hold it</td>
+          </tr>
+          <tr>
+            <td><strong>Payer</strong> <span class="tag">counterparty</span></td>
+            <td>Reached through a connector — API, portal or phone. Issues the determination.</td>
+            <td><strong>The determination is theirs.</strong> Nothing in this portal can produce one</td>
+          </tr>
+          <tr>
+            <td><strong>Patient</strong> <span class="tag">beneficiary</span></td>
+            <td>Benefits from faster care. From 1 Jan 2027, CMS-0057-F requires PA status and history to be exposed through the Patient Access API — consent-gated and through the practice.</td>
+            <td>None</td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <div class="note warn">
-      <span class="t">Why two roles are marked as assumptions</span>
+    <div class="note">
+      <span class="t">Three personas, one portal</span>
       <p>
-        The research this was built from is <strong>entirely provider-side</strong>.
-        Nothing in the client requirements or the consulting documents describes a payer
-        intake queue, a clinical-reviewer workflow or a determination form. Those are
-        modelled on payer-side products described in the market research, not on stated
-        requirements — so they are labelled wherever they appear.
+        Only the first three are seats. Every tenant on the platform and every persona
+        inside it signs into the <strong>same application at the same address</strong> —
+        no separate build per customer, no separate app per role, no separate operator
+        console. A Keycloak token carries a tenant and a set of scopes:
+        <strong>the tenant decides whose data you see</strong>, the
+        <strong>scopes decide what you may do with it</strong>, and both are checked again
+        server-side on every request. One person may hold several personas and gets the
+        union of their scopes, so a lean practice never needs extra headcount.
+      </p>
+      <p>
+        Tenant Admin and Master Admin are <strong>one persona with two reaches</strong>.
+        The distinction in the source material is real but it is a matter of scope, not of
+        screens: <code>adminScope</code> decides whether a tenant listing returns one row
+        or all of them. Neither reach holds a PHI scope.
+      </p>
+      <p>
+        An earlier draft of this document also modelled payer-side reviewers and a patient
+        portal. Both were inferences from market research rather than client requirements,
+        and both are <strong>withdrawn</strong>: payers are counterparties reached through
+        connectors, and patient access is a 2027 API obligation served through the
+        practice.
       </p>
     </div>
 
@@ -454,6 +490,287 @@
           <tr><td>Document &amp; fax</td><td>Retrieval; submission of last resort</td><td>Files · T.38</td></tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+
+  <!-- ============ ARCHITECTURE ============ -->
+  <section id="architecture">
+    <h2>The architecture, end to end</h2>
+
+    <p>
+      Everything above assembles into one system. The picture below is the whole of it —
+      the single portal at the top, the systems we do not control at the bottom, and the
+      five layers in between that turn a click into a submitted authorization.
+    </p>
+
+    <p>
+      Two rules shape it, and both are visible in the drawing. <strong>The core is closed;
+      the fabric is open</strong> — a new payer or EHR is a new adapter in the integration
+      fabric, never a change to the engine above it. And <strong>everything persists
+      through one boundary</strong>: the data-and-trust rail on the right, where PHI,
+      provenance and the audit chain live, and which every layer writes to rather than
+      keeping state of its own.
+    </p>
+
+    <figure>
+      <div class="figbox">
+        <svg viewBox="0 0 900 496" role="img" aria-label="A layered architecture diagram. At the top, the experience layer — one portal serving every tenant and every persona — contains Staff slash Operations, Clinical Reviewer, Admin, and an EHR-embedded launch using SMART and CDS Hooks. Below it, the edge and identity layer: an API gateway doing TLS, rate limiting and WAF, and Keycloak providing one realm per tenant with MFA, and a tenant id plus scopes on every token. Below that, the execution core, closed for modification, containing the case service and its state machine, the rules engine holding payer criteria and thresholds, SLA timers for the 72-hour and 7-day clocks and expiry, the human task queue, and notifications and metering which carry no PHI. Below that, the agent runtime, a single pipeline running left to right: orchestrator, then coverage, clinical and compliance, then decision, then submission, then follow-up. Below that, the integration fabric, open for extension under one adapter contract: EHR and practice-management connectors, clearinghouse, payer API, portal workers and voice with fax. At the bottom, across a dashed boundary, the systems we do not control: EHRs, clearinghouses, payer APIs, payer portals and phone lines. Running down the right-hand side, spanning the core, the agent runtime and the fabric, is a data and trust rail marked as the PHI boundary, containing PostgreSQL with row-level security, the FHIR store holding raw data and provenance, the object store for documents and recordings, the outbox feeding an event bus, and the hash-chained write-once audit ledger with the secrets vault. Arrows run downward through the layers, and three arrows run from the core, the agent runtime and the fabric into the data rail.">
+
+          <!-- ---------- band 1 · experience ---------- -->
+          <text class="d-cap" x="15" y="16">Experience — one portal · every tenant · every persona</text>
+
+          <rect class="d-hot" x="15"  y="24" width="206" height="44" rx="8"/>
+          <text class="d-t" x="118" y="45" text-anchor="middle">Staff / Operations</text>
+          <text class="d-mm" x="118" y="60" text-anchor="middle">exceptions · submissions</text>
+
+          <rect class="d-warn" x="231" y="24" width="206" height="44" rx="8"/>
+          <text class="d-t d-warn-t" x="334" y="45" text-anchor="middle">Clinical Reviewer</text>
+          <text class="d-mm d-warn-t" x="334" y="60" text-anchor="middle">licensed · medical calls only</text>
+
+          <rect class="d-soft" x="447" y="24" width="206" height="44" rx="8"/>
+          <text class="d-t" x="550" y="45" text-anchor="middle">Admin</text>
+          <text class="d-mm" x="550" y="60" text-anchor="middle">tenant or platform · no PHI</text>
+
+          <rect class="d-box" x="663" y="24" width="222" height="44" rx="8"/>
+          <text class="d-t" x="774" y="45" text-anchor="middle">EHR-embedded launch</text>
+          <text class="d-mm" x="774" y="60" text-anchor="middle">SMART app · CDS Hooks card</text>
+
+          <path class="d-lb" d="M620,68 V92" marker-end="url(#arb)"/>
+
+          <!-- ---------- band 2 · edge ---------- -->
+          <text class="d-cap" x="15" y="88">Edge and identity</text>
+
+          <rect class="d-box" x="15"  y="96" width="430" height="42" rx="8"/>
+          <text class="d-t" x="230" y="116" text-anchor="middle">API gateway</text>
+          <text class="d-mm" x="230" y="131" text-anchor="middle">TLS · rate limit · WAF</text>
+
+          <rect class="d-box" x="455" y="96" width="430" height="42" rx="8"/>
+          <text class="d-t" x="670" y="116" text-anchor="middle">Keycloak</text>
+          <text class="d-mm" x="670" y="131" text-anchor="middle">one realm per tenant · MFA · tenant_id + scopes on every token</text>
+
+          <path class="d-lb" d="M620,138 V170" marker-end="url(#arb)"/>
+
+          <!-- ---------- data and trust rail (spans bands 3–5) ---------- -->
+          <rect class="d-soft" x="700" y="160" width="185" height="282" rx="10"/>
+          <text class="d-cap" x="712" y="178">Data and trust</text>
+          <text class="d-mm" x="712" y="192">the PHI boundary</text>
+
+          <rect class="d-box" x="712" y="202" width="161" height="34" rx="6"/>
+          <text class="d-t" x="792" y="217" text-anchor="middle">PostgreSQL + RLS</text>
+          <text class="d-mm" x="792" y="230" text-anchor="middle">one policy per tenant</text>
+
+          <rect class="d-box" x="712" y="246" width="161" height="34" rx="6"/>
+          <text class="d-t" x="792" y="261" text-anchor="middle">FHIR store</text>
+          <text class="d-mm" x="792" y="274" text-anchor="middle">raw + provenance</text>
+
+          <rect class="d-box" x="712" y="290" width="161" height="34" rx="6"/>
+          <text class="d-t" x="792" y="305" text-anchor="middle">Object store</text>
+          <text class="d-mm" x="792" y="318" text-anchor="middle">documents · recordings</text>
+
+          <rect class="d-box" x="712" y="334" width="161" height="34" rx="6"/>
+          <text class="d-t" x="792" y="349" text-anchor="middle">Outbox → bus</text>
+          <text class="d-mm" x="792" y="362" text-anchor="middle">state + event, one commit</text>
+
+          <rect class="d-bad" x="712" y="378" width="161" height="34" rx="6"/>
+          <text class="d-t d-bad-t" x="792" y="393" text-anchor="middle">Audit · vault</text>
+          <text class="d-mm d-bad-t" x="792" y="406" text-anchor="middle">hash-chained · write-once</text>
+
+          <text class="d-mm" x="712" y="430">every layer writes here</text>
+
+          <!-- ---------- band 3 · execution core ---------- -->
+          <text class="d-cap" x="15" y="166">Execution core — closed for modification</text>
+
+          <rect class="d-hot" x="15"  y="174" width="125" height="48" rx="8"/>
+          <text class="d-t" x="78"  y="195" text-anchor="middle">Case service</text>
+          <text class="d-mm" x="78"  y="211" text-anchor="middle">state machine</text>
+
+          <rect class="d-hot" x="150" y="174" width="125" height="48" rx="8"/>
+          <text class="d-t" x="213" y="195" text-anchor="middle">Rules engine</text>
+          <text class="d-mm" x="213" y="211" text-anchor="middle">criteria · thresholds</text>
+
+          <rect class="d-hot" x="285" y="174" width="125" height="48" rx="8"/>
+          <text class="d-t" x="348" y="195" text-anchor="middle">SLA timers</text>
+          <text class="d-mm" x="348" y="211" text-anchor="middle">72h · 7d · expiry</text>
+
+          <rect class="d-hot" x="420" y="174" width="125" height="48" rx="8"/>
+          <text class="d-t" x="483" y="195" text-anchor="middle">Human tasks</text>
+          <text class="d-mm" x="483" y="211" text-anchor="middle">the exception queue</text>
+
+          <rect class="d-hot" x="555" y="174" width="125" height="48" rx="8"/>
+          <text class="d-t" x="618" y="195" text-anchor="middle">Notifications</text>
+          <text class="d-mm" x="618" y="211" text-anchor="middle">+ metering · no PHI</text>
+
+          <line class="d-l" x1="682" y1="198" x2="696" y2="198" marker-end="url(#ar)"/>
+          <path class="d-lb" d="M620,222 V248" marker-end="url(#arb)"/>
+
+          <!-- ---------- band 4 · agent runtime ---------- -->
+          <text class="d-cap" x="15" y="244">Agent runtime — one pipeline, left to right</text>
+
+          <rect class="d-aqua" x="15" y="252" width="665" height="48" rx="8"/>
+          <line class="d-div" x1="140" y1="258" x2="140" y2="294"/>
+          <line class="d-div" x1="380" y1="258" x2="380" y2="294"/>
+          <line class="d-div" x1="490" y1="258" x2="490" y2="294"/>
+          <line class="d-div" x1="585" y1="258" x2="585" y2="294"/>
+
+          <text class="d-t"  x="77"  y="273" text-anchor="middle">Orchestrator</text>
+          <text class="d-mm" x="77"  y="288" text-anchor="middle">opens the case</text>
+
+          <text class="d-t"  x="260" y="273" text-anchor="middle">Coverage · Clinical · Compliance</text>
+          <text class="d-mm" x="260" y="288" text-anchor="middle">eligibility · evidence · completeness</text>
+
+          <text class="d-t"  x="435" y="273" text-anchor="middle">Decision</text>
+          <text class="d-mm" x="435" y="288" text-anchor="middle">confidence + gate</text>
+
+          <text class="d-t"  x="537" y="273" text-anchor="middle">Submission</text>
+          <text class="d-mm" x="537" y="288" text-anchor="middle">the waterfall</text>
+
+          <text class="d-t"  x="632" y="273" text-anchor="middle">Follow-Up</text>
+          <text class="d-mm" x="632" y="288" text-anchor="middle">pends · recheck</text>
+
+          <line class="d-l" x1="682" y1="276" x2="696" y2="276" marker-end="url(#ar)"/>
+          <path class="d-lb" d="M620,300 V326" marker-end="url(#arb)"/>
+
+          <!-- ---------- band 5 · integration fabric ---------- -->
+          <text class="d-cap" x="15" y="322">Integration fabric — open for extension · one adapter contract</text>
+
+          <rect class="d-box" x="15"  y="330" width="128" height="48" rx="8"/>
+          <text class="d-t" x="79"  y="351" text-anchor="middle">EHR / PM</text>
+          <text class="d-mm" x="79"  y="367" text-anchor="middle">FHIR · SMART</text>
+
+          <rect class="d-box" x="149" y="330" width="128" height="48" rx="8"/>
+          <text class="d-t" x="213" y="351" text-anchor="middle">Clearinghouse</text>
+          <text class="d-mm" x="213" y="367" text-anchor="middle">X12 270/271 · 278</text>
+
+          <rect class="d-box" x="283" y="330" width="128" height="48" rx="8"/>
+          <text class="d-t" x="347" y="351" text-anchor="middle">Payer API</text>
+          <text class="d-mm" x="347" y="367" text-anchor="middle">CRD · DTR · PAS</text>
+
+          <rect class="d-box" x="417" y="330" width="128" height="48" rx="8"/>
+          <text class="d-t" x="481" y="351" text-anchor="middle">Portal workers</text>
+          <text class="d-mm" x="481" y="367" text-anchor="middle">isolated browsers</text>
+
+          <rect class="d-box" x="551" y="330" width="129" height="48" rx="8"/>
+          <text class="d-t" x="615" y="351" text-anchor="middle">Voice · fax</text>
+          <text class="d-mm" x="615" y="367" text-anchor="middle">IVR + a human</text>
+
+          <line class="d-l" x1="682" y1="354" x2="696" y2="354" marker-end="url(#ar)"/>
+          <path class="d-lb" d="M620,378 V404" marker-end="url(#arb)"/>
+
+          <!-- ---------- band 6 · outside ---------- -->
+          <line class="d-div" x1="15" y1="392" x2="680" y2="392"/>
+          <text class="d-cap" x="15" y="400">Outside — the systems we do not control</text>
+
+          <rect class="d-soft" x="15"  y="408" width="128" height="42" rx="8"/>
+          <text class="d-t" x="79"  y="427" text-anchor="middle">EHRs</text>
+          <text class="d-mm" x="79"  y="441" text-anchor="middle">Epic · Oracle · athena</text>
+
+          <rect class="d-soft" x="149" y="408" width="128" height="42" rx="8"/>
+          <text class="d-t" x="213" y="427" text-anchor="middle">Clearinghouses</text>
+          <text class="d-mm" x="213" y="441" text-anchor="middle">Availity</text>
+
+          <rect class="d-soft" x="283" y="408" width="128" height="42" rx="8"/>
+          <text class="d-t" x="347" y="427" text-anchor="middle">Payer APIs</text>
+          <text class="d-mm" x="347" y="441" text-anchor="middle">Da Vinci, where live</text>
+
+          <rect class="d-soft" x="417" y="408" width="128" height="42" rx="8"/>
+          <text class="d-t" x="481" y="427" text-anchor="middle">Payer portals</text>
+          <text class="d-mm" x="481" y="441" text-anchor="middle">the UI changes</text>
+
+          <rect class="d-soft" x="551" y="408" width="129" height="42" rx="8"/>
+          <text class="d-t" x="615" y="427" text-anchor="middle">Phone lines</text>
+          <text class="d-mm" x="615" y="441" text-anchor="middle">IVR + hold queue</text>
+
+          <text class="d-mm" x="15" y="472">Requests run down. Decisions, pends and documents come back up the same path — onto the same case, whichever channel resolved it.</text>
+          <text class="d-mm" x="15" y="488">Nothing in the fabric decides anything: adapters translate at the edge, and the core never learns a vendor's dialect.</text>
+        </svg>
+      </div>
+      <figcaption>
+        The agent runtime sits <em>inside</em> the boundary and reaches the outside world
+        only through the fabric, using an internal tool router. That is what makes
+        “a new payer is a new adapter” true rather than aspirational — and it is also what
+        keeps the PHI boundary a single line rather than a scattering of exceptions.
+      </figcaption>
+    </figure>
+
+    <h4>Where each stage of this document happens</h4>
+    <p>
+      The nine stages that follow are a walk down and back up that picture. This is the
+      map between them.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th style="width:30%">Stage</th><th>Layers it touches</th><th style="width:26%">What it leaves behind</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1 · The request starts</strong></td>
+            <td>Experience or EHR launch → edge → <strong>case service</strong> → orchestrator</td>
+            <td>Case at <code>RECEIVED</code>, idempotency key, first audit entry</td>
+          </tr>
+          <tr>
+            <td><strong>2 · Is authorization required?</strong></td>
+            <td><strong>Coverage</strong> role → clearinghouse and payer-API adapters → rules engine for the payer matrix</td>
+            <td>An evidenced answer with its source and reference number</td>
+          </tr>
+          <tr>
+            <td><strong>3 · Assembling the packet</strong></td>
+            <td><strong>Clinical</strong> and <strong>Compliance</strong> roles → EHR/PM and document adapters → FHIR store and object store</td>
+            <td>Only the documents the matched rule asked for, each with provenance</td>
+          </tr>
+          <tr>
+            <td><strong>4 · The assessment and the gate</strong></td>
+            <td><strong>Decision</strong> role → rules engine → human-task service when it holds</td>
+            <td>A confidence vector, and the audit entry naming which check held the case</td>
+          </tr>
+          <tr>
+            <td><strong>5 · Submitting</strong></td>
+            <td><strong>Submission</strong> role → payer API, then portal workers, then voice, then a human task</td>
+            <td>One <code>SubmissionAttempt</code> per channel — failures kept, not discarded</td>
+          </tr>
+          <tr>
+            <td><strong>6 · Pended</strong></td>
+            <td><strong>Follow-Up</strong> role → the adapter that pended → EHR adapter for that one document</td>
+            <td>A resupply on the existing case, and a recheck on the scheduler</td>
+          </tr>
+          <tr>
+            <td><strong>7 · The determination arrives</strong></td>
+            <td>Any fabric adapter → case service → human-task service on a denial</td>
+            <td>A <code>Decision</code> recorded as the payer's act, never as ours</td>
+          </tr>
+          <tr>
+            <td><strong>8 · Outcome and write-back</strong></td>
+            <td>Case service → EHR adapter → SLA timers for expiry → outbox → notifications</td>
+            <td>Auth number and valid dates in the chart; an alert carrying no PHI</td>
+          </tr>
+          <tr>
+            <td><strong>9 · The record left behind</strong></td>
+            <td>The audit ledger, written to at every step above</td>
+            <td>A hash-chained trail that can be replayed in an appeal or a dispute</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="t">What the drawing is claiming</span>
+      <p>
+        <strong>One portal, not one per customer.</strong> Four tenants and three personas
+        share the top band. What separates them is a Keycloak realm, a
+        <code>tenant_id</code> on every row and a row-level-security policy in the rail —
+        never a second deployment.
+      </p>
+      <p>
+        <strong>One case, many channels.</strong> Electronic, portal, voice and human are
+        four adapters in the same band, writing attempts onto the same case. The waterfall
+        is a routing decision inside the Submission role, not four different products.
+      </p>
+      <p>
+        <strong>LLMs reason; rules decide.</strong> The agent runtime extracts, classifies
+        and drafts. Payer requirements, thresholds, routing and deadlines all come from the
+        rules engine in the band above it, which the model cannot overrule.
+      </p>
     </div>
   </section>
 
@@ -1410,72 +1727,51 @@
   <section id="s7">
     <div class="stage">
       <span class="stage-n">7</span>
-      <div><h2>Inside the payer</h2><p class="stage-sub">Where the decision is actually made <span class="assumption" style="vertical-align:middle">Assumption</span></p></div>
+      <div><h2>The determination arrives</h2><p class="stage-sub">It is the payer's act, and it comes in through a connector</p></div>
     </div>
 
-    <div class="note warn">
-      <span class="t">Read this stage differently</span>
+    <div class="note">
+      <span class="t">Why this stage has no screen</span>
       <p>
-        Everything in this stage is an <strong>assumption</strong>. The source research is
-        entirely provider-side — no client or consulting document describes a payer intake
-        queue, a reviewer workflow or a determination form. This is modelled on payer-side
-        products named in the market research. It is the largest open question in the
-        project, and it should be settled before anyone presents this externally.
+        The payer is a <strong>counterparty, not a tenant</strong>. Nobody signed into this
+        portal approves, denies or partially approves anything — those outcomes arrive from
+        the payer as a PAS <code>ClaimResponse</code>, an X12 278 response, a portal screen
+        read by the browser agent, or a reference number given on a call. An earlier draft
+        modelled payer intake and medical-director screens on market research rather than
+        on any client requirement; they are gone, and the rule they carried came out
+        stronger for it: <strong>there is now no code path in this product that produces a
+        determination at all.</strong>
       </p>
     </div>
 
     <div class="lens lens-user">
       <span class="lens-tag">▶ User view</span>
       <p>
-        Two people, with a hard line between them. The <strong>intake reviewer</strong>
-        sees a queue with a completeness indicator and a deadline clock, confirms the
-        packet is workable, and triages it. They cannot decide anything clinical.
+        Nobody sees this stage happen. Staff see a status change — <em>Submitted — pending</em>
+        becoming <em>Approved</em>, or a case appearing in the clinical reviewer's queue
+        because it came back denied.
       </p>
       <p>
-        The <strong>clinical reviewer</strong> — a medical director — reads the criteria
-        match as an aid, then approves, denies or partially approves. The determination is
-        recorded against their name.
+        Where the payer's response names its own reviewer, that name is recorded as the
+        payer's, not as one of ours. Where it does not — an electronic approval usually
+        does not — the decision is attributed to <em>Electronic determination</em> with the
+        transaction reference beside it.
       </p>
     </div>
-
-    <figure>
-      <p class="figcap-top">User diagram · two payer roles, one of them licensed</p>
-      <div class="figbox">
-        <svg viewBox="0 0 900 214" role="img" aria-label="Two payer-side roles. The intake reviewer checks completeness and triages but cannot decide. The clinical reviewer, who is licensed, reads the criteria match and issues the determination. An intake reviewer who opens the determination form sees a message saying only a licensed clinical reviewer may issue a determination.">
-          <rect class="d-box" x="20" y="26" width="400" height="86" rx="10"/>
-          <text class="d-t" x="220" y="54" text-anchor="middle">Intake reviewer</text>
-          <text class="d-s" x="220" y="74" text-anchor="middle">completeness check · SLA clock · triage</text>
-          <rect class="d-bad" x="60" y="82" width="320" height="24" rx="12"/>
-          <text class="d-mm d-bad-t" x="220" y="99" text-anchor="middle">cannot issue a determination</text>
-
-          <rect class="d-hot" x="480" y="26" width="400" height="86" rx="10"/>
-          <text class="d-t" x="680" y="54" text-anchor="middle">Clinical reviewer · licensed</text>
-          <text class="d-s" x="680" y="74" text-anchor="middle">reads the criteria match, then decides</text>
-          <rect class="d-ok" x="520" y="82" width="320" height="24" rx="12"/>
-          <text class="d-mm d-ok-t" x="680" y="99" text-anchor="middle">approve · deny · partially approve</text>
-
-          <line class="d-lb" x1="420" y1="69" x2="476" y2="69" marker-end="url(#arb)"/>
-          <rect class="d-patch" x="424" y="40" width="48" height="14"/>
-          <text class="d-mm" x="448" y="52" text-anchor="middle">triage</text>
-
-          <rect class="d-bad" x="20" y="134" width="860" height="56" rx="8"/>
-          <text class="d-t d-bad-t" x="450" y="158" text-anchor="middle">If an intake reviewer opens the determination form, they see the boundary stated</text>
-          <text class="d-s d-bad-t" x="450" y="178" text-anchor="middle">“Only a licensed clinical reviewer may issue a determination” — rather than simply finding no button</text>
-        </svg>
-      </div>
-      <figcaption>
-        Showing the guard is better than hiding the control. A missing button teaches
-        nobody anything; a stated boundary makes the rule visible to the person who hit it.
-      </figcaption>
-    </figure>
 
     <div class="lens lens-tech">
       <span class="lens-tag">⚙ Under the hood</span>
       <p>
-        <code>recordDecision</code> <strong>throws</strong> if a denial or partial approval
-        arrives without a named reviewer holding the licensed role. An approval returned
-        electronically by a payer legitimately has no human on our side — so the attribution
-        is required exactly where it matters and not where it would be theatre.
+        <code>recordDecision</code> records the outcome with <code>actorType: "payer"</code>
+        and <strong>refuses</strong> any attempt to attribute it to a user of this portal —
+        a <code>403</code>, not a silent acceptance. <code>Decision.decidedByUserId</code>
+        is therefore always undefined.
+      </p>
+      <p>
+        A denial unconditionally raises an <code>appeal-review</code> task for the licensed
+        Clinical Reviewer and writes an escalation entry tagged
+        <code>policy: "no-ai-denial"</code>. That routing is a rule, not a setting: no
+        threshold, trust mode or kill-switch position changes it.
       </p>
       <p>
         The outcome maps onto a FHIR <code>ClaimResponse</code>: <code>complete</code> for
@@ -1486,45 +1782,59 @@
     </div>
 
     <figure>
-      <p class="figcap-top">Technical diagram · the guard, and the two wire formats</p>
+      <p class="figcap-top">Technical diagram · where a determination can come from, and where it cannot</p>
       <div class="figbox">
-        <svg viewBox="0 0 900 300" role="img" aria-label="Technical view of the determination. A guard checks whether the outcome needs a human. Approvals returned electronically may be system-recorded. Denials and partial approvals require a named licensed reviewer, and the service throws without one. The outcome then maps to a FHIR ClaimResponse or an X12 278 HCR01 action code.">
-          <rect class="d-hot" x="290" y="20" width="320" height="48" rx="8"/>
-          <text class="d-t" x="450" y="42" text-anchor="middle">recordDecision(outcome, reviewer?)</text>
-          <text class="d-mm" x="450" y="59" text-anchor="middle">the single entry point for any determination</text>
+        <svg viewBox="0 0 900 300" role="img" aria-label="A determination can only arrive from the payer, through one of four channels: a FHIR PAS ClaimResponse, an X12 278 response, a payer portal screen read by the browser agent, or a reference number from a phone call. All four converge on recordDecision, which records the outcome with actor type payer. A separate box shows that any attempt to attribute a determination to a user of this portal is refused with a 403. A denial branches unconditionally to a task for the licensed clinical reviewer. The outcome maps to a FHIR ClaimResponse or an X12 278 HCR01 action code.">
+          <text class="d-cap" x="20" y="20">The payer, through a connector — the only source</text>
+          <rect class="d-box" x="20" y="28" width="200" height="44" rx="8"/>
+          <text class="d-t" x="120" y="47" text-anchor="middle">PAS ClaimResponse</text>
+          <text class="d-mm" x="120" y="63" text-anchor="middle">FHIR · Da Vinci</text>
 
-          <path class="d-l" d="M450,68 V88"/>
-          <path class="d-lo" d="M450,88 H180 V112" marker-end="url(#aro)"/>
-          <path class="d-lx" d="M450,88 H720 V112" marker-end="url(#arx)"/>
+          <rect class="d-box" x="236" y="28" width="200" height="44" rx="8"/>
+          <text class="d-t" x="336" y="47" text-anchor="middle">X12 278 response</text>
+          <text class="d-mm" x="336" y="63" text-anchor="middle">HCR01 action code</text>
 
-          <rect class="d-ok" x="20" y="116" width="320" height="76" rx="8"/>
-          <text class="d-t d-ok-t" x="180" y="138" text-anchor="middle">Approved</text>
-          <text class="d-s d-ok-t" x="180" y="157" text-anchor="middle">may be system-recorded</text>
-          <text class="d-mm" x="180" y="176" text-anchor="middle">a payer's electronic yes has no</text>
-          <text class="d-mm" x="180" y="188" text-anchor="middle">human on our side — and needs none</text>
+          <rect class="d-box" x="452" y="28" width="200" height="44" rx="8"/>
+          <text class="d-t" x="552" y="47" text-anchor="middle">Payer portal</text>
+          <text class="d-mm" x="552" y="63" text-anchor="middle">read by the browser agent</text>
 
-          <rect class="d-bad" x="560" y="116" width="320" height="76" rx="8"/>
-          <text class="d-t d-bad-t" x="720" y="138" text-anchor="middle">Denied / partially approved</text>
-          <text class="d-s d-bad-t" x="720" y="157" text-anchor="middle">named licensed reviewer REQUIRED</text>
-          <text class="d-mm" x="720" y="176" text-anchor="middle">no reviewer → 422 · wrong role → 403</text>
-          <text class="d-mm" x="720" y="188" text-anchor="middle">there is no path around this</text>
+          <rect class="d-box" x="668" y="28" width="212" height="44" rx="8"/>
+          <text class="d-t" x="774" y="47" text-anchor="middle">Phone call</text>
+          <text class="d-mm" x="774" y="63" text-anchor="middle">reference number + transcript</text>
 
-          <line class="d-div" x1="20" y1="210" x2="880" y2="210"/>
+          <path class="d-l" d="M120,72 V92 H450"/>
+          <path class="d-l" d="M336,72 V92"/>
+          <path class="d-l" d="M552,72 V92"/>
+          <path class="d-l" d="M774,72 V92 H450"/>
+          <path class="d-l" d="M450,92 V108" marker-end="url(#arb)"/>
 
-          <text class="d-cap" x="20" y="232">The same decision, two wire formats</text>
-          <rect class="d-box" x="20" y="240" width="420" height="50" rx="8"/>
-          <text class="d-t" x="230" y="261" text-anchor="middle">FHIR ClaimResponse · Da Vinci PAS</text>
-          <text class="d-mm" x="230" y="279" text-anchor="middle">complete · partial · error + preAuthRef + preAuthPeriod</text>
+          <rect class="d-hot" x="290" y="112" width="320" height="50" rx="8"/>
+          <text class="d-t" x="450" y="134" text-anchor="middle">recordDecision(outcome)</text>
+          <text class="d-mm" x="450" y="152" text-anchor="middle">actorType: "payer" · always</text>
 
-          <rect class="d-box" x="460" y="240" width="420" height="50" rx="8"/>
-          <text class="d-t" x="670" y="261" text-anchor="middle">X12 278 · HCR01 action code</text>
-          <text class="d-mm" x="670" y="279" text-anchor="middle">A1 certified · A6 modified · A3 not certified · A4 pended</text>
+          <rect class="d-bad" x="20" y="112" width="250" height="50" rx="8"/>
+          <text class="d-t d-bad-t" x="145" y="134" text-anchor="middle">A user of this portal</text>
+          <text class="d-mm d-bad-t" x="145" y="152" text-anchor="middle">refused · 403 not_permitted</text>
+          <line class="d-lx" x1="270" y1="137" x2="286" y2="137" marker-end="url(#arx)"/>
+
+          <path class="d-lo" d="M450,162 V182 H200 V200" marker-end="url(#aro)"/>
+          <path class="d-lx" d="M450,162 V182 H700 V200" marker-end="url(#arx)"/>
+
+          <rect class="d-ok" x="20" y="204" width="360" height="56" rx="8"/>
+          <text class="d-t d-ok-t" x="200" y="226" text-anchor="middle">Approved / partially approved</text>
+          <text class="d-mm" x="200" y="246" text-anchor="middle">auth #, dates and reference written back · expiry watch starts</text>
+
+          <rect class="d-bad" x="520" y="204" width="360" height="56" rx="8"/>
+          <text class="d-t d-bad-t" x="700" y="226" text-anchor="middle">Denied</text>
+          <text class="d-mm d-bad-t" x="700" y="246" text-anchor="middle">always a task for the licensed clinical reviewer — no exceptions</text>
+
+          <text class="d-cap" x="20" y="286">Both wire formats produce the same internal Decision: complete · partial · error, or A1 · A6 · A3 · A4</text>
         </svg>
       </div>
       <figcaption>
-        Both lanes produce the same internal <code>Decision</code>. The wire format is an
-        adapter concern; the business rule about who may issue a denial sits above it and
-        applies to both.
+        Removing the payer seat did not weaken the no-AI-denial rule — it removed the only
+        place a determination could have been typed. The wire format is an adapter concern;
+        the business rule about who may issue a denial sits above it and applies to both lanes.
       </figcaption>
     </figure>
   </section>
@@ -1872,10 +2182,10 @@
     </p>
     <p>
       Every patient, payer, policy and reference number used as an example here is
-      synthetic. The payer-side stage and the patient view are assumptions, labelled as
-      such — the source research they were built from is entirely provider-side.
-      Regulatory details were current as of 30 September 2026 and should be re-verified
-      before being relied on.
+      synthetic. The product is provider-side: three personas in one portal, with payers
+      reached as counterparties through connectors and patient access treated as a 2027
+      API obligation rather than a seat. Regulatory details were current as of
+      30 September 2026 and should be re-verified before being relied on.
     </p>
   </footer>
 

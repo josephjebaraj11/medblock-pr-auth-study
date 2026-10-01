@@ -93,7 +93,7 @@ Sensitivity follows the blueprint's classes: **PHI** = protected health informat
 
 | Entity | File | Key fields | Class | Notes |
 |---|---|---|---|---|
-| `Tenant` | `core.ts` | id, kind, tier, deploymentMode, region | CFG | `kind` separates provider from payer tenants |
+| `Tenant` | `core.ts` | id, tier, deploymentMode, region, **health** | CFG | Every tenant is a provider organisation; payers are counterparties, not tenants. `health` is counts and rates only — what a platform admin may see |
 | `Organization` | `core.ts` | id, npi (type 2), taxId, type | CFG | |
 | `Provider` | `core.ts` | id, npi (type 1), specialty, **isLicensedReviewer** | CFG | `isLicensedReviewer` gates attestation and appeal approval |
 | `Patient` | `core.ts` | id, mrn, name, dob, sourceIds[] | **PHI** | `sourceIds` enables cross-EHR matching |
@@ -109,19 +109,25 @@ Sensitivity follows the blueprint's classes: **PHI** = protected health informat
 | `Questionnaire` | `clinical.ts` | canonicalUrl, version, items[] | CFG | Da Vinci DTR |
 | `QuestionnaireResponse` | `clinical.ts` | answers[] with source + confidence + span | **PHI** | Every answer carries provenance |
 | `AIAssessment` | `clinical.ts` | extractedFacts, criteriaMatches, missingDocuments, confidence, recommendation, draftLetter, modelVersion, promptVersion | **PHI** | **No deny recommendation exists** |
-| `Decision` | `clinical.ts` | outcome, **decidedByUserId**, authorizationNumber, validFrom/To, reasonCodes[], appealDeadline | **PHI** | Denial requires a named human |
+| `Decision` | `clinical.ts` | outcome, decidedByName, authorizationNumber, validFrom/To, reasonCodes[], appealDeadline | **PHI** | The payer's act. `decidedByUserId` is always undefined — no persona here records one |
 | `Appeal` | `clinical.ts` | level, status, dueAt, **approvedByUserId**, argument | **PHI** | Cannot be filed without clinical approval |
 | `PeerToPeer` | `clinical.ts` | status, offeredSlots, scheduledAt, providerUserId | **PHI** | |
 | `Communication` | `clinical.ts` | kind, direction, requestedItems[], dueAt | **PHI** | The RFI loop |
 | `Task` | `platform.ts` | kind, reason, assignedRole, dueAt, resolution | **PHI** | `reason` is why a human was pulled in |
-| `User` | `platform.ts` | roleIds[], payerId?, providerId?, patientId?, mfaEnrolled | CFG | |
-| `Role` | `platform.ts` | scopes[], side, **canMakeClinicalDetermination** | CFG | |
+| `User` | `platform.ts` | roleIds[], providerId?, **adminScope?**, mfaEnrolled | CFG | `roleIds` is a list: one person may hold several personas, and gets the union |
+| `Role` | `platform.ts` | scopes[], side, **canMakeClinicalDetermination** | CFG | Three of them. Exactly one is licensed |
 | `Connector` | `platform.ts` | kind, interfaces[], capabilities[], standards[], onboardingDays | CFG | The shared registry |
 | `ConnectorInstance` | `platform.ts` | **state**, credentialRef, successRate, errors[] | **SEC** | State, not "once authorized" |
 | `ConnectorMapping` / `FieldMapping` | `platform.ts` | sourcePath → targetPath, transform, codeSystemFrom/To, status | CFG | Terminology translation |
 | `AuditEvent` | `platform.ts` | actor, actorType, action, externalRef, **prevHash**, **hash** | **PHI-sensitive** | Append-only, hash-chained |
-| `Notification` | `platform.ts` | eventType, title, body, link, requestId | **CFG** | **Carries no PHI by construction** |
+| `Notification` | `platform.ts` | eventType, title, body, link, requestId, channel[] | **CFG** | **Carries no PHI by construction**, on every channel |
+| `NotificationPreference` | `platform.ts` | userId, eventType, email, webPush | CFG | Per user, per event. In-app has no toggle — it is the queue |
+| `WebPushSubscription` | `platform.ts` | userId, permission, endpointRef, deviceLabel | CFG | The browser grant and service-worker endpoint |
 | `PolicyConfig` | `platform.ts` | version, autoSubmitThreshold, killSwitch, trustByPayer, timers | CFG | Every change is a new version |
+| `BillingAccount` | `platform.ts` | stripeCustomerRef, plan, licensedPhysicians, annualLicenseUsd, managedServicesMonthlyUsd, passThroughMode, paymentMethod | CFG | One Stripe customer per tenant |
+| `PaymentMethod` | `platform.ts` | kind, brand, last4, stripeRef | CFG | A reference and a last four. The instrument lives at Stripe |
+| `Invoice` / `InvoiceLine` | `platform.ts` | number, period, status, totalUsd, lines[] with kind + usageKind | CFG | Pass-through lines name the usage kind behind them |
+| `UsageRecord` | `platform.ts` | kind, quantity, unitCostUsd, **requestId** | CFG | Names the case that caused the spend — how an invoice line audits down to cases |
 
 ---
 
@@ -140,17 +146,31 @@ export type AIRecommendation =
 
 There is no fourth value. The agent can say *submit*, *get more*, or *ask a person*. It has no vocabulary for refusing care.
 
-### 4.2 A denial requires a named licensed human
+### 4.2 No determination originates in this portal
 
-`Decision.decidedByUserId` is optional in the type — because an **approval** returned electronically by a payer legitimately has no human attributable on our side. But the service layer closes the gap:
+A determination is the **payer's** act. It arrives through a connector — a PAS `ClaimResponse`, an X12 278 response, a portal screen or a call outcome — and `Decision.decidedByUserId` is therefore always `undefined`: there is no user of ours to attribute it to. The service layer refuses any attempt to supply one:
 
 ```ts
-if (needsHuman) {
-  if (!reviewer) throw new ApiError("A denial or partial approval must be attributed to a named reviewer.", 422, "human_required");
-  if (!reviewer.roleIds.includes("payer-clinical"))
-    throw new ApiError("Only a licensed clinical reviewer may issue a denial or partial approval. AI never denies care.", 403, "not_licensed");
+// `payerReviewerName` names the payer's own medical director where the
+// response gives one. It is never one of our users.
+if (input.reviewerUserId) {
+  throw new ApiError(
+    "Determinations come from the payer. No persona in this portal may record one.",
+    403, "not_permitted",
+  );
 }
 ```
+
+And a denial unconditionally raises a task for the licensed Clinical Reviewer — a rule, not a configuration:
+
+```ts
+if (input.outcome === "denied") {
+  store.tasks.unshift({ kind: "appeal-review", assignedRole: "clinical-reviewer", /* … */ });
+  appendAudit({ action: "request.escalated", metadata: { policy: "no-ai-denial" } });
+}
+```
+
+Earlier drafts enforced this by requiring a named licensed *payer* reviewer on our side. Removing the payer seat made the rule stronger rather than weaker: there is now no code path that produces a determination at all.
 
 ### 4.3 "Not required" is never a default
 
@@ -167,6 +187,8 @@ if (needsHuman) {
 ### 4.6 No PHI in notifications
 
 `Notification` has `title`, `body`, `link` and `requestId` — and no name, code or diagnosis field to put PHI into. The fixtures read as deliberately vague ("One authorization case is waiting on a clinical judgement") because that is the requirement.
+
+The rule does not relax by channel. `NotificationChannel` is `"in-app" | "email" | "web-push"`, and the same ID-only body goes to all three — an inbox and a lock screen are the two places PHI must never sit. `NotificationPreference` carries `email` and `webPush` per user per event type; in-app has no toggle because it *is* the queue. Turning a channel off suppresses delivery only: the event still fires, the in-app row still appears and the audit entry is still written, so a preference can never make something vanish from the record.
 
 ### 4.7 Derived, not stored
 
@@ -281,6 +303,8 @@ Three gaps worth flagging, because designing around them is a real cost:
 ---
 
 ## 8. Multi-tenancy and persistence
+
+**One application, many tenants.** Isolation is three independent mechanisms, none of which is a second portal: a Keycloak realm per tenant (a token from one realm is not accepted by another), a scope check per endpoint, and `tenant_id` taken from the token — never from the URL — filtered by row-level security underneath. A dedicated or air-gapped customer runs this same schema in its own VPC with its own keys.
 
 Every protected table carries `tenant_id` **first in the primary key**, with row-level security on:
 

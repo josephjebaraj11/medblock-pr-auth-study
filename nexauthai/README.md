@@ -6,6 +6,8 @@ The physician clicks one button. The agent confirms coverage, asks the payer whe
 
 The line it never crosses: **the agent does the paperwork; it never makes the medical judgment.**
 
+**One portal.** Every tenant on the platform and every persona inside it signs into the same application at the same address — three personas (Staff / Operations, Clinical Reviewer, Admin), four tenants, no separate build per customer and no separate operator console. A token carries a tenant and a set of scopes; the tenant decides whose data you see, the scopes decide what you may do with it. Open **"How this portal works"** in any persona's sidebar to see it laid out.
+
 ---
 
 ## Run it
@@ -15,7 +17,7 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**. No backend, no database, no sign-in — pick a role on the landing screen.
+Open **http://localhost:5173**. No backend, no database, no sign-in — pick a persona on the landing screen.
 
 ```bash
 npm run build       # typecheck + production build
@@ -34,15 +36,17 @@ State lives in memory. **Reloading the page resets the demo.**
 
 ---
 
-## 5-minute demo script
+## 6-minute demo script
 
-Two journeys: one authorization from provider submission to payer approval, then an appeal on a denied case. Timings are generous — the prototype simulates realistic API latency on purpose, so electronic responses take ~1s, portals ~15s and phone calls minutes.
+Three parts: one authorization from order to outcome, the clinical boundary and an appeal, then the admin side — tenants, billing and notifications. Timings are generous — the prototype simulates realistic API latency on purpose, so electronic responses take ~1s, portals ~15s and phone calls minutes.
 
 ---
 
-### Part 1 — Provider submission → payer approval *(3 min)*
+### Part 1 — Order → payer outcome *(3 min)*
 
-**① Sign in as Provider / Clinic Staff** → **"Provider / Clinic Staff"** on the landing screen.
+**① Sign in as Staff / Operations** → **"Staff / Operations"** on the landing screen.
+
+Before you click it, read the blue panel above the cards: **one portal, every tenant, every persona.** That claim is what the rest of the demo is standing on.
 
 The dashboard opens on *what needs a person*, not on everything. Note **"How cases were resolved"** on the right — the channel mix is the waterfall made visible. Electronic is cheap and fast; each step down costs more.
 
@@ -65,85 +69,78 @@ The dashboard opens on *what needs a person*, not on everything. Note **"How cas
 - **Drafted medical-necessity letter** — click *Read draft*. It cites only extracted facts, and **it cannot be sent until a human approves it.**
 - **Automation gate** — kill switch, then trust mode, then threshold, in that order.
 
-> Say out loud: *there is no "deny" button here, and there is no code path that produces one.*
+> Say out loud: *there is no "deny" button here, and there is no code path that produces one — in any persona.*
 
-**④ Submit to payer.** Watch the waterfall run. The outcome screen shows which channel resolved it and every attempt, including failures.
-
-**⑤ Switch to the payer side** → sign-out icon (top right) → **Payer Clinical Reviewer**.
-
-You are now Dr. Ingrid Halvorsen, a medical director at Meridian. Open any case in the queue.
-
-- The **AI criteria match** appears here too — as an *aid*, not a determination.
-- Scroll to **Issue determination**. Choose **Approve**, write a rationale, and record it.
-
-> The determination is recorded against her name. Try the same as **Payer Intake Reviewer** and the form is replaced by *"Only a licensed clinical reviewer may issue a determination."* That is enforced in the service layer, not just hidden in the UI.
+**④ Submit to payer.** Watch the waterfall run. The outcome screen shows which channel resolved it and every attempt, including failures. The determination comes back through a connector and is recorded as the **payer's** act, not anyone's in this portal.
 
 ---
 
-### Part 2 — Appeal on a denied case *(2 min)*
+### Part 2 — The clinical boundary, and an appeal *(2 min)*
 
-**⑥ Sign in as Ordering Physician** → sign-out → **Ordering Physician**.
+**⑤ Sign in as Clinical Reviewer** → sign-out icon (top right) → **Clinical Reviewer**.
 
-**⑦ Clinical review** → sidebar. Two kinds of case reach a clinician, and only these two:
+You are now Dr. Adaeze Okafor. The sidebar is different — no *New request*, no *Billing* — because her token carries different scopes, not because she was sent to a different app. The queue holds exactly four kinds of thing, and all four are medical judgements.
 
 - **An evidence gap** — open **NA-1047** (Sofia Marino). The agent found four weeks of conservative therapy against a six-week policy threshold. Whether concurrent medication satisfies the criterion's *intent* is a clinical judgement, so it stopped and asked. Click **Attest evidence & return to agent.**
 
-- **A denial** — go to **My orders**, open a denied case (e.g. **NA-1048**).
+- **A denial** — open **NA-1048**. A red banner: *"Every denial goes to a licensed human."* The payer's reason codes are structured — CARC 50 — with the rationale and the appeal deadline. Open the **AI assist** tab: the agent has drafted an appeal citing the evidence that was omitted.
 
-**⑧ The denial.** A red banner: *"Every denial goes to a licensed human."* The payer's reason codes are structured — CARC 50 — with the rationale and the appeal deadline.
+**⑥ Approve & file appeal.** The appeal is filed **with Dr. Okafor's approval recorded against it**. Open the **Audit** tab and you will see two entries — `appeal.approved` by a user, then `appeal.filed` by an agent. The human decision and the mechanical action are separate records.
 
-Open the **AI assist** tab: the agent has drafted an appeal citing the evidence that was omitted.
-
-**⑨ Approve & file appeal.** Note what happens: the appeal is filed **with Dr. Okafor's approval recorded against it**. Open the **Audit** tab and you will see two entries — `appeal.approved` by a user, then `appeal.filed` by an agent. The human decision and the mechanical action are separate records.
+> Try the URL `/admin/billing` while signed in as her. You land back on her queue — scope-gated in the router, and re-checked in the service layer.
 
 ---
 
-### If you have two more minutes
+### Part 3 — Admin: tenants, billing, notifications *(1–2 min)*
 
-| Role | Look at | Why it matters |
+**⑦ Sign in as Admin** → sign-out → **Admin**. One persona covers both the practice's own admin and the platform operator; the chip in the header says which reach this user has.
+
+| Screen | Look at | Why it matters |
 |---|---|---|
-| **Platform Admin** → Connectors | **athenahealth** is `refresh-failed`; **Atlas Mutual Portal** is `failed` with `ui_changed` | A connection that worked yesterday can quietly stop working today. Click **Test connection** — it calls the adapter's real `test()` method |
-| Admin → Connectors → Epic → **Field mapping** | SNOMED → ICD-10, local order codes → CPT, and an `unmapped` row | Terminology translation happens at the adapter edge, never in the core |
-| Admin → **Payers & rules** | Flip a payer's trust mode, or engage the kill switch | Autonomy is configuration, never a code change — and every change writes a new audited policy version |
-| Admin → **Audit log** | *"Hash chain intact — all N entries verify"* | Append-only. There is no edit or delete control, here or in the API |
-| **Patient** | Owen Brooks' view | Status and timeline only, in plain language. No clinical detail, no criteria, no rationale |
-| Any role → **Notifications** | *"One authorization case is waiting on a clinical judgement"* | Deliberately vague. No patient name, no diagnosis, no CPT — no PHI in a payload, ever |
+| **Tenants** | Four tenants, one of them on a **dedicated** deployment; realm, region and isolation per tenant | Multi-tenancy is a realm, a `tenant_id` and a row-level-security policy — never a second portal. Counts and rates only: admin holds **no PHI scope** |
+| **Connectors** | **athenahealth** is `refresh-failed`; **Atlas Mutual Portal** is `failed` with `ui_changed`. Click **Test connection** | It calls the adapter's real `test()` method. A connection that worked yesterday can quietly stop working today |
+| Connectors → Epic → **Field mapping** | SNOMED → ICD-10, local order codes → CPT, and an `unmapped` row | Terminology translation happens at the adapter edge, never in the core |
+| **Payers & rules** | Flip a payer's trust mode, or engage the kill switch | Autonomy is configuration, never a code change — and every change writes a new audited policy version |
+| **Users & roles** | Three personas and their scopes. **Georgia Bellweather holds two** | One person, two personas, the union of their scopes — a lean practice never needs extra headcount |
+| **Billing** | Expand an invoice. Annual license + flat managed services + **itemised pass-through** — voice minutes, EDI transactions, model tokens. Click **Pay now** | A subscription, not a price per PA. Every pass-through line traces to usage, and every usage row names the case that caused it — the waterfall, priced. Stripe holds the instrument; the portal sees a last four |
+| **Audit log** | *"Hash chain intact"* — and your `invoice.paid` entry at the top | Append-only. There is no edit or delete control, here or in the API |
+| **Notifications** | Enable **web push**, then toggle **email** off for one event | Three channels, one payload rule: *"One authorization case is waiting on a clinical judgement"* — no patient name, no diagnosis, no CPT. Turning a channel off suppresses delivery only; the event, the in-app row and the audit entry still happen |
+| **How this portal works** | The bottom of every sidebar | The whole single-portal argument on one page: realm → scope → RLS, the three personas, notifications, billing |
 
----
+## Persona walkthrough
 
-## Role walkthrough
+Three personas. One application, one navigation list, one route table — filtered by scopes.
 
-| Role | Lands on | Can do |
+| Persona | Lands on | Can do |
 |---|---|---|
-| **Provider / Clinic Staff** | `/provider` | Create requests, submit, release held submissions, respond to RFIs, request extensions, work the exception queue |
-| **Ordering Physician** | `/physician` | See own orders, attest clinical evidence, approve appeals, request peer-to-peer |
-| **Payer Intake Reviewer** | `/payer/queue` | Completeness check, triage to clinical review. **Cannot decide** |
-| **Payer Clinical Reviewer** | `/payer/clinical` | **The only role that can approve, deny or partially approve** |
-| **Patient** | `/patient` | Read-only status and timeline |
-| **Platform Admin** | `/admin` | Connectors, field mappings, payer rules, automation policy, users, audit. **No PHI scopes at all** |
+| **Staff / Operations** | `/ops` | Create requests, submit, release held submissions, respond to RFIs, request extensions, update coverage, work the exception queue |
+| **Clinical Reviewer** *(licensed)* | `/clinical` | Attest clinical evidence, approve appeals, request peer-to-peer, browse cases for context. **The only persona that makes a medical judgement** |
+| **Admin** | `/admin` | Tenants, connectors, field mappings, payer rules, automation policy, users, billing, audit. **No PHI scopes at all** — tenant reach or platform reach, same screens |
 
----
+Every persona also gets `/notifications` (its own delivery preferences) and `/portal` (how the single portal works).
+
+**Nobody issues a determination.** Approve, deny and partially approve are the payer's acts; they arrive through a connector and are recorded as the payer's. A denial always raises a task for the Clinical Reviewer — unconditionally, as a rule rather than a setting.
 
 ## All ten journeys
 
 | # | Journey | Where |
 |---|---|---|
-| J1 | Happy path, electronic | `/provider/new` — Owen Brooks, 72148, Meridian |
-| J2 | **No authorization required** (evidenced) | `/provider/new` — CPT 97161 with Meridian |
-| J3 | Clinical gap → attest | **NA-1047** as Ordering Physician |
-| J4 | Held by the automation gate | **NA-1065** as Clinic Staff (Caldera is in Shadow) |
+| J1 | Happy path, electronic | `/ops/new` — Owen Brooks, 72148, Meridian |
+| J2 | **No authorization required** (evidenced) | `/ops/new` — CPT 97161 with Meridian |
+| J3 | Clinical gap → attest | **NA-1047** as Clinical Reviewer |
+| J4 | Held by the automation gate | **NA-1065** as Staff / Operations (Caldera is in Shadow) |
 | J5 | Portal fails → voice succeeds | Any Atlas Mutual case — the portal connector is deliberately broken |
-| J6 | Pended → resupply one document | **NA-1052** as Clinic Staff |
-| J7 | Denial → appeal | **NA-1039** / **NA-1048** as Ordering Physician |
-| J8 | Approval expires before the service date | **NA-1044** as Clinic Staff |
-| J9 | Coverage terminated | **NA-1067** as Clinic Staff |
-| J10 | **Duplicate blocked** | `/provider/new` — order 72148 for a patient with an open case |
+| J6 | Pended → resupply one document | **NA-1052** as Staff / Operations |
+| J7 | Denial → appeal | **NA-1039** / **NA-1048** as Clinical Reviewer |
+| J8 | Approval expires before the service date | **NA-1044** as Staff / Operations |
+| J9 | Coverage terminated | **NA-1067** as Staff / Operations |
+| J10 | **Duplicate blocked** | `/ops/new` — order 72148 for a patient with an open case |
 
 ---
 
 ## What's in the data
 
-28 prior-authorization requests across every status · 15 patients · 5 payers (spanning all four capability tiers and both CMS-0057-F categories) · 3 EHRs plus a generic FHIR and an HL7 v2 fallback · 11 connector types, 9 configured instances · 6 payer policies · 2 DTR questionnaires · a hash-chained audit log.
+28 prior-authorization requests across every status · 15 patients · **4 tenants** (three multi-tenant, one dedicated) · 5 payers (spanning all four capability tiers and both CMS-0057-F categories) · 3 EHRs plus a generic FHIR and an HL7 v2 fallback · 11 connector types, 9 configured instances · 6 payer policies · 2 DTR questionnaires · **4 billing accounts, 3 invoices and the usage behind them** · 12 notifiable event types with per-user email and web-push preferences · a hash-chained audit log.
 
 ---
 
@@ -154,7 +151,7 @@ nexauthai/
 ├── README.md
 ├── docs/
 │   ├── 00-source-analysis.md        # What the source folder says, and what it leaves open
-│   ├── 01-personas-and-journeys.md  # Six roles, ten journeys
+│   ├── 01-personas-and-journeys.md  # One portal, three personas, ten journeys
 │   ├── 02-data-models.md            # 24 entities, FHIR R4 + X12 278 mappings, ER diagram
 │   ├── 03-architecture.md           # Production architecture, security, AI design, CMS-0057-F
 │   ├── 04-build-plan.md             # MVP → v1 → scale, team, risks, metrics
@@ -166,7 +163,7 @@ nexauthai/
     ├── services/     # Fake service layer — simulated latency, the API seam
     ├── connectors/   # Adapter contract + mock EHR/payer/clearinghouse/portal/voice adapters
     ├── components/   # Shared UI
-    ├── pages/        # Grouped by role
+    ├── pages/        # ops/ · clinical/ · admin/ · shared/
     └── routes/       # Scope-gated routing
 ```
 
@@ -180,14 +177,14 @@ nexauthai/
 
 ## Verification
 
-Typechecks and builds clean. A Playwright script (`smoke.mjs`) drives all six roles and every journey:
+Typechecks and builds clean. A Playwright script (`smoke.mjs`) drives all three personas and every journey:
 
 ```bash
 npm run dev          # in one terminal
 node smoke.mjs       # in another
 ```
 
-**45/45 checks pass, zero console errors.** Covers every role's main flow, all ten journeys, the case-detail tabs, connector test/reconnect, policy changes, audit-chain verification, mobile layout at 390px (no horizontal scroll) and dark theme.
+**67/67 checks pass, zero console errors.** Covers every persona's main flow, all ten journeys, the case-detail tabs, scope gating in both directions (Operations blocked from admin, Clinical blocked from billing), the tenants screen, connector test/reconnect, policy changes, billing — invoice expansion, payment, pass-through mode — notification preferences and web-push enablement, the "How this portal works" page from every persona, audit-chain verification, mobile layout at 390px (no horizontal scroll) and dark theme.
 
 ---
 
@@ -203,4 +200,6 @@ Semantic landmarks and a skip link · one visible focus treatment throughout · 
 2. **[`docs/NexAuthAI-Solution.md`](docs/NexAuthAI-Solution.md)** — the whole proposal in one document.
 3. The numbered docs for depth on personas, data, architecture, plan and connectors.
 
-Two things to know before reading any of it: **the payer-side roles are an assumption** — the source folder is entirely provider-side — and **all 107 discovery questions are unanswered**, so every concrete value here is a placeholder.
+Two things to know before reading any of it: **the personas were reduced to the three the client's own table names** — Staff/Operations, Clinical Reviewer and Admin, with Tenant Admin and Master Admin merged into one persona with two reaches — and **all 107 discovery questions are unanswered**, so every concrete value here is a placeholder.
+
+The payer-side and patient-side screens that earlier drafts carried have been removed: payers are counterparties reached through connectors, not tenants, and patient access is a 2027 CMS obligation served through the practice rather than a seat in this portal. `docs/00-source-analysis.md` gap **G1** records why they were ever modelled.

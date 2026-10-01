@@ -384,7 +384,7 @@
     <div class="toc">
       <ol>
         <li><a href="#problem">The problem, sized honestly</a></li>
-        <li><a href="#people">People and the authority boundary</a></li>
+        <li><a href="#people">One portal, three personas</a></li>
         <li><a href="#journeys">The ten journeys</a></li>
         <li><a href="#solution">What the system does</a></li>
         <li><a href="#ai">AI capabilities and guardrails</a></li>
@@ -582,57 +582,136 @@
     <div class="stage">
       <span class="stage-n">2</span>
       <div>
-        <h2>People and the authority boundary</h2>
-        <p class="stage-sub">Six roles · who may judge · who may only move paper</p>
+        <h2>One portal, three personas</h2>
+        <p class="stage-sub">Every tenant, every role, one application · who may judge · who may only move paper</p>
       </div>
     </div>
 
+    <h3>There is only one portal</h3>
     <p>
-      Six personas, and the only distinction that matters structurally is clinical
-      authority. Everyone above the line in the diagram below moves paper. Everyone
-      below it holds a licence. The agent is permanently above the line, and that is
-      enforced in the type system and the service layer, not by convention.
+      Every practice on the platform and every person inside it signs into the
+      <strong>same application at the same address</strong>. There is no separate build
+      per customer, no separate app per role, and no separate operator console. A Keycloak
+      token carries two things, and between them they decide everything: a
+      <strong>tenant</strong>, which settles whose data you see, and a set of
+      <strong>scopes</strong>, which settles what you may do with it. Both are checked
+      again server-side on every request.
+    </p>
+    <p>
+      Multi-tenancy and multi-persona are therefore the same mechanism seen from two
+      angles, and neither is a deployment fork. A customer requiring its own
+      infrastructure gets a dedicated or air-gapped deployment of this same codebase with
+      its own realm and keys — a deployment option, not a different product. One person
+      may hold several personas and gets the <strong>union</strong> of their scopes, so a
+      lean practice never needs extra headcount to satisfy the model.
     </p>
 
     <figure>
-      <p class="figcap-top">Diagram 3 · The line the agent never crosses</p>
+      <p class="figcap-top">Diagram 3a · One application, two filters</p>
       <div class="figbox">
-        <svg viewBox="0 0 900 318" role="img" aria-label="Personas arranged above and below a dividing line. Above the line, holding no clinical authority: the NexAuthAI agent, clinic staff Dana, payer intake reviewer Marcus (an assumption), the patient Owen as read-only, and the platform admin Priyanka who holds no PHI scopes at all. Below the line, holding clinical authority: the ordering physician Dr Okafor, who attests evidence, approves appeals and attends peer-to-peer; and the payer clinical reviewer Dr Halvorsen, the only role that can approve, deny or partially approve. Three dashed arrows cross the line upward-to-downward: the agent escalates denials, appeals and evidence gaps to the physician; clinic staff escalate evidence gaps; and payer intake triages to the clinical reviewer.">
+        <svg viewBox="0 0 900 288" role="img" aria-label="One portal serving four tenants and three personas. At the top, four tenants — Northside, Harbor Point, Cascade Valley and Stillwater, the last on a dedicated deployment — each with its own Keycloak realm. All four arrows converge on a single box labelled one application, one route table, one navigation list. Below it, two filters applied in order: tenant id from the token, enforced by row-level security, which decides whose data; and scopes, checked per endpoint, which decide what you may do. Below those, the three personas that result: Staff slash Operations, Clinical Reviewer who is licensed, and Admin which holds no PHI scope and has two reaches, tenant and platform.">
+          <text class="d-cap" x="15" y="18">Four tenants — one Keycloak realm each</text>
+
+          <rect class="d-box" x="15"  y="28" width="208" height="42" rx="8"/>
+          <text class="d-t" x="119" y="46" text-anchor="middle">Northside Orthopaedic</text>
+          <text class="d-mm" x="119" y="62" text-anchor="middle">nexauth-northside · multi-tenant</text>
+
+          <rect class="d-box" x="235" y="28" width="208" height="42" rx="8"/>
+          <text class="d-t" x="339" y="46" text-anchor="middle">Harbor Point Imaging</text>
+          <text class="d-mm" x="339" y="62" text-anchor="middle">nexauth-harbor · multi-tenant</text>
+
+          <rect class="d-box" x="455" y="28" width="208" height="42" rx="8"/>
+          <text class="d-t" x="559" y="46" text-anchor="middle">Cascade Valley Rehab</text>
+          <text class="d-mm" x="559" y="62" text-anchor="middle">nexauth-cascade · onboarding</text>
+
+          <rect class="d-soft" x="675" y="28" width="210" height="42" rx="8"/>
+          <text class="d-t" x="780" y="46" text-anchor="middle">Stillwater Health</text>
+          <text class="d-mm" x="780" y="62" text-anchor="middle">nexauth-stillwater · dedicated VPC</text>
+
+          <path class="d-l" d="M119,70 V86 H450"/>
+          <path class="d-l" d="M339,70 V86"/>
+          <path class="d-l" d="M559,70 V86"/>
+          <path class="d-l" d="M780,70 V86 H450"/>
+          <path class="d-l" d="M450,86 V100" marker-end="url(#ar)"/>
+
+          <rect class="d-hot" x="230" y="104" width="440" height="46" rx="8"/>
+          <text class="d-t d-brand-t" x="450" y="124" text-anchor="middle">ONE application</text>
+          <text class="d-mm" x="450" y="141" text-anchor="middle">one route table · one navigation list · one deployment of the same code</text>
+
+          <path class="d-l" d="M450,150 V162 H230 V178" marker-end="url(#ar)"/>
+          <path class="d-l" d="M450,150 V162 H670 V178" marker-end="url(#ar)"/>
+
+          <rect class="d-box" x="90"  y="182" width="280" height="44" rx="8"/>
+          <text class="d-t" x="230" y="201" text-anchor="middle">tenant_id — from the token</text>
+          <text class="d-mm" x="230" y="217" text-anchor="middle">realm-bound · Postgres RLS · WHOSE data</text>
+
+          <rect class="d-box" x="530" y="182" width="280" height="44" rx="8"/>
+          <text class="d-t" x="670" y="201" text-anchor="middle">scopes — checked per endpoint</text>
+          <text class="d-mm" x="670" y="217" text-anchor="middle">re-checked in the service layer · WHAT you may do</text>
+
+          <path class="d-l" d="M230,226 V240 H450"/>
+          <path class="d-l" d="M670,226 V240 H450"/>
+          <path class="d-l" d="M450,240 V250" marker-end="url(#ar)"/>
+
+          <rect class="d-box" x="15"  y="254" width="280" height="30" rx="8"/>
+          <text class="d-t" x="155" y="274" text-anchor="middle">Staff / Operations</text>
+
+          <rect class="d-warn" x="310" y="254" width="280" height="30" rx="8"/>
+          <text class="d-t d-warn-t" x="450" y="274" text-anchor="middle">Clinical Reviewer · licensed</text>
+
+          <rect class="d-soft" x="605" y="254" width="280" height="30" rx="8"/>
+          <text class="d-t" x="745" y="274" text-anchor="middle">Admin · tenant or platform reach</text>
+        </svg>
+      </div>
+      <figcaption>
+        Isolation is a realm, a <code>tenant_id</code> and a row-level-security policy —
+        never a second portal. The dedicated tier changes <em>where</em> the code runs,
+        not <em>what</em> it is.
+      </figcaption>
+    </figure>
+
+    <h3>The authority boundary</h3>
+    <p>
+      Three personas, and the only distinction that matters structurally is clinical
+      authority. Everyone above the line in the diagram below moves paper. Below it sits
+      one persona, and it holds a licence. The agent is permanently above the line, and
+      that is enforced in the type system and the service layer, not by convention.
+    </p>
+
+    <figure>
+      <p class="figcap-top">Diagram 3b · The line the agent never crosses</p>
+      <div class="figbox">
+        <svg viewBox="0 0 900 318" role="img" aria-label="Personas arranged above and below a dividing line. Above the line, holding no clinical authority: the NexAuthAI agent which does the paperwork, Staff slash Operations represented by Dana the coordinator who works exceptions only, and Admin represented by Priyanka who holds no PHI scopes at all and whose reach is either one tenant or every tenant. Below the line, holding clinical authority: the Clinical Reviewer, Dr Okafor, who attests evidence, approves appeals and attends peer-to-peer, and who does not issue determinations. Two dashed arrows cross the line: the agent escalates denials, appeals and evidence gaps to the clinical reviewer, and Operations escalates evidence gaps. To the right, outside the portal entirely, sits the payer, reached through a connector, which is the only source of a determination.">
           <text class="d-cap" x="15" y="18">No clinical authority — moves paper, never judges</text>
 
-          <rect class="d-hot"  x="15"  y="30" width="162" height="68" rx="8"/>
-          <text class="d-t d-brand-t" x="96" y="54" text-anchor="middle">NexAuthAI agent</text>
-          <text class="d-s" x="96" y="70" text-anchor="middle">does the paperwork</text>
-          <text class="d-mm" x="96" y="86" text-anchor="middle">7 agent roles</text>
+          <rect class="d-hot"  x="15"  y="30" width="200" height="68" rx="8"/>
+          <text class="d-t d-brand-t" x="115" y="54" text-anchor="middle">NexAuthAI agent</text>
+          <text class="d-s" x="115" y="70" text-anchor="middle">does the paperwork</text>
+          <text class="d-mm" x="115" y="86" text-anchor="middle">7 internal agent roles</text>
 
-          <rect class="d-box"  x="192" y="30" width="162" height="68" rx="8"/>
-          <text class="d-t" x="273" y="54" text-anchor="middle">Clinic staff</text>
-          <text class="d-s" x="273" y="70" text-anchor="middle">Dana · coordinator</text>
-          <text class="d-mm" x="273" y="86" text-anchor="middle">works exceptions only</text>
+          <rect class="d-box"  x="231" y="30" width="200" height="68" rx="8"/>
+          <text class="d-t" x="331" y="54" text-anchor="middle">Staff / Operations</text>
+          <text class="d-s" x="331" y="70" text-anchor="middle">Dana · coordinator</text>
+          <text class="d-mm" x="331" y="86" text-anchor="middle">works exceptions only</text>
 
-          <rect class="d-box"  x="369" y="30" width="162" height="68" rx="8"/>
-          <text class="d-t" x="450" y="54" text-anchor="middle">Payer intake</text>
-          <text class="d-s" x="450" y="70" text-anchor="middle">Marcus · completeness</text>
-          <text class="d-mm d-warn-t" x="450" y="86" text-anchor="middle">ASSUMPTION · G1</text>
+          <rect class="d-soft" x="447" y="30" width="200" height="68" rx="8"/>
+          <text class="d-t" x="547" y="54" text-anchor="middle">Admin</text>
+          <text class="d-s" x="547" y="70" text-anchor="middle">Priyanka · configuration</text>
+          <text class="d-mm" x="547" y="86" text-anchor="middle">no PHI scopes · tenant or platform reach</text>
 
-          <rect class="d-soft" x="546" y="30" width="162" height="68" rx="8"/>
-          <text class="d-t" x="627" y="54" text-anchor="middle">Patient</text>
-          <text class="d-s" x="627" y="70" text-anchor="middle">Owen · read-only</text>
-          <text class="d-mm d-warn-t" x="627" y="86" text-anchor="middle">ASSUMPTION · G4</text>
-
-          <rect class="d-soft" x="723" y="30" width="162" height="68" rx="8"/>
-          <text class="d-t" x="804" y="54" text-anchor="middle">Platform admin</text>
-          <text class="d-s" x="804" y="70" text-anchor="middle">Priyanka · config</text>
-          <text class="d-mm" x="804" y="86" text-anchor="middle">no PHI scopes at all</text>
+          <rect class="d-bad"  x="679" y="30" width="206" height="68" rx="8"/>
+          <text class="d-t d-bad-t" x="782" y="54" text-anchor="middle">Payer</text>
+          <text class="d-s d-bad-t" x="782" y="70" text-anchor="middle">counterparty, not a tenant</text>
+          <text class="d-mm d-bad-t" x="782" y="86" text-anchor="middle">reached through a connector</text>
 
           <!-- escalation arrows -->
-          <path class="d-ld" d="M96,100 V128 H232 V192" marker-end="url(#ar)"/>
-          <text class="d-mm" x="100" y="123">denial · appeal · evidence gap</text>
+          <path class="d-ld" d="M115,100 V128 H300 V192" marker-end="url(#ar)"/>
+          <text class="d-mm" x="119" y="123">denial · appeal · evidence gap</text>
 
-          <path class="d-ld" d="M273,100 V140 H330 V192" marker-end="url(#ar)"/>
+          <path class="d-ld" d="M331,100 V140 H380 V192" marker-end="url(#ar)"/>
 
-          <path class="d-ld" d="M450,100 V128 H586 V192" marker-end="url(#ar)"/>
-          <text class="d-mm" x="454" y="123">triage → decide</text>
+          <path class="d-ld" d="M782,100 V128 H560 V192" marker-end="url(#ar)"/>
+          <text class="d-mm" x="600" y="123" text-anchor="start">every denial, always</text>
 
           <!-- divider -->
           <line class="d-div" x1="15" y1="162" x2="885" y2="162"/>
@@ -641,62 +720,43 @@
 
           <text class="d-cap" x="15" y="186">Clinical authority — licensed humans only</text>
 
-          <rect class="d-warn" x="192" y="192" width="252" height="80" rx="8"/>
-          <text class="d-t d-warn-t" x="318" y="216" text-anchor="middle">Ordering physician</text>
-          <text class="d-s d-warn-t" x="318" y="232" text-anchor="middle">Dr Okafor · attests evidence</text>
-          <text class="d-s d-warn-t" x="318" y="247" text-anchor="middle">approves appeals · peer-to-peer</text>
-          <text class="d-mm d-warn-t" x="318" y="263" text-anchor="middle">does not issue determinations</text>
+          <rect class="d-warn" x="231" y="192" width="330" height="80" rx="8"/>
+          <text class="d-t d-warn-t" x="396" y="216" text-anchor="middle">Clinical Reviewer · licensed</text>
+          <text class="d-s d-warn-t" x="396" y="232" text-anchor="middle">Dr Okafor · attests evidence</text>
+          <text class="d-s d-warn-t" x="396" y="247" text-anchor="middle">approves appeals · peer-to-peer</text>
+          <text class="d-mm d-warn-t" x="396" y="263" text-anchor="middle">does not issue determinations — nobody here does</text>
 
-          <rect class="d-bad"  x="464" y="192" width="252" height="80" rx="8"/>
-          <text class="d-t d-bad-t" x="590" y="216" text-anchor="middle">Payer clinical reviewer</text>
-          <text class="d-s d-bad-t" x="590" y="232" text-anchor="middle">Dr Halvorsen · medical director</text>
-          <text class="d-s d-bad-t" x="590" y="247" text-anchor="middle">the ONLY role that may</text>
-          <text class="d-mm d-bad-t" x="590" y="263" text-anchor="middle">approve · deny · partially approve</text>
-
-          <text class="d-mm" x="15" y="300">recordDecision() throws without a named reviewer holding this role — there is no other code path</text>
+          <text class="d-mm" x="15" y="296">recordDecision() records the payer's act and refuses any attempt to attribute one to a user —</text>
+          <text class="d-mm" x="15" y="310">there is no code path in this product that produces a determination at all</text>
         </svg>
       </div>
       <figcaption>
-        The payer-side roles are an inference, not a requirement. The entire source
-        folder is provider-side; nothing in it describes a payer intake queue, a
-        clinical reviewer workflow or a determination form. That is gap
-        <strong>G1</strong>, and it is the largest in the project.
+        An earlier draft of this dossier placed payer intake and medical-director
+        personas below the line. They were an inference from market research rather than
+        a client requirement (gap <strong>G1</strong>), and they are withdrawn. Removing
+        them strengthened the rule rather than weakening it: there is no longer any place
+        in the product where a determination could be typed.
       </figcaption>
     </figure>
 
-    <h3>The six personas</h3>
+    <h3>The three personas</h3>
     <div class="tablewrap">
       <table>
         <thead><tr><th>Persona</th><th>Wants</th><th style="width:30%">Clinical authority</th></tr></thead>
         <tbody>
           <tr>
-            <td><strong>Provider / clinic staff</strong><br><span class="tag">Dana Whitaker</span></td>
-            <td>A queue of exceptions, not a queue of everything. If a case is not on her list, the agent is still working it. What she must never see is a case that silently failed.</td>
+            <td><strong>Staff / Operations</strong><br><span class="tag">Dana Whitaker</span></td>
+            <td>A queue of exceptions, not a queue of everything. If a case is not on her list, the agent is still working it. Status, submissions, document follow-up, administrative exceptions — plus releasing held submissions, answering payer information requests and chasing approvals that will lapse. What she must never see is a case that silently failed.</td>
             <td>None. Cannot attest evidence or decide necessity.</td>
           </tr>
           <tr>
-            <td><strong>Ordering physician</strong><br><span class="tag">Dr Adaeze Okafor</span></td>
-            <td>One button, and to be asked only genuinely clinical questions. Pulled in at exactly three moments: an evidence gap, a denial, a peer-to-peer.</td>
+            <td><strong>Clinical Reviewer</strong> <span class="tag">licensed</span><br><span class="tag">Dr Adaeze Okafor</span></td>
+            <td>To be asked only genuinely clinical questions. Pulled in at exactly four moments: an evidence gap, a denial, an appeal awaiting sign-off, a peer-to-peer. A distinct persona on purpose, so that only licensed people make — and are audited for — medical calls.</td>
             <td>Attests evidence · approves appeals · attends peer-to-peer</td>
           </tr>
           <tr>
-            <td><strong>Payer intake reviewer</strong><br><span class="assumption">Assumption</span></td>
-            <td>A completeness check and triage — member matched, codes present, documents attached — so a medical director does not spend the day on paperwork triage. The 72h / 7d clock is on every row.</td>
-            <td>None. Explicitly cannot decide.</td>
-          </tr>
-          <tr>
-            <td><strong>Payer clinical reviewer</strong><br><span class="assumption">Assumption</span></td>
-            <td>The criteria match as an aid — each criterion met, not met or unclear, with its evidence and confidence. The determination records against her name.</td>
-            <td><strong>The only role that can approve, deny or partially approve.</strong></td>
-          </tr>
-          <tr>
-            <td><strong>Patient</strong><br><span class="assumption">Assumption</span></td>
-            <td>To know where their request has got to, in plain language. Status and a timeline. No criteria, no rationale, no documents, no actions.</td>
-            <td>None — read-only.</td>
-          </tr>
-          <tr>
-            <td><strong>Platform admin</strong><br><span class="tag">Priyanka Raghunathan</span></td>
-            <td>Connectors, rules, users, audit. Controls the three automation levers the folder insists must be configuration: auto-submit threshold, kill switch, per-payer trust ramp.</td>
+            <td><strong>Admin</strong><br><span class="tag">Priyanka Raghunathan</span></td>
+            <td>Tenants, users and roles, connectors and mappings, billing, audit — and the three automation levers the folder insists must be configuration rather than a code change: auto-submit threshold, kill switch, per-payer trust ramp.</td>
             <td>None, and <strong>no PHI scopes at all</strong>.</td>
           </tr>
         </tbody>
@@ -705,13 +765,30 @@
 
     <div class="branch">
       <p>
-        <strong>Tenant Admin vs Master Admin.</strong> The Vision &amp; Scope splits the
-        admin role in two, and the distinction is commercial. <em>Tenant Admin</em> is
-        the practice's own administrator — users, thresholds, escalation routing,
-        payer-matrix overrides, their tenant's audit log. <em>Master Admin</em> is the
-        platform operator — tenants, the shared connector registry, cross-tenant health,
-        and <strong>never PHI</strong>. The prototype collapses them into one switchable
-        role for demo convenience; in production they are distinct realms.
+        <strong>Tenant Admin and Master Admin are one persona with two reaches.</strong>
+        The Vision &amp; Scope splits the admin role in two, and the distinction is real —
+        but it is a matter of <em>scope</em>, not of screens. <em>Tenant reach</em> is the
+        practice's own administrator: users, thresholds, escalation routing, payer-matrix
+        overrides, connections, billing and their tenant's audit log. <em>Platform reach</em>
+        is the operator: every tenant, plus the shared connector registry and cross-tenant
+        health, and <strong>never PHI</strong>. Both use the same console in the same
+        portal; <code>User.adminScope</code> is the only thing that differs, and the
+        tenant listing returns one row or all of them accordingly. A platform admin can
+        see that a tenant's exception rate is climbing and cannot open a single case
+        behind it.
+      </p>
+    </div>
+
+    <div class="branch">
+      <p>
+        <strong>Who has no seat, and why.</strong> The <em>ordering physician</em> does not
+        log in: their one action — <em>Get Authorization</em> — is placed by Operations or
+        arrives from the EHR at <code>order-sign</code>, and anything clinical routes to the
+        Clinical Reviewer. The <em>payer</em> is a counterparty reached through connectors,
+        not a tenant of this platform. The <em>patient</em> benefits from faster care;
+        from 1 January 2027 CMS-0057-F requires PA status and history to be exposed through
+        the Patient Access API, consent-gated and through the practice — an API surface,
+        not a login here.
       </p>
     </div>
 
@@ -720,27 +797,40 @@
       <table class="center">
         <thead>
           <tr>
-            <th style="width:30%">Capability</th>
-            <th>Clinic staff</th><th>Physician</th><th>Payer intake</th>
-            <th>Payer clinical</th><th>Patient</th><th>Admin</th>
+            <th style="width:38%">Capability</th>
+            <th>Staff / Operations</th><th>Clinical Reviewer</th><th>Admin</th>
           </tr>
         </thead>
         <tbody>
-          <tr><td>Create a request</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>See case detail (PHI)</td><td class="yes">✓</td><td>own</td><td class="yes">✓</td><td class="yes">✓</td><td>own status</td><td class="no">—</td></tr>
-          <tr><td>Submit to payer</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Release a held submission</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Attest clinical evidence</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td><strong>Approve / deny / partially approve</strong></td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Approve an appeal for filing</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Request / schedule peer-to-peer</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Triage and assign</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
-          <tr><td>Edit threshold, kill switch, trust ramp</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr><td>Manage connectors and mappings</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
-          <tr><td>Read the audit log</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Create a request (Get Authorization)</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>See case detail (PHI)</td><td class="yes">✓</td><td class="yes">✓</td><td class="no">—</td></tr>
+          <tr><td>Submit to payer</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Release a held submission</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Answer a payer information request</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td>Request a date-span extension · update coverage</td><td class="yes">✓</td><td class="no">—</td><td class="no">—</td></tr>
+          <tr><td><strong>Attest clinical evidence</strong></td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td></tr>
+          <tr><td><strong>Approve an appeal for filing</strong></td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td></tr>
+          <tr><td><strong>Request / attend peer-to-peer</strong></td><td class="no">—</td><td class="yes">✓</td><td class="no">—</td></tr>
+          <tr><td>Manage tenants</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Edit threshold, kill switch, trust ramp</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Manage connectors and mappings</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Manage users and roles</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Billing, invoices and usage</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Read the audit log</td><td class="no">—</td><td class="no">—</td><td class="yes">✓</td></tr>
+          <tr><td>Own notification preferences</td><td class="yes">✓</td><td class="yes">✓</td><td class="yes">✓</td></tr>
+          <tr><td><strong>Approve / deny / partially approve</strong></td><td class="no">—</td><td class="no">—</td><td class="no">—</td></tr>
         </tbody>
       </table>
     </div>
+
+    <p>
+      The last row is the point. <strong>No persona can issue a determination</strong> —
+      those are the payer's acts, arriving through a connector as a PAS
+      <code>ClaimResponse</code>, an X12 278 response, a portal screen or a call outcome,
+      and recorded with <code>actorType: "payer"</code>. A denial unconditionally raises a
+      task for the licensed Clinical Reviewer; that routing is a rule, and no threshold,
+      trust mode or kill-switch position changes it.
+    </p>
 
     <p>
       These are scopes on the session, checked by <code>useSession().can()</code> in the
@@ -767,11 +857,11 @@
         <tbody>
           <tr><td><strong>J1</strong></td><td>Happy path, electronic. Eligibility active → CRD says required → DTR auto-fills → confidence 0.93 clears 0.85 → PAS submit → approved. <em>The point is how little happens.</em></td><td>Approved, no human touched it</td><td><code>/provider/new</code></td></tr>
           <tr><td><strong>J2</strong></td><td><strong>No authorization required</strong> — returned with source, date and reference number. A positive assertion, never a silent default.</td><td>Closed, written back to the chart</td><td>CPT 97161, Meridian</td></tr>
-          <tr><td><strong>J3</strong></td><td>Clinical gap: four weeks of conservative therapy against a six-week threshold → physician reviews the agent's findings, attaches the record, attests.</td><td>Submitted</td><td>Case NA-1047</td></tr>
+          <tr><td><strong>J3</strong></td><td>Clinical gap: four weeks of conservative therapy against a six-week threshold → the clinical reviewer reads the agent's findings, attaches the record, attests.</td><td>Submitted</td><td>Case NA-1047</td></tr>
           <tr><td><strong>J4</strong></td><td>Held by the automation gate — payer is in Shadow mode. Staff release it; the audit entry names which check held it.</td><td>Submitted</td><td>Case NA-1065</td></tr>
           <tr><td><strong>J5</strong></td><td>Portal fails because the payer moved a control → voice agent navigates the IVR, holds, speaks to a representative, gets a reference number.</td><td>Submitted, with transcript</td><td>Any Atlas Mutual case</td></tr>
           <tr><td><strong>J6</strong></td><td>Pended → the agent fetches <em>that one document</em> and resupplies it through the same channel, <strong>without restarting</strong> the request.</td><td>Approved</td><td>Case NA-1052</td></tr>
-          <tr><td><strong>J7</strong></td><td>Denial with CARC 50 → routes to a licensed human, always → agent drafts the appeal citing the omitted evidence → physician approves filing.</td><td>Appeal filed</td><td>Case NA-1039</td></tr>
+          <tr><td><strong>J7</strong></td><td>Denial with CARC 50 → routes to a licensed human, always → agent drafts the appeal citing the omitted evidence → the clinical reviewer approves filing.</td><td>Appeal filed</td><td>Case NA-1039</td></tr>
           <tr><td><strong>J8</strong></td><td>Approval expires before the service date — valid to 18 October, procedure booked 22 October → date-span extension requested.</td><td>Approved (extended)</td><td>Case NA-1044</td></tr>
           <tr><td><strong>J9</strong></td><td>Coverage terminated → administrative exception → staff correct the member ID → the case re-runs from eligibility.</td><td>Continues</td><td>Case NA-1067</td></tr>
           <tr><td><strong>J10</strong></td><td>Duplicate order → inquire-before-submit plus the idempotency key → <strong>blocked</strong>, and the existing case opens instead.</td><td>Existing case opened</td><td><code>/provider/new</code></td></tr>
@@ -924,7 +1014,7 @@
           <text class="d-mm d-bad-t" x="445" y="640" text-anchor="middle">J7 · appeal prep → licensed human, ALWAYS</text>
           <line class="d-lx" x1="272" y1="629" x2="314" y2="629" marker-end="url(#arx)"/>
           <rect class="d-bad" x="600" y="612" width="285" height="34" rx="7"/>
-          <text class="d-s d-bad-t" x="742" y="627" text-anchor="middle">Agent drafts · physician approves filing</text>
+          <text class="d-s d-bad-t" x="742" y="627" text-anchor="middle">Agent drafts · licensed reviewer approves filing</text>
           <text class="d-mm d-bad-t" x="742" y="640" text-anchor="middle">fileAppeal() throws without a licensed reviewer</text>
           <line class="d-lx" x1="572" y1="629" x2="594" y2="629" marker-end="url(#arx)"/>
         </svg>
@@ -932,7 +1022,7 @@
       <figcaption>
         Read the middle column as the exception queue. Everything in it is a case a
         person will see; everything not in it the agent is still working. The dashed
-        returns are the two places a human hands the case back — a physician attesting
+        returns are the two places a human hands the case back — a clinical reviewer attesting
         evidence, and staff releasing a held submission.
       </figcaption>
     </figure>
@@ -1514,17 +1604,32 @@
   | "escalate-clinical-review";</code></pre>
     <p>There is no fourth value. Submit, get more, or ask a person.</p>
 
-    <h4>A denial requires a named licensed human</h4>
-<pre><code>if (needsHuman) {
-  if (!reviewer)
-    throw new ApiError("A denial or partial approval must be attributed to a named reviewer.", 422, "human_required");
-  if (!reviewer.roleIds.includes("payer-clinical"))
-    throw new ApiError("Only a licensed clinical reviewer may issue a denial or partial approval. AI never denies care.", 403, "not_licensed");
+    <h4>No determination originates in this portal</h4>
+<pre><code>// `payerReviewerName` names the payer's own medical director where the
+// response gives one. It is never one of our users.
+if (input.reviewerUserId) {
+  throw new ApiError(
+    "Determinations come from the payer. No persona in this portal may record one.",
+    403, "not_permitted",
+  );
+}
+
+// …and a denial unconditionally raises a task for the licensed reviewer.
+if (input.outcome === "denied") {
+  store.tasks.unshift({ kind: "appeal-review", assignedRole: "clinical-reviewer", /* … */ });
+  appendAudit({ action: "request.escalated", metadata: { policy: "no-ai-denial" } });
 }</code></pre>
     <p>
-      <code>Decision.decidedByUserId</code> is <em>optional</em> in the type — because an
-      approval returned electronically by a payer legitimately has no human attributable
-      on our side. The service layer closes the gap.
+      A determination is the <strong>payer's</strong> act. It arrives through a connector —
+      a PAS <code>ClaimResponse</code>, an X12 278 response, a portal screen or a call
+      outcome — and is recorded with <code>actorType: "payer"</code>.
+      <code>Decision.decidedByUserId</code> is therefore always undefined: there is no
+      user of ours to attribute it to.
+    </p>
+    <p>
+      An earlier draft enforced this by requiring a named licensed <em>payer</em> reviewer
+      on our side. Removing the payer seat made the rule stronger rather than weaker:
+      there is now no code path that produces a determination at all.
     </p>
 
     <div class="tablewrap">
@@ -1534,7 +1639,9 @@
           <tr><td><strong>“Not required” is never a default</strong></td><td><code>RequirementResult.paRequired</code> is <code>boolean | "unknown"</code> — tri-state on purpose. An unknown answer stays unknown and routes to a person, because a wrong “no” produces an unpaid claim months later.</td></tr>
           <tr><td><strong>Minimum necessary</strong></td><td><code>ClinicalDocument.requiredByRule: boolean</code>. The document fetch filters by the matched rule's required-document list; the UI labels anything else supplementary.</td></tr>
           <tr><td><strong>No duplicate authorization</strong></td><td><code>idempotencyKey</code> = tenant + order + CPT, with a unique constraint per tenant. <code>create</code> rejects a second open case for the same patient and code; <code>submit</code> rejects a second submission where a successful attempt exists.</td></tr>
-          <tr><td><strong>No PHI in notifications</strong></td><td><code>Notification</code> has <code>title</code>, <code>body</code>, <code>link</code> and <code>requestId</code> — and no name, code or diagnosis field to put PHI into. The fixtures read as deliberately vague because that <em>is</em> the requirement.</td></tr>
+          <tr><td><strong>No PHI in notifications</strong></td><td><code>Notification</code> has <code>title</code>, <code>body</code>, <code>link</code> and <code>requestId</code> — and no name, code or diagnosis field to put PHI into. The rule does not relax by channel: <code>NotificationChannel</code> is <code>"in-app" | "email" | "web-push"</code>, and the same ID-only body goes to all three. The fixtures read as deliberately vague because that <em>is</em> the requirement.</td></tr>
+          <tr><td><strong>A preference cannot hide a record</strong></td><td><code>NotificationPreference</code> carries <code>email</code> and <code>webPush</code> per user per event type; in-app has no toggle because it <em>is</em> the queue. Turning a channel off suppresses delivery only — the event still fires, the in-app row still appears and the audit entry is still written.</td></tr>
+          <tr><td><strong>An invoice line traces to cases</strong></td><td><code>UsageRecord</code> carries <code>requestId</code>, so a pass-through line — “612 voice minutes” — expands into the exact cases that produced it. The waterfall, priced.</td></tr>
           <tr><td><strong>Derived, not stored</strong></td><td><code>expiringSoon</code>, <code>slaBreached</code>, <code>slaAtRisk</code> are computed on every read. “Expiring soon” is valid-to before the scheduled service date — it cannot go stale because it is never written down.</td></tr>
           <tr><td><strong>Append-only audit</strong></td><td><code>AuditEvent.prevHash</code> chains to the previous entry's <code>hash</code>; the viewer verifies the chain on load and states the result. In production, <code>REVOKE UPDATE, DELETE ON audit_event FROM app_role</code>.</td></tr>
         </tbody>
@@ -1925,7 +2032,7 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
     <figure>
       <p class="figcap-top">Diagram 15 · The layers, and which of them are closed</p>
       <div class="figbox">
-        <svg viewBox="0 0 900 520" role="img" aria-label="Six horizontal layers with an observability column spanning all of them on the right. Layer one, experience, one portal shaped by role: the React 19 portal, the SMART EHR launch with a CDS Hooks card, and the consent-gated patient view. Layer two, edge and identity: the API gateway with TLS, rate limiting and a WAF, and Keycloak with one realm per tenant, MFA and SAML/OIDC. Layer three, the execution core, closed for modification: case service, rules and policy engine, SLA timers, human tasks, notifications carrying no PHI, and metering and billing. Layer four, the agent runtime, reaching connectors through an internal MCP-style tool router: orchestrator, coverage, clinical, compliance, decision, submission and follow-up. Layer five, the integration fabric, open for extension: EHR connectors, payer APIs, clearinghouse, portal RPA workers, voice, and documents and fax. Layer six, data and trust, the PHI boundary: PostgreSQL with row-level security, the FHIR store, the object store, the outbox and event bus, the hash-chained audit, and the secrets vault. The observability column is OpenTelemetry with PHI scrubbing at the collector.">
+        <svg viewBox="0 0 900 520" role="img" aria-label="Six horizontal layers with an observability column spanning all of them on the right. Layer one, experience, one portal shaped by role: the React 19 portal, the SMART EHR launch with a CDS Hooks card, and the patient access API surface that CMS-0057-F requires from 2027, which is consent-gated and served through the practice rather than being a seat in the portal. Layer two, edge and identity: the API gateway with TLS, rate limiting and a WAF, and Keycloak with one realm per tenant, MFA and SAML/OIDC. Layer three, the execution core, closed for modification: case service, rules and policy engine, SLA timers, human tasks, notifications carrying no PHI, and metering and billing. Layer four, the agent runtime, reaching connectors through an internal MCP-style tool router: orchestrator, coverage, clinical, compliance, decision, submission and follow-up. Layer five, the integration fabric, open for extension: EHR connectors, payer APIs, clearinghouse, portal RPA workers, voice, and documents and fax. Layer six, data and trust, the PHI boundary: PostgreSQL with row-level security, the FHIR store, the object store, the outbox and event bus, the hash-chained audit, and the secrets vault. The observability column is OpenTelemetry with PHI scrubbing at the collector.">
           <rect class="d-soft" x="15" y="26"  width="770" height="66" rx="10"/>
           <text class="d-cap" x="28" y="44">1 · Experience — one portal, shaped by role</text>
           <rect class="d-box" x="28"  y="54" width="240" height="30" rx="6"/><text class="d-mm" x="148" y="74" text-anchor="middle">React 19 portal + Tailwind</text>
@@ -2119,7 +2226,7 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
           <tr><td>Events</td><td>Postgres outbox → EventBridge or SQS</td><td>At-least-once with no lost or phantom events</td></tr>
           <tr><td>Infra</td><td>AWS (ECS Fargate, RDS Multi-AZ, S3, SQS, KMS, Secrets Manager), Terraform</td><td>HIPAA-eligible services only, under a BAA</td></tr>
           <tr><td>Observability</td><td>OpenTelemetry → CloudWatch/Grafana, Sentry</td><td><strong>PHI scrubbed at the collector</strong>, not at the dashboard</td></tr>
-          <tr><td>Billing</td><td>Stripe Billing + Invoicing</td><td>One Stripe customer per tenant; usage lines trace to the case ledger</td></tr>
+          <tr><td>Billing</td><td>Stripe Billing + Invoicing, with metered usage where pass-through is itemised</td><td>One Stripe customer per tenant. The instrument stays at Stripe — the application sees a brand, a last four and a <code>pm_…</code> reference</td></tr>
         </tbody>
       </table>
     </div>
@@ -2146,6 +2253,82 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
           <tr><td>DR</td><td>RDS automated backups + PITR; documented RTO/RPO; restore rehearsed quarterly, not assumed</td></tr>
         </tbody>
       </table>
+    </div>
+
+    <h3>The platform around the case</h3>
+    <p>
+      Three concerns surround every case and belong to the portal rather than to any one
+      request: who may act (§2), who gets told what, and how it is all paid for.
+    </p>
+
+    <h4>Notifications — three channels, one payload rule</h4>
+    <p>
+      The same domain events that move a case fan out to a notification service.
+      <strong>In-app</strong> is the queue itself and is always on. <strong>Email</strong>
+      (transactional) and <strong>web push</strong> (a browser service worker, delivered
+      with the dashboard closed) are what leave the building, and each is opt-out per
+      event type, per user.
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:18%">Channel</th><th>What it is</th><th style="width:30%">Preference</th></tr></thead>
+        <tbody>
+          <tr><td><strong>In-app</strong></td><td>The bell and the notification centre</td><td>No toggle — it <em>is</em> the queue</td></tr>
+          <tr><td><strong>Email</strong></td><td>Transactional, to the user's address</td><td>Opt-out per event type</td></tr>
+          <tr><td><strong>Web push</strong></td><td>Browser service worker; needs a permission grant and a stored endpoint</td><td>Opt-out per event type, plus the browser grant</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The payload rule does not relax by channel: a notification carries an ID and an
+      event type and <strong>nothing else</strong> — no patient name, no diagnosis, no
+      procedure code, no payer rationale. The message says a case needs attention and
+      links back into the app, where access is re-checked on arrival. An inbox and a lock
+      screen are the two places PHI must never sit.
+    </p>
+    <p>
+      Turning a channel off suppresses <em>delivery</em> only. The event still fires, the
+      in-app row still appears and the audit entry is still written — a preference can
+      never make something vanish from the record. Events are role-scoped: a
+      clinical-review request only reaches the Clinical Reviewer, a held submission only
+      reaches Operations, a connection failure or an invoice only reaches Admin.
+    </p>
+
+    <h4>Billing — a subscription, not a price per authorization</h4>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th style="width:24%">Component</th><th style="width:20%">Type</th><th>Shape</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Onboarding</strong></td><td>One-time</td><td>Tiered by complexity — ~$3.5K (Starter) to ~$20K (Enterprise+)</td></tr>
+          <tr><td><strong>Annual licence</strong></td><td>Recurring</td><td>Tiered by physician count — ~$15K/yr to ~$175K/yr; the per-physician rate falls with scale</td></tr>
+          <tr><td><strong>Managed services + cloud</strong></td><td>Recurring, <strong>flat</strong></td><td>~$3,000 per customer per month — hosting, platform, baseline run cost</td></tr>
+          <tr><td><strong>Net-new integration</strong></td><td>One-time, hourly</td><td>$50/hr. Once a connector is reusable, later customers do not re-pay its build</td></tr>
+          <tr><td><strong>Pass-through usage</strong></td><td>Recurring, variable</td><td>EDI transactions, portal sessions, voice minutes, model tokens, fax pages — itemised per channel, or folded into the flat fee, per tenant</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      The <strong>$4-per-PA</strong> figure in the market models is a TAM/SAM sizing
+      device, as the workbook itself states. It must not leak into pricing.
+    </p>
+    <p>
+      Every usage record names the <strong>case</strong> that caused the spend, so an
+      invoice line — “612 voice minutes” — audits down to the exact cases behind it. That
+      also prices the waterfall honestly: an electronic check costs a fraction of a cent,
+      a portal session cents, a voice call dollars. Cheapest-channel-first is a margin
+      decision as well as a speed one. Settling an invoice is a Stripe payment intent
+      against the stored method, and the act writes <code>invoice.paid</code> to the audit
+      log like any other.
+    </p>
+    <div class="note warn">
+      <span class="t">Still open — D2</span>
+      <p>
+        The <em>shape</em> above is what the source folder documents; the
+        <em>amounts</em> are placeholders. The walkthrough says pay-per-use with no flat
+        fee, while the end-to-end flow and the costs page describe a licence plus a flat
+        managed-services fee. That contradiction needs an owner before anything
+        client-facing quotes a number.
+      </p>
     </div>
 
     <h3>What this architecture deliberately avoids</h3>
@@ -2236,21 +2419,28 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
     <h3>RBAC for the coarse grain, ABAC for the rest</h3>
 
     <p>
+      <strong>One portal, three personas.</strong> Staff / Operations, Clinical Reviewer
+      and Admin all sign into the same application; the navigation, the routes and the
+      rows each call returns are derived from the token, not from a per-role build. One
+      person may hold several personas and gets the union of their scopes.
+    </p>
+    <p>
       <strong>RBAC:</strong> Keycloak realm roles map to token scopes —
-      <code>request:read</code>, <code>clinical:decide</code>, <code>policy:write</code>,
-      <code>connector:write</code>, <code>audit:read</code>.
+      <code>request:read</code>, <code>clinical:attest</code>, <code>policy:write</code>,
+      <code>connector:write</code>, <code>tenant:manage</code>,
+      <code>billing:manage</code>, <code>audit:read</code>.
     </p>
     <p><strong>ABAC</strong> handles what roles cannot express:</p>
     <ul>
-      <li>An ordering physician sees <strong>their own</strong> orders — <code>request:read:own</code>, attribute <code>orderingProviderId == user.providerId</code>.</li>
-      <li>A payer user sees only submissions <strong>to their own payer</strong> — <code>payerId == user.payerId</code>.</li>
-      <li>A patient sees only <strong>their own</strong> record — <code>patientId == user.patientId</code>.</li>
+      <li>The <strong>admin reach</strong>: <code>tenant:manage</code> with <code>adminScope == "tenant"</code> returns one tenant; with <code>adminScope == "platform"</code> it returns all of them. Same endpoint, same screen, different row set — this is how Tenant Admin and Master Admin became one persona rather than two.</li>
+      <li>A <strong>clinical</strong> user's attestation and appeal approval require <code>isLicensedReviewer == true</code> on the linked <code>Provider</code> record, not merely the scope.</li>
       <li>Each <strong>agent role</strong> gets only the tools and fields it needs — field-level policy, Cedar-style. The Coverage agent cannot read clinical notes; the Clinical agent cannot call the submission tool.</li>
     </ul>
     <p>
-      The platform-operator role has <strong>no PHI scopes at all</strong> — which the
-      prototype implements literally, by omitting <code>request:read</code> from that
-      role's scope list.
+      The <strong>Admin persona has no PHI scopes at all</strong>, on either reach — which
+      the prototype implements literally, by omitting <code>request:read</code> from that
+      persona's scope list. A platform admin can see that a tenant's exception rate is
+      climbing and cannot open a single case behind it.
     </p>
 
     <h3>SOC 2 readiness</h3>
@@ -3068,8 +3258,10 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
         <strong>G1 — there are no payer-side requirements anywhere in the source.</strong>
         Every client and consulting document is provider-side. Payer intake reviewers,
         clinical reviewers, work queues, reason codes and decision forms appear only in
-        the <em>research</em>. Everything built for payer roles is an assumption, grounded
-        in research rather than in requirements. This is the largest gap in the project.
+        the <em>research</em>. An earlier draft built them anyway, as labelled assumptions.
+        They are now <strong>withdrawn</strong>: payers are counterparties reached through
+        connectors, not tenants, and determinations arrive as the payer's act. Reopening
+        this is a deliberate client decision, not an inference — see D1.
       </p>
       <p>
         <strong>G2 — all 107 discovery questions are unanswered.</strong> Every row has
@@ -3104,10 +3296,10 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
       <table>
         <thead><tr><th style="width:46px">#</th><th style="width:34%">Gap</th><th>Consequence</th></tr></thead>
         <tbody>
-          <tr><td><strong>G1</strong></td><td><strong>No payer-side requirements anywhere</strong></td><td>The four payer screens are assumptions, grounded in research. <strong>Largest gap in the project</strong></td></tr>
+          <tr><td><strong>G1</strong></td><td><strong>No payer-side requirements anywhere</strong></td><td><strong>Resolved by removal.</strong> The payer screens were assumptions grounded in research; they are out. The rule they carried came out stronger — there is now no code path that produces a determination at all</td></tr>
           <tr><td><strong>G2</strong></td><td><strong>All 107 discovery questions unanswered</strong></td><td>Every concrete value is a placeholder</td></tr>
           <tr><td>G3</td><td>No real payer policy content — no criteria, no CPT→documentation mappings, no questionnaire definitions</td><td>Criteria in the prototype are invented and labelled as such</td></tr>
-          <tr><td>G4</td><td>No patient-portal requirements</td><td>Scoped narrowly to status + timeline, anticipating the 2027 Patient Access API</td></tr>
+          <tr><td>G4</td><td>No patient-portal requirements</td><td><strong>Resolved by removal.</strong> Patient access to PA status is a CMS-0057-F obligation from 1 Jan 2027, served through the practice and consent-gated — an API surface, not a seat here</td></tr>
           <tr><td>G5</td><td>Appeals thin — named as an outcome, with no levels, deadlines or mechanics</td><td>Level 1 / level 2 / external review is an assumption; <strong>no Da Vinci IG covers appeals</strong></td></tr>
           <tr><td>G6</td><td><strong>Nothing is signed.</strong> The Vision &amp; Scope is a “discussion draft, not yet approved”; the repo README says no implementation exists</td><td>All of this is proposal-grade</td></tr>
           <tr><td>G7</td><td>Volume and ROI numbers rest on a screenshot of a search result, not the AMA publication</td><td>Use for sizing; baseline against real practice data</td></tr>
@@ -3118,20 +3310,30 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
 
     <h3>Assumptions carried through — all labelled in the code and docs</h3>
     <ol>
-      <li>Payer-side roles, screens, queue and determination form <span class="tag">G1</span></li>
-      <li>Patient portal scope — status and timeline only <span class="tag">G4</span></li>
       <li>Appeal levels, deadlines and mechanics <span class="tag">G5</span></li>
       <li>Peer-to-peer scheduling — no standard covers it</li>
       <li>All payer criteria content — invented, shaped to resemble real imaging policy <span class="tag">G3</span></li>
       <li>Connector onboarding estimates <span class="tag">G8</span></li>
       <li>The production stack beyond AWS, Keycloak and Stripe, which the folder fixes</li>
-      <li>Tenant Admin and Master Admin collapsed into one prototype role for demo convenience</li>
+      <li>Billing figures — the tier table follows the documented shape, but the amounts are placeholders until D2 is answered</li>
+      <li><strong>Tenant Admin and Master Admin merged into one <code>admin</code> persona with two reaches.</strong> A design decision, not a demo shortcut: the Vision &amp; Scope's distinction is one of scope, not of screens. Splitting them again is a change to the role table and nothing else</li>
     </ol>
+
+    <div class="note">
+      <span class="t">Two assumptions withdrawn rather than relabelled</span>
+      <p>
+        The payer-side roles and screens <span class="tag">G1</span> and the patient portal
+        <span class="tag">G4</span> were inferences from market research, not client
+        requirements. Both are out of the product. That is why they no longer appear on
+        this list: an assumption you have acted on is a risk, and the cheapest way to
+        retire it was to stop building on it.
+      </p>
+    </div>
 
     <h3>The eight questions that actually block work</h3>
     <ol>
       <li><strong>Pricing model</strong> — subscription, metered, or hybrid? Blocks billing design and every commercial section.</li>
-      <li><strong>Does NexAuthAI serve payers too?</strong> The brief implies yes; no source document does. Changes the product's shape, go-to-market and compliance posture fundamentally.</li>
+      <li><strong>Does NexAuthAI serve payers too?</strong> The brief implied yes; no source document does. <strong>Answered for now: no</strong> — the product is provider-side and payers are counterparties reached through connectors. Reopening it changes the product's shape, go-to-market and compliance posture fundamentally, so it should be a deliberate decision rather than an inference.</li>
       <li><strong>Which EHR, which clearinghouse, which payers, which CPT family?</strong> The whole integration plan is placeholder until these land.</li>
       <li><strong>Acceptance thresholds for leaving Shadow mode</strong> — who signs, and at what measured accuracy?</li>
       <li><strong>Deployment mode</strong> — multi-tenant SaaS, or dedicated / air-gapped?</li>
@@ -3146,7 +3348,8 @@ REVOKE UPDATE, DELETE ON audit_event FROM app_role;   -- write-once</code></pre>
     <div class="close">
       <h3>In one paragraph</h3>
       <p>
-        A physician clicks <strong>Get Authorization</strong> on an MRI order. NexAuthAI
+        An order for an MRI arrives — from the EHR at <code>order-sign</code>, or placed
+        by Operations with one click of <strong>Get Authorization</strong>. NexAuthAI
         opens a case, confirms coverage, and asks the payer electronically whether CPT
         72148 even needs authorization — if not, it logs the proof with a reference
         number and stops. If it does, the agent assembles exactly the packet that payer's

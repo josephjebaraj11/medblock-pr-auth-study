@@ -4,15 +4,22 @@
  */
 
 import { getConnection, getConnector } from "@/connectors/registry";
-import { connectorMappings, connectors, store, tenants } from "@/mocks";
+import { connectorMappings, connectors, store, tenants, usageRecords } from "@/mocks";
 import type {
   AuditEvent,
+  BillingAccount,
   Connector,
   ConnectorInstance,
   ConnectorMapping,
+  Invoice,
   Notification,
+  NotificationChannel,
+  NotificationEventType,
+  NotificationPreference,
   PolicyConfig,
+  Tenant,
   TrustMode,
+  UsageRecord,
   User,
 } from "@/types";
 import { ApiError, simulate, snapshot } from "./http";
@@ -168,8 +175,23 @@ export const adminService = {
     return simulate(() => snapshot(store.users), 160, 380);
   },
 
-  async listTenants() {
-    return simulate(() => snapshot(tenants), 140, 320);
+  /**
+   * Tenants.
+   *
+   * A platform admin sees every tenant; a tenant admin sees only their own.
+   * Same screen, same call, different reach — which is the whole point of
+   * merging the two admin personas into one.
+   */
+  async listTenants(scope: "tenant" | "platform" = "platform", tenantId?: string): Promise<Tenant[]> {
+    return simulate(
+      () => snapshot(scope === "platform" ? tenants : tenants.filter((t) => t.id === tenantId)),
+      140,
+      320,
+    );
+  },
+
+  async getTenant(id: string): Promise<Tenant | undefined> {
+    return simulate(() => snapshot(tenants.find((t) => t.id === id)), 110, 260);
   },
 
   async listAudit(filter: { actorType?: string; action?: string; search?: string } = {}): Promise<AuditEvent[]> {
@@ -227,5 +249,177 @@ export const notificationService = {
       }
       return true;
     }, 140, 320);
+  },
+
+  /* ---------------------------------------------------------------- *
+   * Delivery preferences — email and web push
+   *
+   * In-app delivery is not a preference; it is the queue itself. These two
+   * channels are what leaves the building, and each is opt-out per event
+   * type. Turning one off suppresses delivery only — the event still fires,
+   * the in-app row still appears, the audit entry is still written.
+   * ---------------------------------------------------------------- */
+
+  async listPreferences(userId: string): Promise<NotificationPreference[]> {
+    return simulate(
+      () => snapshot(store.notificationPreferences.filter((p) => p.userId === userId)),
+      120,
+      280,
+    );
+  },
+
+  async setPreference(
+    userId: string,
+    eventType: NotificationEventType,
+    channel: Exclude<NotificationChannel, "in-app">,
+    enabled: boolean,
+  ): Promise<NotificationPreference> {
+    return simulate(() => {
+      let pref = store.notificationPreferences.find(
+        (p) => p.userId === userId && p.eventType === eventType,
+      );
+      if (!pref) {
+        pref = { userId, eventType, email: true, webPush: true };
+        store.notificationPreferences.push(pref);
+      }
+      if (channel === "email") pref.email = enabled;
+      else pref.webPush = enabled;
+      return snapshot(pref);
+    }, 180, 420);
+  },
+
+  async getWebPush(userId: string) {
+    return simulate(
+      () => snapshot(store.webPush.find((w) => w.userId === userId)) ?? { userId, permission: "default" as const },
+      100,
+      240,
+    );
+  },
+
+  /**
+   * Stands in for the browser permission prompt plus the service-worker
+   * registration. In production this is `Notification.requestPermission()`
+   * followed by `pushManager.subscribe()`, and the endpoint it returns is
+   * what the notification service posts to.
+   */
+  async enableWebPush(userId: string) {
+    return simulate(() => {
+      let sub = store.webPush.find((w) => w.userId === userId);
+      if (!sub) {
+        sub = { userId, permission: "granted" };
+        store.webPush.push(sub);
+      }
+      sub.permission = "granted";
+      sub.endpointRef = `wps_${Math.random().toString(16).slice(2, 10)}`;
+      sub.deviceLabel = "This browser";
+      sub.subscribedAt = new Date().toISOString();
+      return snapshot(sub);
+    }, 500, 1100);
+  },
+
+  async disableWebPush(userId: string) {
+    return simulate(() => {
+      const sub = store.webPush.find((w) => w.userId === userId);
+      if (sub) {
+        sub.permission = "default";
+        sub.endpointRef = undefined;
+        sub.subscribedAt = undefined;
+      }
+      return true;
+    }, 220, 480);
+  },
+};
+
+/**
+ * Billing.
+ *
+ * Money lives at Stripe; this service reads back what Stripe holds and
+ * never touches an instrument. A pass-through invoice line can be expanded
+ * into the usage records behind it, and each of those names the case that
+ * caused the spend — the submission waterfall, priced.
+ */
+export const billingService = {
+  async getAccount(tenantId: string): Promise<BillingAccount | undefined> {
+    return simulate(() => snapshot(store.billing.find((b) => b.tenantId === tenantId)), 160, 380);
+  },
+
+  async listAccounts(): Promise<BillingAccount[]> {
+    return simulate(() => snapshot(store.billing), 180, 420);
+  },
+
+  async listInvoices(tenantId: string): Promise<Invoice[]> {
+    return simulate(
+      () =>
+        snapshot(
+          store.invoices
+            .filter((i) => i.tenantId === tenantId)
+            .sort((a, b) => (a.issuedAt < b.issuedAt ? 1 : -1)),
+        ),
+      200,
+      480,
+    );
+  },
+
+  /** The metered consumption behind a pass-through line. */
+  async usageFor(tenantId: string, kind?: UsageRecord["kind"]): Promise<UsageRecord[]> {
+    return simulate(
+      () =>
+        snapshot(
+          usageRecords.filter((u) => u.tenantId === tenantId && (!kind || u.kind === kind)),
+        ),
+      160,
+      360,
+    );
+  },
+
+  /**
+   * Settles an open invoice. In production this is a Stripe payment intent
+   * against the stored payment method; nothing here handles card data.
+   */
+  async payInvoice(invoiceId: string, userId: string): Promise<Invoice> {
+    const invoice = store.invoices.find((i) => i.id === invoiceId);
+    if (!invoice) throw new ApiError("Invoice not found", 404, "not_found");
+    if (invoice.status === "paid") throw new ApiError("Invoice is already paid", 409, "conflict");
+
+    return simulate(() => {
+      invoice.status = "paid";
+      appendAudit({
+        tenantId: invoice.tenantId,
+        actorId: userId,
+        actorName: store.users.find((u) => u.id === userId)?.name ?? "Admin",
+        actorType: "user",
+        action: "invoice.paid",
+        targetType: "Invoice",
+        targetId: invoice.id,
+        externalRef: invoice.stripeInvoiceRef,
+        summary: `Invoice ${invoice.number} settled`,
+        metadata: { totalUsd: invoice.totalUsd },
+      });
+      return snapshot(invoice);
+    }, 900, 1800);
+  },
+
+  async updatePassThroughMode(
+    tenantId: string,
+    mode: BillingAccount["passThroughMode"],
+    userId: string,
+  ): Promise<BillingAccount> {
+    const account = store.billing.find((b) => b.tenantId === tenantId);
+    if (!account) throw new ApiError("Billing account not found", 404, "not_found");
+    return simulate(() => {
+      account.passThroughMode = mode;
+      appendAudit({
+        tenantId,
+        actorId: userId,
+        actorName: store.users.find((u) => u.id === userId)?.name ?? "Admin",
+        actorType: "user",
+        action: "billing.changed",
+        targetType: "BillingAccount",
+        targetId: tenantId,
+        summary: `Pass-through usage set to ${mode}`,
+        metadata: { mode },
+      });
+      return snapshot(account);
+    }, 400, 900);
   },
 };

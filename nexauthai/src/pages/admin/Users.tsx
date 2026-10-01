@@ -13,37 +13,68 @@ import {
   Th,
 } from "@/components/ui";
 import { relative } from "@/lib/format";
-import { roles } from "@/mocks";
+import { roles, tenants } from "@/mocks";
+import { useSession } from "@/lib/session";
 import { adminService } from "@/services/adminService";
 import type { User } from "@/types";
 
+/**
+ * Users and roles.
+ *
+ * Three personas, and a directory that spans every tenant when the signed-in
+ * admin has platform reach. A person may hold more than one persona — the
+ * practice manager below holds two — and the portal renders the union of
+ * their scopes rather than sending them somewhere else.
+ */
 export default function AdminUsers() {
+  const { user } = useSession();
   const [users, setUsers] = useState<User[] | null>(null);
+
+  const platformReach = user?.adminScope === "platform";
 
   useEffect(() => {
     let active = true;
-    adminService.listUsers().then((rows) => active && setUsers(rows));
+    adminService.listUsers().then((rows) => {
+      if (!active) return;
+      setUsers(platformReach ? rows : rows.filter((u) => u.tenantId === user?.tenantId));
+    });
     return () => {
       active = false;
     };
-  }, []);
+  }, [user, platformReach]);
+
+  const tenantName = (id: string) => tenants.find((t) => t.id === id)?.name ?? id;
 
   return (
     <>
       <PageHeader
-        eyebrow="Platform admin"
+        eyebrow="Admin"
         title="Users &amp; roles"
-        description="Who can do what. Roles map to token scopes, and the API checks the scope and the tenant on every request."
+        description="Who can do what. Personas map to token scopes, and the API checks the scope and the tenant on every request."
+        actions={
+          <Badge tone={platformReach ? "brand" : "neutral"} dot>
+            {platformReach ? "All tenants" : tenantName(user?.tenantId ?? "")}
+          </Badge>
+        }
       />
 
-      <Callout tone="brand" icon={<ShieldCheck size={15} />} title="One role carries the clinical boundary">
-        Only roles marked as licensed may issue a medical-necessity
-        determination. The service layer enforces it: a denial or partial
-        approval cannot be recorded without a named licensed reviewer.
+      <Callout tone="brand" icon={<ShieldCheck size={15} />} title="One persona carries the clinical boundary">
+        Only the Clinical Reviewer is licensed, and only that persona makes a
+        medical judgement — evidence attestation, appeal approval,
+        peer-to-peer. Nothing in this portal issues a determination of its
+        own: those arrive from the payer through a connector, and every denial
+        routes to a licensed clinician.
       </Callout>
 
       <Card className="mt-5">
-        <CardHeader title="Directory" description={`${users?.length ?? 0} users across both tenants.`} />
+        <CardHeader
+          title="Directory"
+          description={
+            platformReach
+              ? `${users?.length ?? 0} users across ${tenants.length} tenants.`
+              : `${users?.length ?? 0} users in ${tenantName(user?.tenantId ?? "")}.`
+          }
+        />
         {!users ? (
           <LoadingBlock label="Loading users" />
         ) : (
@@ -93,7 +124,12 @@ export default function AdminUsers() {
                       })}
                     </span>
                   </Td>
-                  <Td className="text-xs text-content-muted">{u.tenantId}</Td>
+                  <Td className="text-xs">
+                    <span className="block text-content-secondary">{tenantName(u.tenantId)}</span>
+                    <span className="block font-mono text-[10px] text-content-muted">
+                      {u.tenantId}
+                    </span>
+                  </Td>
                   <Td>
                     {u.mfaEnrolled ? (
                       <Check size={15} className="text-tint-accent-on" aria-label="Enrolled" />
@@ -123,7 +159,7 @@ export default function AdminUsers() {
       <Card className="mt-6">
         <CardHeader
           title="Permission matrix"
-          description="Each role's scopes. The UI renders from these; the API enforces them."
+          description="Three personas and their scopes. The UI renders from these; the API enforces them. Someone holding two personas gets the union."
         />
         <CardBody className="space-y-4">
           {roles.map((r) => (
@@ -135,12 +171,14 @@ export default function AdminUsers() {
                     {r.description}
                   </p>
                 </div>
-                {r.canMakeClinicalDetermination && (
+                {r.canMakeClinicalDetermination ? (
                   <Badge tone="accent">
                     <ShieldCheck size={11} aria-hidden />
                     Licensed
                   </Badge>
-                )}
+                ) : r.id === "admin" ? (
+                  <Badge tone="neutral">No PHI scope</Badge>
+                ) : null}
               </div>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
                 {r.scopes.map((s) => (

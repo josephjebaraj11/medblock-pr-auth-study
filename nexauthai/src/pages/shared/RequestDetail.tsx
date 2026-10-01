@@ -1,8 +1,8 @@
 /**
  * One case, in full.
  *
- * The same page serves the provider, physician and payer sides — the case is
- * one object, and the only thing that changes between roles is which actions
+ * The same page serves Operations and the Clinical Reviewer — the case is one
+ * object, and the only thing that changes between personas is which actions
  * are offered. That is the design rule from the source material ("the case
  * remains the same even if execution moves from API to portal to phone to
  * human"), applied to the UI.
@@ -42,10 +42,8 @@ import {
   CardBody,
   CardHeader,
   EmptyState,
-  Field,
   LoadingBlock,
   Tabs,
-  inputClass,
 } from "@/components/ui";
 import { bytes, dateTime, fullDate, latency, relative } from "@/lib/format";
 import { useSession } from "@/lib/session";
@@ -57,14 +55,14 @@ import { paService, type RequestDetail as Detail } from "@/services/paService";
 type TabId = "overview" | "ai" | "documents" | "channels" | "messages" | "audit";
 
 export default function RequestDetailPage({
-  backTo = "/provider/requests",
+  backTo = "/ops/requests",
   backLabel = "All requests",
 }: {
   backTo?: string;
   backLabel?: string;
 }) {
   const { id = "" } = useParams();
-  const { user, role, can } = useSession();
+  const { user, can } = useSession();
 
   const [detail, setDetail] = useState<Detail | null>(null);
   const [tab, setTab] = useState<TabId>("overview");
@@ -114,13 +112,12 @@ export default function RequestDetailPage({
   const openRfi = communications.find((c) => c.kind === "rfi" && c.status === "open");
   const patient = directoryService.sync.patient(request.patientId);
   const payer = directoryService.sync.payer(request.payerId);
-  const isPayerSide = role?.side === "payer";
 
   /* ---------------------------- actions ---------------------------- */
 
   const actions: React.ReactNode[] = [];
 
-  if (!isPayerSide && can("request:approve-submission") && request.status === "needs-approval") {
+  if (can("request:approve-submission") && request.status === "needs-approval") {
     actions.push(
       <Button
         key="release"
@@ -141,7 +138,6 @@ export default function RequestDetailPage({
   }
 
   if (
-    !isPayerSide &&
     can("request:submit") &&
     ["documentation", "requirement-check"].includes(request.status)
   ) {
@@ -158,7 +154,7 @@ export default function RequestDetailPage({
     );
   }
 
-  if (!isPayerSide && openRfi && can("request:submit")) {
+  if (openRfi && can("request:submit")) {
     actions.push(
       <Button
         key="rfi"
@@ -186,7 +182,7 @@ export default function RequestDetailPage({
     );
   }
 
-  if (!isPayerSide && flags.expiringSoon && can("request:submit")) {
+  if (flags.expiringSoon && can("request:submit")) {
     actions.push(
       <Button
         key="extend"
@@ -597,7 +593,7 @@ export default function RequestDetailPage({
               assessment={assessment}
               documents={documents}
               threshold={store.policy.autoSubmitThreshold}
-              readOnly={isPayerSide}
+              readOnly={!can("request:submit") && !can("clinical:attest")}
             />
           ) : (
             <Card>
@@ -839,183 +835,5 @@ export default function RequestDetailPage({
         )}
       </div>
     </>
-  );
-}
-
-/** Payer-side determination form, mounted on the payer review route. */
-export function DeterminationForm({
-  requestId,
-  onDone,
-}: {
-  requestId: string;
-  onDone: () => void;
-}) {
-  const { user, role } = useSession();
-  const [outcome, setOutcome] = useState<"approved" | "partially-approved" | "denied">("approved");
-  const [rationale, setRationale] = useState("");
-  const [reasonCode, setReasonCode] = useState("");
-  const [units, setUnits] = useState("1");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const canDecide = role?.canMakeClinicalDetermination ?? false;
-
-  const submit = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const validFrom = new Date().toISOString().slice(0, 10);
-      const validTo = new Date(Date.now() + 90 * 86_400_000).toISOString().slice(0, 10);
-      await paService.recordDecision(requestId, {
-        outcome,
-        reviewerUserId: user!.id,
-        rationale,
-        approvedUnits: outcome === "denied" ? undefined : Number(units),
-        authorizationNumber:
-          outcome === "denied" ? undefined : `MRDN-AUTH-${Math.floor(Math.random() * 9_000_000 + 1_000_000)}`,
-        validFrom: outcome === "denied" ? undefined : validFrom,
-        validTo: outcome === "denied" ? undefined : validTo,
-        reasonCodes: reasonCode
-          ? [
-              {
-                system: "CARC",
-                code: reasonCode,
-                display:
-                  reasonCode === "50"
-                    ? "These are non-covered services because this is not deemed a medical necessity by the payer."
-                    : "Payer-specified reason.",
-              },
-            ]
-          : [],
-      });
-      onDone();
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Could not record the determination.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (!canDecide) {
-    return (
-      <Callout tone="signal" icon={<ShieldAlert size={15} />} title="Not permitted">
-        Only a licensed clinical reviewer may issue a determination. Intake
-        reviewers check completeness and triage; they do not decide.
-      </Callout>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader
-        title="Issue determination"
-        description="A denial or partial approval is recorded against your name. The platform will not record one without a named licensed reviewer."
-      />
-      <CardBody className="space-y-4">
-        <fieldset>
-          <legend className="text-xs font-semibold text-content-secondary">Outcome</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {(
-              [
-                ["approved", "Approve"],
-                ["partially-approved", "Partially approve"],
-                ["denied", "Deny"],
-              ] as const
-            ).map(([value, label]) => (
-              <label
-                key={value}
-                className={`cursor-pointer rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                  outcome === value
-                    ? value === "denied"
-                      ? "border-danger-500 bg-tint-danger text-tint-danger-on"
-                      : "border-brand-500 bg-tint-brand text-tint-brand-on"
-                    : "border-line bg-surface-raised text-content-secondary hover:bg-surface-inset"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="outcome"
-                  value={value}
-                  checked={outcome === value}
-                  onChange={() => setOutcome(value)}
-                  className="sr-only"
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-
-        {outcome !== "denied" && (
-          <Field label="Approved units" hint="Fewer units than requested makes this a partial approval.">
-            {(props) => (
-              <input
-                {...props}
-                type="number"
-                min={1}
-                value={units}
-                onChange={(e) => setUnits(e.target.value)}
-                className={inputClass}
-              />
-            )}
-          </Field>
-        )}
-
-        {outcome === "denied" && (
-          <Field label="Reason code" hint="CARC code carried back on the ClaimResponse." required>
-            {(props) => (
-              <select
-                {...props}
-                value={reasonCode}
-                onChange={(e) => setReasonCode(e.target.value)}
-                className={inputClass}
-              >
-                <option value="">Select a reason code</option>
-                <option value="50">50 — Not deemed a medical necessity</option>
-                <option value="197">197 — Precertification absent</option>
-                <option value="A1">A1 — Claim denied charges</option>
-              </select>
-            )}
-          </Field>
-        )}
-
-        <Field
-          label="Rationale"
-          hint="This is what the provider sees, and what an appeal will argue against. Say which criterion drove the decision."
-          required
-        >
-          {(props) => (
-            <textarea
-              {...props}
-              rows={4}
-              value={rationale}
-              onChange={(e) => setRationale(e.target.value)}
-              className={inputClass}
-              placeholder="Criteria assessed and the basis for this determination…"
-            />
-          )}
-        </Field>
-
-        {error && (
-          <Callout tone="danger" icon={<X size={15} />}>
-            {error}
-          </Callout>
-        )}
-
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant={outcome === "denied" ? "danger" : "primary"}
-            loading={busy}
-            disabled={!rationale.trim() || (outcome === "denied" && !reasonCode)}
-            onClick={submit}
-          >
-            Record determination as {user?.name}
-          </Button>
-          <span className="text-xs text-content-muted">
-            Recorded against your name in the audit trail.
-          </span>
-        </div>
-      </CardBody>
-    </Card>
   );
 }

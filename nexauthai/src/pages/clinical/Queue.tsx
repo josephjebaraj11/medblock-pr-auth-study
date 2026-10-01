@@ -1,3 +1,13 @@
+/**
+ * The clinical reviewer's queue.
+ *
+ * This is the whole of the licensed persona's landing surface, and it holds
+ * exactly the four things that are medical judgements: an evidence gap the
+ * agent stopped at, a denial, an appeal awaiting sign-off, and a scheduled
+ * peer-to-peer. Nothing administrative reaches here — that is Operations'
+ * queue, and the split is the point of keeping the two personas apart.
+ */
+
 import { Gavel, Phone, ShieldCheck, Stethoscope } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -11,6 +21,7 @@ import {
   EmptyState,
   LoadingBlock,
   PageHeader,
+  Stat,
 } from "@/components/ui";
 import { relative } from "@/lib/format";
 import { store } from "@/mocks";
@@ -24,12 +35,12 @@ const KIND_ICON = {
   "peer-to-peer": <Phone size={15} />,
 } as const;
 
-export default function ClinicalReviewQueue() {
+export default function ClinicalQueue() {
   const [tasks, setTasks] = useState<Task[] | null>(null);
 
   useEffect(() => {
     let active = true;
-    paService.listTasks("ordering-physician").then((rows) => {
+    paService.listTasks("clinical-reviewer").then((rows) => {
       if (active) setTasks(rows.filter((t) => t.status === "open" || t.status === "in-progress"));
     });
     return () => {
@@ -37,10 +48,12 @@ export default function ClinicalReviewQueue() {
     };
   }, []);
 
+  const count = (kind: Task["kind"]) => (tasks ?? []).filter((t) => t.kind === kind).length;
+
   return (
     <>
       <PageHeader
-        eyebrow="Ordering physician"
+        eyebrow="Clinical reviewer · licensed"
         title="Clinical review"
         description="Cases where the agent reached a question only a clinician can answer."
       />
@@ -49,7 +62,16 @@ export default function ClinicalReviewQueue() {
         The agent reads the chart, matches the payer's criteria and says what it
         found and what is missing. It does not judge medical necessity, it does
         not issue denials, and it cannot file an appeal without your approval.
+        Every action you take here is recorded against your name.
       </Callout>
+
+      {tasks && (
+        <div className="mt-5 grid gap-3 sm:grid-cols-3">
+          <Stat label="Evidence gaps" value={count("clinical-review")} tone="signal" />
+          <Stat label="Denials & appeals" value={count("appeal-review")} tone="danger" />
+          <Stat label="Peer-to-peer" value={count("peer-to-peer")} />
+        </div>
+      )}
 
       <Card className="mt-5">
         <CardHeader title="Your queue" description={`${tasks?.length ?? 0} open.`} />
@@ -73,7 +95,7 @@ export default function ClinicalReviewQueue() {
               return (
                 <li key={t.id}>
                   <Link
-                    to={`/physician/orders/${t.requestId}`}
+                    to={`/clinical/${t.requestId}`}
                     className="block px-4 py-4 transition-colors hover:bg-surface-inset/60"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">

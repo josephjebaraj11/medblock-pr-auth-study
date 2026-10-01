@@ -137,8 +137,6 @@ export interface RequestFilter {
   orderingProviderId?: string;
   urgency?: Urgency;
   search?: string;
-  /** Payer-side callers see only their own payer's submitted work. */
-  payerScope?: string;
 }
 
 export interface RequestDetail {
@@ -160,16 +158,6 @@ export const paService = {
     return simulate(() => {
       let rows = store.requests;
 
-      if (filter.payerScope) {
-        // A payer only ever sees what was actually submitted to it.
-        rows = rows.filter(
-          (r) =>
-            r.payerId === filter.payerScope &&
-            ["submitted", "in-review", "pended", "approved", "partially-approved", "denied", "appealed", "peer-to-peer"].includes(
-              r.status,
-            ),
-        );
-      }
       if (filter.status?.length) rows = rows.filter((r) => filter.status!.includes(r.status));
       if (filter.payerId) rows = rows.filter((r) => r.payerId === filter.payerId);
       if (filter.patientId) rows = rows.filter((r) => r.patientId === filter.patientId);
@@ -668,7 +656,7 @@ I am available for a peer-to-peer discussion at your convenience.`,
           kind: "admin-exception",
           title: "No automated channel could reach this payer",
           reason: "Every electronic, portal and voice route failed. A staff member must take this one manually.",
-          assignedRole: "provider-staff",
+          assignedRole: "staff-operations",
           priority: "high",
           createdAt: new Date().toISOString(),
           status: "open",
@@ -880,21 +868,28 @@ I am available for a peer-to-peer discussion at your convenience.`,
   },
 
   /* ---------------------------------------------------------------- *
-   * Payer-side determination
+   * Payer determination, arriving
    * ---------------------------------------------------------------- */
 
   /**
-   * Records a determination.
+   * Records the determination a payer returned.
    *
-   * A denial or partial approval requires a named reviewer who holds a role
-   * permitted to make a clinical determination. There is no code path that
-   * records one without a human — that is the point.
+   * The payer is a counterparty, not a user of this portal — determinations
+   * arrive through a connector (PAS `ClaimResponse`, an X12 278 response, a
+   * portal screen or a call outcome) and are recorded as coming from the
+   * payer, never from one of our personas. The platform has no code path
+   * that issues a denial of its own.
+   *
+   * A denial or partial approval always raises a task for the licensed
+   * Clinical Reviewer. That routing is unconditional — it is the rule, not a
+   * configuration.
    */
   async recordDecision(
     requestId: string,
     input: {
       outcome: Decision["outcome"];
-      reviewerUserId?: string;
+      /** The payer's own reviewer, where the response names one. */
+      payerReviewerName?: string;
       rationale: string;
       reasonCodes?: Decision["reasonCodes"];
       authorizationNumber?: string;
@@ -906,27 +901,6 @@ I am available for a peer-to-peer discussion at your convenience.`,
     const request = store.requests.find((r) => r.id === requestId);
     if (!request) throw new ApiError("Request not found", 404, "not_found");
 
-    const needsHuman = input.outcome === "denied" || input.outcome === "partially-approved";
-    const reviewer = input.reviewerUserId
-      ? store.users.find((u) => u.id === input.reviewerUserId)
-      : undefined;
-
-    if (needsHuman) {
-      if (!reviewer) {
-        throw new ApiError(
-          "A denial or partial approval must be attributed to a named reviewer.",
-          422,
-          "human_required",
-        );
-      }
-      if (!reviewer.roleIds.includes("payer-clinical")) {
-        throw new ApiError(
-          "Only a licensed clinical reviewer may issue a denial or partial approval. AI never denies care.",
-          403,
-          "not_licensed",
-        );
-      }
-    }
 
     const decision: Decision = {
       id: `dec-${requestId.replace("req-", "")}`,
@@ -934,8 +908,9 @@ I am available for a peer-to-peer discussion at your convenience.`,
       requestId,
       outcome: input.outcome,
       decidedAt: new Date().toISOString(),
-      decidedByUserId: reviewer?.id,
-      decidedByName: reviewer?.name ?? "Electronic determination",
+      // Never one of our users. A determination is the payer's act.
+      decidedByUserId: undefined,
+      decidedByName: input.payerReviewerName ?? "Electronic determination",
       authorizationNumber: input.authorizationNumber,
       validFrom: input.validFrom,
       validTo: input.validTo,
@@ -964,20 +939,11 @@ I am available for a peer-to-peer discussion at your convenience.`,
       request.updatedAt = new Date().toISOString();
       request.version += 1;
 
-      for (const t of store.tasks) {
-        if (t.requestId === requestId && t.kind === "clinical-determination" && t.status === "open") {
-          t.status = "done";
-          t.resolvedAt = new Date().toISOString();
-          t.resolvedByUserId = reviewer?.id;
-          t.resolution = `Determination issued: ${input.outcome}.`;
-        }
-      }
-
       appendAudit({
         tenantId: request.tenantId,
-        actorId: reviewer?.id ?? "payer:system",
-        actorName: reviewer?.name ?? "Electronic determination",
-        actorType: reviewer ? "user" : "payer",
+        actorId: `payer:${request.payerId}`,
+        actorName: input.payerReviewerName ?? "Electronic determination",
+        actorType: "payer",
         action: "determination.issued",
         targetType: "Decision",
         targetId: decision.id,
@@ -996,7 +962,7 @@ I am available for a peer-to-peer discussion at your convenience.`,
           title: "Denial received — appeal draft ready for review",
           reason:
             "Every denial routes to a licensed clinician. The agent has drafted an appeal; it cannot be filed without clinical sign-off.",
-          assignedRole: "ordering-physician",
+          assignedRole: "clinical-reviewer",
           priority: "high",
           createdAt: new Date().toISOString(),
           dueAt: decision.appealDeadline,
@@ -1018,54 +984,6 @@ I am available for a peer-to-peer discussion at your convenience.`,
       return snapshot(decision);
     }, 600, 1300);
   },
-
-  async triage(requestId: string, assigneeUserId: string) {
-    return simulate(() => {
-      const task = store.tasks.find(
-        (t) => t.requestId === requestId && t.kind === "intake-completeness" && t.status === "open",
-      );
-      if (task) {
-        task.status = "done";
-        task.resolvedAt = new Date().toISOString();
-        task.resolution = "Intake complete; triaged to clinical review.";
-      }
-      const request = store.requests.find((r) => r.id === requestId);
-      if (request) {
-        request.status = "in-review";
-        request.updatedAt = new Date().toISOString();
-        store.tasks.unshift({
-          id: `tsk-${Date.now()}`,
-          tenantId: "t-meridian",
-          requestId,
-          kind: "clinical-determination",
-          title: `Criteria review — ${request.serviceLines[0].display}`,
-          reason: "Intake complete, triaged to clinical review.",
-          assignedRole: "payer-clinical",
-          assignedToUserId: assigneeUserId,
-          priority: request.urgency === "expedited" ? "urgent" : "normal",
-          createdAt: new Date().toISOString(),
-          dueAt: request.decisionDueAt,
-          status: "open",
-        });
-      }
-      appendAudit({
-        tenantId: "t-meridian",
-        actorId: "usr-reyes",
-        actorName: "Marcus Reyes",
-        actorType: "user",
-        action: "request.triaged",
-        targetType: "PriorAuthRequest",
-        targetId: requestId,
-        summary: "Intake complete, assigned to clinical review",
-        metadata: { assignedTo: assigneeUserId },
-      });
-      return true;
-    }, 350, 750);
-  },
-
-  /* ---------------------------------------------------------------- *
-   * Appeals and peer-to-peer
-   * ---------------------------------------------------------------- */
 
   async fileAppeal(
     requestId: string,

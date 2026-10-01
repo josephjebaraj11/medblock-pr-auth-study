@@ -29,6 +29,26 @@ export interface Tenant {
   /** Tenant-wide automation posture. See PolicyConfig for the detail. */
   status: "active" | "onboarding" | "suspended";
   createdAt: string;
+  /**
+   * Operational health shown on the admin Tenants screen. Counts and rates
+   * only — a platform admin sees how a tenant is doing, never what is in it.
+   */
+  health: TenantHealth;
+}
+
+/** Cross-tenant operational metrics. Deliberately contains no PHI. */
+export interface TenantHealth {
+  physicians: number;
+  activeUsers: number;
+  casesLast30d: number;
+  /** Share of cases that closed without a human touch. */
+  touchlessRate: number;
+  exceptionRate: number;
+  /** Connections not in the `active` state. */
+  connectionsDegraded: number;
+  primaryEhr: string;
+  /** Keycloak realm backing this tenant's identity. */
+  realm: string;
 }
 
 /** FHIR: Organization */

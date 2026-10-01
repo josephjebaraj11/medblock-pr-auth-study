@@ -1,9 +1,13 @@
 /**
  * Routes.
  *
- * Grouped by role. `RequireRole` is not security — there is no auth here —
- * it exists so a role cannot land on a screen its scopes would not grant in
- * production, which keeps the prototype honest about what each role sees.
+ * One route table for one portal. Every persona and every tenant signs into
+ * the same application; `RequireScope` decides which of these routes resolve
+ * for the signed-in token rather than shipping a different build per role.
+ *
+ * It is not security — there is no auth here — it exists so a persona cannot
+ * land on a screen its scopes would not grant in production, which keeps the
+ * prototype honest about what each one actually sees.
  */
 
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
@@ -11,25 +15,23 @@ import { AppShell } from "@/components/AppShell";
 import { useSession } from "@/lib/session";
 import Login from "@/pages/Login";
 import Notifications from "@/pages/Notifications";
+import OnePortal from "@/pages/OnePortal";
 import AdminAudit from "@/pages/admin/Audit";
+import AdminBilling from "@/pages/admin/Billing";
 import AdminConnectors, { ConnectorDetail } from "@/pages/admin/Connectors";
 import AdminOverview from "@/pages/admin/Overview";
 import AdminPayers from "@/pages/admin/Payers";
+import AdminTenants from "@/pages/admin/Tenants";
 import AdminUsers from "@/pages/admin/Users";
-import PatientPortal from "@/pages/patient/Portal";
-import PayerClinicalQueue from "@/pages/payer/ClinicalQueue";
-import PayerQueue from "@/pages/payer/Queue";
-import PayerReviewDetail from "@/pages/payer/ReviewDetail";
-import ClinicalReviewQueue from "@/pages/physician/ClinicalReview";
-import MyOrders from "@/pages/physician/MyOrders";
-import ProviderDashboard from "@/pages/provider/Dashboard";
-import NewRequest from "@/pages/provider/NewRequest";
-import ProviderRequests from "@/pages/provider/Requests";
-import Worklist from "@/pages/provider/Worklist";
+import ClinicalQueue from "@/pages/clinical/Queue";
+import OpsDashboard from "@/pages/ops/Dashboard";
+import NewRequest from "@/pages/ops/NewRequest";
+import OpsRequests from "@/pages/ops/Requests";
+import Worklist from "@/pages/ops/Worklist";
 import RequestDetailPage from "@/pages/shared/RequestDetail";
 import type { Scope } from "@/types";
 
-function RequireRole({ scope, children }: { scope: Scope; children: React.ReactNode }) {
+function RequireScope({ scope, children }: { scope: Scope; children: React.ReactNode }) {
   const { can, role } = useSession();
   if (!can(scope)) {
     return <Navigate to={role?.landingPath ?? "/"} replace />;
@@ -55,175 +57,143 @@ export function AppRoutes() {
       <Routes>
         <Route path="/" element={<Navigate to={role.landingPath} replace />} />
         <Route path="/login" element={<Navigate to={role.landingPath} replace />} />
+
+        {/* Open to every persona: the notification centre and the statement
+            that there is only one portal behind all of this. */}
         <Route path="/notifications" element={<Notifications />} />
+        <Route path="/portal" element={<OnePortal />} />
 
-        {/* ---------------- Provider / clinic staff ---------------- */}
+        {/* ---------------- Staff / Operations ---------------- */}
         <Route
-          path="/provider"
+          path="/ops"
           element={
-            <RequireRole scope="request:create">
-              <ProviderDashboard />
-            </RequireRole>
+            <RequireScope scope="request:create">
+              <OpsDashboard />
+            </RequireScope>
           }
         />
         <Route
-          path="/provider/requests"
+          path="/ops/requests"
           element={
-            <RequireRole scope="request:read">
-              <ProviderRequests />
-            </RequireRole>
+            <RequireScope scope="request:read">
+              <OpsRequests />
+            </RequireScope>
           }
         />
         <Route
-          path="/provider/requests/:id"
+          path="/ops/requests/:id"
           element={
-            <RequireRole scope="request:read">
+            <RequireScope scope="request:read">
               <RequestDetailPage />
-            </RequireRole>
+            </RequireScope>
           }
         />
         <Route
-          path="/provider/new"
+          path="/ops/new"
           element={
-            <RequireRole scope="request:create">
+            <RequireScope scope="request:create">
               <NewRequest />
-            </RequireRole>
+            </RequireScope>
           }
         />
         <Route
-          path="/provider/worklist"
+          path="/ops/worklist"
           element={
-            <RequireRole scope="queue:work">
+            <RequireScope scope="queue:work">
               <Worklist />
-            </RequireRole>
+            </RequireScope>
           }
         />
 
-        {/* ---------------- Ordering physician ---------------- */}
+        {/* ---------------- Clinical reviewer (licensed) ---------------- */}
         <Route
-          path="/physician"
+          path="/clinical"
           element={
-            <RequireRole scope="request:read:own">
-              <MyOrders />
-            </RequireRole>
+            <RequireScope scope="clinical:attest">
+              <ClinicalQueue />
+            </RequireScope>
           }
         />
         <Route
-          path="/physician/review"
+          path="/clinical/cases"
           element={
-            <RequireRole scope="clinical:attest">
-              <ClinicalReviewQueue />
-            </RequireRole>
+            <RequireScope scope="clinical:attest">
+              <OpsRequests linkBase="/clinical" />
+            </RequireScope>
           }
         />
         <Route
-          path="/physician/review/:id"
+          path="/clinical/:id"
           element={
-            <RequireRole scope="clinical:attest">
-              <RequestDetailPage backTo="/physician/review" backLabel="Clinical review" />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/physician/orders/:id"
-          element={
-            <RequireRole scope="request:read:own">
-              <RequestDetailPage backTo="/physician" backLabel="My orders" />
-            </RequireRole>
+            <RequireScope scope="clinical:attest">
+              <RequestDetailPage backTo="/clinical" backLabel="Clinical review" />
+            </RequireScope>
           }
         />
 
-        {/* ---------------- Payer ---------------- */}
-        <Route
-          path="/payer/queue"
-          element={
-            <RequireRole scope="queue:assign">
-              <PayerQueue />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/payer/clinical"
-          element={
-            <RequireRole scope="clinical:decide">
-              <PayerClinicalQueue />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/payer/review/:id"
-          element={
-            <RequireRole scope="queue:work">
-              <PayerReviewDetail />
-            </RequireRole>
-          }
-        />
-        <Route
-          path="/payer/clinical/:id"
-          element={
-            <RequireRole scope="clinical:decide">
-              <PayerReviewDetail />
-            </RequireRole>
-          }
-        />
-
-        {/* ---------------- Patient ---------------- */}
-        <Route
-          path="/patient"
-          element={
-            <RequireRole scope="patient:read:self">
-              <PatientPortal />
-            </RequireRole>
-          }
-        />
-
-        {/* ---------------- Admin ---------------- */}
+        {/* ---------------- Admin (tenant and platform reach) ---------------- */}
         <Route
           path="/admin"
           element={
-            <RequireRole scope="connector:write">
+            <RequireScope scope="connector:write">
               <AdminOverview />
-            </RequireRole>
+            </RequireScope>
+          }
+        />
+        <Route
+          path="/admin/tenants"
+          element={
+            <RequireScope scope="tenant:manage">
+              <AdminTenants />
+            </RequireScope>
           }
         />
         <Route
           path="/admin/connectors"
           element={
-            <RequireRole scope="connector:read">
+            <RequireScope scope="connector:read">
               <AdminConnectors />
-            </RequireRole>
+            </RequireScope>
           }
         />
         <Route
           path="/admin/connectors/:id"
           element={
-            <RequireRole scope="connector:read">
+            <RequireScope scope="connector:read">
               <ConnectorDetail />
-            </RequireRole>
+            </RequireScope>
           }
         />
         <Route
           path="/admin/payers"
           element={
-            <RequireRole scope="policy:write">
+            <RequireScope scope="policy:write">
               <AdminPayers />
-            </RequireRole>
+            </RequireScope>
           }
         />
         <Route
           path="/admin/users"
           element={
-            <RequireRole scope="user:manage">
+            <RequireScope scope="user:manage">
               <AdminUsers />
-            </RequireRole>
+            </RequireScope>
+          }
+        />
+        <Route
+          path="/admin/billing"
+          element={
+            <RequireScope scope="billing:manage">
+              <AdminBilling />
+            </RequireScope>
           }
         />
         <Route
           path="/admin/audit"
           element={
-            <RequireRole scope="audit:read">
+            <RequireScope scope="audit:read">
               <AdminAudit />
-            </RequireRole>
+            </RequireScope>
           }
         />
 

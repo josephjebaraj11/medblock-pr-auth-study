@@ -1,4 +1,4 @@
-import { Activity, Plug, ScrollText, ShieldAlert, Users } from "lucide-react";
+import { Activity, Layers, Plug, ScrollText, ShieldAlert, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
@@ -12,6 +12,7 @@ import {
   Stat,
 } from "@/components/ui";
 import { dateTime, percent, relative } from "@/lib/format";
+import { useSession } from "@/lib/session";
 import { adminService } from "@/services/adminService";
 import { connectors } from "@/mocks";
 import type { AuditEvent, ConnectorInstance, Tenant } from "@/types";
@@ -26,7 +27,16 @@ const STATE_TONE = {
   configuring: "brand",
 } as const;
 
+/**
+ * Admin overview.
+ *
+ * Tenant Admin and Master Admin are one persona here. The screens are the
+ * same for both; the only difference is reach — a tenant admin's `listTenants`
+ * returns one row, a platform admin's returns all of them. Neither holds a
+ * PHI scope, so nothing on this page is a case.
+ */
 export default function AdminOverview() {
+  const { user } = useSession();
   const [instances, setInstances] = useState<ConnectorInstance[] | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [audit, setAudit] = useState<AuditEvent[]>([]);
@@ -35,7 +45,7 @@ export default function AdminOverview() {
     let active = true;
     Promise.all([
       adminService.listInstances(),
-      adminService.listTenants(),
+      adminService.listTenants(user?.adminScope ?? "tenant", user?.tenantId),
       adminService.listAudit(),
     ]).then(([inst, ten, aud]) => {
       if (!active) return;
@@ -46,7 +56,7 @@ export default function AdminOverview() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   const unhealthy = (instances ?? []).filter((i) =>
     ["failed", "refresh-failed", "expired", "disconnected"].includes(i.state),
@@ -56,10 +66,31 @@ export default function AdminOverview() {
   return (
     <>
       <PageHeader
-        eyebrow="Platform admin"
-        title="Platform overview"
-        description="Connectors, tenants, rules and the audit trail. This role never sees clinical detail."
+        eyebrow="Admin"
+        title="Overview"
+        description="Tenants, connectors, rules, billing and the audit trail. This persona never sees clinical detail."
+        actions={
+          <Badge tone={user?.adminScope === "platform" ? "brand" : "neutral"} dot>
+            {user?.adminScope === "platform" ? "Platform reach" : "Tenant reach"}
+          </Badge>
+        }
       />
+
+      <Callout tone="brand" icon={<Layers size={15} />} title="One admin persona, two reaches">
+        <p className="text-xs leading-relaxed">
+          Tenant Admin and Master Admin are the same persona on the same
+          screens. A tenant admin manages one practice; a platform admin
+          manages every tenant and the shared connector registry. Neither holds
+          a PHI scope — this console is configuration and oversight, never
+          case contents.{" "}
+          <Link to="/portal" className="font-semibold underline">
+            How this portal works
+          </Link>
+          .
+        </p>
+      </Callout>
+
+      <div className="h-4" />
 
       {unhealthy.length > 0 && (
         <Callout
@@ -92,7 +123,12 @@ export default function AdminOverview() {
           tone="accent"
           hint={`${unhealthy.length} unhealthy`}
         />
-        <Stat label="Tenants" value={tenants.length} hint="Across all deployments" />
+        <Stat
+          label="Tenants"
+          value={tenants.length}
+          hint="Across all deployments"
+          to="/admin/tenants"
+        />
         <Stat
           label="Audit entries"
           value={chain.checked}
@@ -211,9 +247,11 @@ export default function AdminOverview() {
             <CardHeader icon={<Users size={16} />} title="Quick links" />
             <CardBody className="space-y-2">
               {[
+                ["/admin/tenants", "Tenants and isolation"],
                 ["/admin/connectors", "Connectors and field mappings"],
                 ["/admin/payers", "Payers, rules and automation policy"],
                 ["/admin/users", "Users and roles"],
+                ["/admin/billing", "Billing, invoices and usage"],
                 ["/admin/audit", "Audit log"],
               ].map(([to, label]) => (
                 <Link

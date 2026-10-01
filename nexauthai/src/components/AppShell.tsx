@@ -1,20 +1,27 @@
 /**
  * The application shell.
  *
- * Navigation is derived from the active role's scopes, not from a hard-coded
- * list per role — the same way the production app would render from token
- * scopes. A user holding several roles would see the union.
+ * There is one of these for the whole platform. Every tenant and every
+ * persona renders this same shell; the navigation below is filtered by the
+ * active token's scopes, not chosen from a per-role list, so a user holding
+ * several personas sees the union and nobody is sent to a different app.
+ *
+ * The tenant chip in the header is there for the same reason: it makes the
+ * "whose data am I looking at" half of the model visible, next to the
+ * persona chip that answers "what may I do with it".
  */
 
 import clsx from "clsx";
 import {
-  Activity,
   Bell,
   Building2,
   ClipboardList,
+  CreditCard,
   FileSearch,
   Inbox,
+  Layers,
   LayoutDashboard,
+  ListChecks,
   LogOut,
   Menu,
   Moon,
@@ -27,6 +34,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import { tenants } from "@/mocks";
 import { useSession } from "@/lib/session";
 import { notificationService } from "@/services/adminService";
 import type { Scope } from "@/types";
@@ -39,29 +47,31 @@ interface NavItem {
   end?: boolean;
 }
 
+/**
+ * One list, for everyone.
+ *
+ * Each entry names the scope that reveals it. Staff/Operations, the Clinical
+ * Reviewer and Admin are reading the same array — they simply hold different
+ * scopes, so different rows survive the filter.
+ */
 const NAV: NavItem[] = [
-  // Provider / clinic staff
-  { to: "/provider", label: "Dashboard", icon: <LayoutDashboard size={17} />, scope: "request:create", end: true },
-  { to: "/provider/requests", label: "Requests", icon: <ClipboardList size={17} />, scope: "request:read" },
-  { to: "/provider/new", label: "New request", icon: <FileSearch size={17} />, scope: "request:create" },
-  { to: "/provider/worklist", label: "Worklist", icon: <Inbox size={17} />, scope: "queue:work" },
+  // Staff / Operations
+  { to: "/ops", label: "Dashboard", icon: <LayoutDashboard size={17} />, scope: "request:create", end: true },
+  { to: "/ops/requests", label: "Requests", icon: <ClipboardList size={17} />, scope: "request:read" },
+  { to: "/ops/new", label: "New request", icon: <FileSearch size={17} />, scope: "request:create" },
+  { to: "/ops/worklist", label: "Exception queue", icon: <Inbox size={17} />, scope: "queue:work" },
 
-  // Ordering physician
-  { to: "/physician", label: "My orders", icon: <LayoutDashboard size={17} />, scope: "request:read:own", end: true },
-  { to: "/physician/review", label: "Clinical review", icon: <Stethoscope size={17} />, scope: "clinical:attest" },
+  // Clinical reviewer (licensed)
+  { to: "/clinical", label: "Clinical review", icon: <Stethoscope size={17} />, scope: "clinical:attest", end: true },
+  { to: "/clinical/cases", label: "All cases", icon: <ListChecks size={17} />, scope: "clinical:decide" },
 
-  // Payer
-  { to: "/payer/queue", label: "Intake queue", icon: <Inbox size={17} />, scope: "queue:assign" },
-  { to: "/payer/clinical", label: "Clinical review", icon: <Stethoscope size={17} />, scope: "clinical:decide" },
-
-  // Patient
-  { to: "/patient", label: "My authorizations", icon: <Activity size={17} />, scope: "patient:read:self", end: true },
-
-  // Admin
+  // Admin — tenant reach and platform reach, same screens
   { to: "/admin", label: "Overview", icon: <LayoutDashboard size={17} />, scope: "connector:write", end: true },
+  { to: "/admin/tenants", label: "Tenants", icon: <Building2 size={17} />, scope: "tenant:manage" },
   { to: "/admin/connectors", label: "Connectors", icon: <Plug size={17} />, scope: "connector:read" },
   { to: "/admin/payers", label: "Payers & rules", icon: <Building2 size={17} />, scope: "policy:write" },
   { to: "/admin/users", label: "Users & roles", icon: <UserRound size={17} />, scope: "user:manage" },
+  { to: "/admin/billing", label: "Billing", icon: <CreditCard size={17} />, scope: "billing:manage" },
   { to: "/admin/audit", label: "Audit log", icon: <ScrollText size={17} />, scope: "audit:read" },
 ];
 
@@ -87,6 +97,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   if (!user || !role) return null;
 
   const items = NAV.filter((item) => can(item.scope));
+  const tenant = tenants.find((t) => t.id === user.tenantId);
+  const isPlatformAdmin = user.adminScope === "platform";
 
   const nav = (
     <nav aria-label="Main" className="space-y-0.5">
@@ -108,6 +120,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           {item.label}
         </NavLink>
       ))}
+
+      {/* Reachable from every persona: the statement that all of the above
+          is one application serving every tenant and every role. */}
+      <NavLink
+        to="/portal"
+        className={({ isActive }) =>
+          clsx(
+            "mt-3 flex items-center gap-2.5 rounded-lg border-t border-line-subtle px-3 pb-2 pt-4 text-sm font-medium transition-colors",
+            isActive
+              ? "text-content-brand"
+              : "text-content-muted hover:bg-surface-inset hover:text-content",
+          )
+        }
+      >
+        <Layers size={17} />
+        How this portal works
+      </NavLink>
     </nav>
   );
 
@@ -139,8 +168,23 @@ export function AppShell({ children }: { children: ReactNode }) {
             <span className="type-display text-base font-semibold text-content">NexAuthAI</span>
           </Link>
 
-          <span className="hidden rounded-full bg-surface-inset px-2.5 py-1 text-xs font-medium text-content-muted sm:inline">
-            {role.label}
+          {/* Whose data (tenant) and what you may do with it (persona) —
+              the two halves of the single-portal model, always on screen. */}
+          <span className="hidden items-center gap-1.5 md:flex">
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full bg-surface-inset px-2.5 py-1 text-xs font-medium text-content-secondary"
+              title={
+                isPlatformAdmin
+                  ? "Signed in with platform reach — every tenant"
+                  : `Tenant ${user.tenantId}`
+              }
+            >
+              <Building2 size={12} aria-hidden />
+              {isPlatformAdmin ? "All tenants" : (tenant?.name ?? user.tenantId)}
+            </span>
+            <span className="rounded-full bg-surface-inset px-2.5 py-1 text-xs font-medium text-content-muted">
+              {role.label}
+            </span>
           </span>
 
           <div className="ml-auto flex items-center gap-1">
@@ -182,8 +226,8 @@ export function AppShell({ children }: { children: ReactNode }) {
               type="button"
               onClick={signOut}
               className="rounded-lg p-2 text-content-secondary hover:bg-surface-inset"
-              aria-label="Switch role"
-              title="Switch role"
+              aria-label="Switch persona"
+              title="Switch persona"
             >
               <LogOut size={17} />
             </button>

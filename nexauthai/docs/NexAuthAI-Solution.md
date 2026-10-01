@@ -91,29 +91,81 @@ And the one independent study in the entire source library — the Peterson Heal
 
 ---
 
-## 3. Personas and journeys
+## 3. One portal, three personas
 
-Six roles. Full detail in [`01-personas-and-journeys.md`](01-personas-and-journeys.md).
+Full detail in [`01-personas-and-journeys.md`](01-personas-and-journeys.md).
 
-| Persona | Wants | Clinical authority |
+### 3.0 One portal
+
+**There is exactly one application.** Every tenant on the platform and every persona inside it signs into the same portal at the same address — no separate build per customer, no separate app per role, no separate operator console. A Keycloak token carries two things, and between them they decide everything:
+
+| The token carries | It decides | Enforced by |
 |---|---|---|
-| **Provider / clinic staff** | A queue of exceptions, not a queue of everything | None |
-| **Ordering physician** | One button; to be asked only genuinely clinical questions | Attests evidence, approves appeals, attends peer-to-peer |
-| **Payer intake reviewer** **[Assumption]** | Completeness check and triage | None |
-| **Payer clinical reviewer** **[Assumption]** | The criteria match as an aid | **The only role that can approve, deny or partially approve** |
-| **Patient** **[Assumption]** | To know where their request has got to | None — read-only |
-| **Platform admin** | Connectors, rules, users, audit | None, and **no PHI scopes at all** |
+| `tenant_id` (realm-bound) | **Whose** data you see | One realm per tenant · `tenant_id` first in every key and index · PostgreSQL row-level security |
+| Scopes | **What** you may do with it | API scope check per endpoint · re-checked in the service layer · UI renders from the same scopes |
 
-> **The payer-side roles are an assumption.** The source folder is entirely provider-side; nothing in it describes a payer intake queue, a clinical reviewer workflow or a decision form. Those screens are modelled on the payer-side products in the research reports. This is gap **G1**, and it is the largest in the project — see §13.
+Multi-tenancy and multi-persona are the same mechanism seen from two angles. A customer that requires its own infrastructure gets a dedicated or air-gapped deployment of this same codebase, with its own realm and keys — a deployment option, not a different product. One person may hold more than one persona, and the portal renders the union of their scopes.
 
-### 3.1 The ten journeys
+The prototype says this on the sign-in screen, in the header (a tenant chip beside a persona chip) and on `/portal`, which sits in every persona's navigation.
+
+### 3.1 The three personas
+
+Reduced to the three the client's own persona table names, with **Tenant Admin and Master Admin merged into one `admin` persona with two reaches**.
+
+| Persona | Who | Sees / does | Clinical authority |
+|---|---|---|---|
+| **Staff / Operations** | The practice's queue workers — billing and front desk combined | Status, submissions, document follow-up, administrative exceptions; places the authorization request; releases held submissions | None |
+| **Clinical Reviewer** *(licensed)* | A licensed clinician | Medical-necessity gaps, denials, appeals, peer-to-peer — kept a **distinct persona on purpose** so only licensed people make, and are audited for, medical calls | **Attests evidence, approves appeals, attends peer-to-peer** |
+| **Admin** | The practice's own admin (**tenant reach**) or the platform operator (**platform reach**) | Tenants, users and roles, rules and thresholds, payer matrix, connections, billing, audit log | None, and **no PHI scope at all** |
+
+**Why the two admins are one persona.** The Vision & Scope's distinction between Tenant Admin and Master Admin is real, but it is a matter of *scope*, not of screens: a tenant admin manages one practice, a platform admin manages every tenant plus the shared connector registry, and both use the same console in the same portal. `User.adminScope` is the only thing that differs. Neither can open a case — a platform admin can see that a tenant's exception rate is climbing and cannot see a single case behind it.
+
+**What has no seat here.** There is no ordering-physician persona: the physician's one action, *GET AUTHORIZATION*, is placed by Operations or arrives from the EHR as `order-sign`, and anything clinical routes to the Clinical Reviewer. There is no payer persona: payers are counterparties reached through connectors, not tenants of this platform. There is no patient persona: patient access to PA status is a CMS-0057-F obligation from 1 January 2027, served through the practice and consent-gated, not a login here.
+
+> Earlier drafts of this document modelled payer intake and payer clinical reviewers and a patient portal. Those were an inference (gap **G1**), not a client requirement, and they are out — see §13.2. The rule they encoded has not gone anywhere: **no determination originates in this portal.** Approve, deny and partially approve arrive from the payer through a connector and are recorded as the payer's act, and every denial unconditionally raises a task for the licensed Clinical Reviewer.
+
+### 3.2 Multi-tenancy
+
+Four tenants ship in the prototype — three multi-tenant, one on a dedicated deployment — isolated by three independent mechanisms, none of which is a second portal:
+
+1. **Realm.** One Keycloak realm per tenant. A token issued by one realm is not accepted by another, so cross-tenant access fails before any application code runs.
+2. **Scope.** The API checks the scope the endpoint requires. A missing scope is a 403, whichever tenant you belong to.
+3. **Row-level security.** Postgres filters by `tenant_id` taken from the token — never from the URL — so a query that forgets its tenant returns nothing rather than someone else's rows.
+
+See §9.2 for the full isolation stack.
+
+### 3.3 Notifications — email and web push
+
+The domain events that move a case fan out to a notification service on three channels. **In-app** is the queue itself and is always on. **Email** (transactional) and **web push** (browser service worker) are what leave the building, and each is opt-out per event type, per user.
+
+One payload rule, identical on all three: a notification carries an ID and an event type and **nothing else** — no patient name, no diagnosis, no procedure code, no payer rationale. The message says a case needs attention and links back into the app, where access is re-checked on arrival. An inbox and a lock screen are the two places PHI must never sit.
+
+Turning a channel off suppresses *delivery* only: the event still fires, the in-app row still appears, and the audit entry is still written. Events are role-scoped — a clinical-review request only reaches the Clinical Reviewer, a held submission only reaches Operations, a connection failure or an invoice only reaches Admin.
+
+### 3.4 Billing and payment
+
+One Stripe customer per tenant. A **subscription, not a price per authorization**:
+
+| Component | Type | Shape |
+|---|---|---|
+| Onboarding | One-time | Tiered by complexity — ~$3.5K (Starter) to ~$20K (Enterprise+) |
+| Annual license | Recurring | Tiered by physician count — ~$15K/yr to ~$175K/yr; per-physician rate falls with scale |
+| Managed services + cloud | Recurring, **flat** | ~$3,000 per customer per month |
+| Net-new integration | One-time, hourly | $50/hr; once a connector is reusable, later customers do not re-pay its build |
+| Pass-through usage | Recurring, variable | EDI transactions, portal sessions, voice minutes, model tokens, fax pages — itemised per channel or folded into the flat fee, per tenant |
+
+The **$4-per-PA** figure in the market model is a TAM/SAM sizing device, never the billing mechanism.
+
+Every usage record names the case that caused the spend, so an invoice line — *"612 voice minutes"* — audits down to the exact cases behind it. That prices the waterfall honestly: an electronic check costs a fraction of a cent, a portal session cents, a voice call dollars, which makes cheapest-channel-first a margin decision as well as a speed one. Stripe holds the payment instrument; the portal reads back a brand, a last four and a `pm_…` reference, and settling an invoice writes `invoice.paid` to the audit log like any other act.
+
+### 3.5 The ten journeys
 
 | # | Journey | Ends as |
 |---|---|---|
 | J1 | Happy path, electronic | Approved, no human touched it |
 | J2 | **No authorization required** — evidenced, with source and reference | Closed, written back to the chart |
 | J3 | Clinical gap → licensed clinician attests | Submitted |
-| J4 | Held by the automation gate → staff release | Submitted |
+| J4 | Held by the automation gate → Operations release | Submitted |
 | J5 | Portal fails → voice succeeds | Submitted, with transcript |
 | J6 | Pended → one document resupplied, **without restarting** | Approved |
 | J7 | Denial → licensed human approves the appeal | Appeal filed |
@@ -121,7 +173,7 @@ Six roles. Full detail in [`01-personas-and-journeys.md`](01-personas-and-journe
 | J9 | Coverage terminated → corrected → re-run | Continues |
 | J10 | Duplicate order → **blocked** | Existing case opened |
 
-All ten are clickable in the prototype. The README's 5-minute demo walks J1 and J7.
+All ten are clickable in the prototype. The README's demo script walks J1, J3 and J7, then the admin side.
 
 ---
 
@@ -131,7 +183,7 @@ All ten are clickable in the prototype. The README's 5-minute demo walks J1 and 
 
 ```mermaid
 flowchart LR
-  A["Physician clicks<br/>GET AUTHORIZATION"] --> B["Confirm coverage<br/>X12 270/271"]
+  A["Order placed —<br/>GET AUTHORIZATION"] --> B["Confirm coverage<br/>X12 270/271"]
   B --> C{"PA required?<br/>CRD / 278 / matrix"}
   C -- "No (evidenced)" --> C1(["Log proof<br/>write back<br/>STOP"])
   C -- "Unknown" --> C2(["Route to a human<br/>never assume no"])
@@ -155,7 +207,7 @@ flowchart LR
 
 | Feature | What it means in practice |
 |---|---|
-| **One-click authorization** | The physician's entire interaction |
+| **One-click authorization** | One action — from the EHR at order-sign, or from Operations |
 | **Cost-ordered waterfall** | Electronic → portal → voice → human, on every case. Failed attempts stay on the record |
 | **Evidenced "not required"** | A "no" is recorded with source, date and reference number. Never a silent default |
 | **Minimum-necessary packet** | Only what the matched rule asks for leaves the chart |
@@ -322,6 +374,8 @@ NexAuthAI operates as a **business associate** of each provider organisation.
 
 Keycloak realm per tenant → `tenant_id` from the token (never the URL) → PostgreSQL RLS → per-tenant storage prefixes and KMS keys. Cross-tenant reads must fail at **both** the API and the database in automated tests.
 
+All four layers sit inside **one application**. Isolation is never achieved by giving a customer a different portal — a dedicated or air-gapped tenant runs the same codebase in its own VPC with its own realm and keys, which changes where it runs and not what it is. An admin with platform reach spans tenants for configuration and health only: the persona holds no PHI scope, so there is no path by which cross-tenant oversight becomes cross-tenant data access.
+
 ### 9.3 RBAC and ABAC
 
 Roles map to scopes; attributes handle what roles cannot express — a physician sees their own orders, a payer user sees only their payer's submissions, a patient sees only their own record, and each agent role gets only the tools and fields it needs. The platform-operator role has **no PHI scopes at all**.
@@ -425,10 +479,10 @@ Time to onboard a tenant · cost per case by channel · **connector reuse rate**
 
 | # | Gap | Consequence |
 |---|---|---|
-| **G1** | **No payer-side requirements anywhere.** Every client and consulting document is provider-side | The four payer screens are **[Assumption]**, grounded in research rather than requirements. **Largest gap in the project** |
+| **G1** | **No payer-side requirements anywhere.** Every client and consulting document is provider-side | **Closed by removal.** Earlier drafts modelled payer intake and clinical-reviewer screens on research rather than requirements; they are gone. Payers are counterparties reached through connectors, and determinations arrive as the payer's act |
 | **G2** | **All 107 discovery questions unanswered** — every row Status `Open`, Client Response empty | No EHR, clearinghouse, payer list, CPT list, volumes, baseline or thresholds. **Every concrete value is a placeholder** |
 | G3 | No real payer policy content | Criteria in the prototype are invented and labelled as such |
-| G4 | No patient-portal requirements | Scoped narrowly to status + timeline, anticipating the 2027 Patient Access API |
+| G4 | No patient-portal requirements | **Closed by removal.** Patient access to PA status is a CMS-0057-F obligation from 1 Jan 2027, served through the practice and consent-gated — not a seat in this portal. Revisit when the obligation is in scope |
 | G5 | Appeals thin — named as an outcome, no levels, deadlines or mechanics | Level 1/2/external review is **[Assumption]**; no Da Vinci IG covers appeals |
 | G6 | **Nothing is signed.** Vision & Scope is a "discussion draft, not yet approved" | All of this is proposal-grade |
 | G7 | Volume/ROI numbers rest on a screenshot | Use for sizing; baseline against real data |
@@ -450,20 +504,21 @@ Time to onboard a tenant · cost per case by channel · **connector reuse rate**
 
 Everything below is labelled **[Assumption]** in the code and docs:
 
-1. Payer-side roles, screens, queue and determination form (G1)
-2. Patient portal scope — status and timeline only (G4)
-3. Appeal levels, deadlines and mechanics (G5)
-4. Peer-to-peer scheduling (no standard covers it)
-5. All payer criteria content — invented, shaped to resemble real imaging policy (G3)
-6. Connector onboarding estimates (G8)
-7. The production stack beyond AWS/Keycloak/Stripe, which the folder fixes
-8. Tenant Admin and Master Admin collapsed into one prototype role for demo convenience
+1. Appeal levels, deadlines and mechanics (G5)
+2. Peer-to-peer scheduling (no standard covers it)
+3. All payer criteria content — invented, shaped to resemble real imaging policy (G3)
+4. Connector onboarding estimates (G8)
+5. The production stack beyond AWS/Keycloak/Stripe, which the folder fixes
+6. Billing figures — the tier table follows the documented shape, but the amounts are placeholders until D2 is answered
+7. **Tenant Admin and Master Admin merged into one `admin` persona with two reaches.** This is a deliberate design decision, not a demo shortcut: the Vision & Scope's distinction is one of scope, not of screens. If the client wants them split into separate roles, it is a change to the role table and nothing else
+
+Two assumptions carried by earlier drafts have been **withdrawn** rather than relabelled: the payer-side roles and screens (G1) and the patient portal (G4). Both were inferences from research, neither was a client requirement, and both are now out of the product.
 
 ---
 
 ## 14. In one paragraph
 
-A physician clicks **Get Authorization** on an MRI order. NexAuthAI opens a case, confirms coverage, and asks the payer electronically whether CPT 72148 even needs authorization — if not, it logs the proof with a reference number and stops. If it does, the agent assembles exactly the packet that payer's policy requires, escalating to a clinician only when real clinical evidence is missing, then submits it the cheapest way that payer supports: electronic, then portal, then a phone call, then a human — without ever creating a duplicate. When the payer asks for more mid-review, it fetches just that document and resupplies it without starting over. The outcome comes back, the authorization number and valid dates are written into the chart, and the practice sees only the result or the one exception that genuinely needs a person. Every step is written once to an audit trail that can be replayed later. And the agent never, at any point, decides whether the care was necessary.
+An order for an MRI arrives — from the EHR at order-sign, or placed by Operations with one click of **Get Authorization**. NexAuthAI opens a case, confirms coverage, and asks the payer electronically whether CPT 72148 even needs authorization — if not, it logs the proof with a reference number and stops. If it does, the agent assembles exactly the packet that payer's policy requires, escalating to a clinician only when real clinical evidence is missing, then submits it the cheapest way that payer supports: electronic, then portal, then a phone call, then a human — without ever creating a duplicate. When the payer asks for more mid-review, it fetches just that document and resupplies it without starting over. The outcome comes back, the authorization number and valid dates are written into the chart, and the practice sees only the result or the one exception that genuinely needs a person. Every step is written once to an audit trail that can be replayed later. And the agent never, at any point, decides whether the care was necessary.
 
 ---
 
