@@ -213,6 +213,25 @@
   .d-div{ stroke: var(--line);      stroke-width: 1.2; stroke-dasharray: 4 5; }
   .d-patch { fill: var(--surface); }
 
+  /* ---------- layered-architecture primitives ---------- */
+  /* Trust boundary: everything inside is infrastructure we run. */
+  .d-trust { fill: none; stroke: var(--brand); stroke-width: 1.5; stroke-dasharray: 8 6; opacity: .8; }
+  .d-rail  { fill: var(--inset); stroke: var(--line); stroke-width: 1.3; }
+  .d-num   { fill: var(--brand-wash); stroke: var(--brand); stroke-width: 1.2; }
+  .d-numt  { font-family: var(--mono); font-size: 10px; font-weight: 700; fill: var(--brand-ink); }
+  .d-lab   { font-family: var(--mono); font-size: 9.5px; fill: var(--brand-ink); }
+
+  /* Icons live in <symbol>s and are placed with <use>. The symbol's paths
+     stroke in currentColor, so the colour comes from the .ic-* class on the
+     <use> — one definition, many tints, correct in both themes. */
+  .icon { fill: none; stroke: currentColor; stroke-width: 1.7;
+          stroke-linecap: round; stroke-linejoin: round; }
+  .ic   { color: var(--ink-faint); }
+  .ic-b { color: var(--brand); }
+  .ic-w { color: var(--warn); }
+  .ic-a { color: var(--aqua); }
+  .ic-x { color: var(--bad); }
+
   /* ---------- contents ---------- */
   .toc { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px 22px; }
   .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 28px; max-width: none; }
@@ -274,7 +293,83 @@
     white-space: nowrap;
   }
 
-  @media print { .theme-btn { display: none; } }
+  /* ---------- diagram zoom ---------- */
+  /* The affordance is injected per figure by script, so a browser without the
+     dialog element simply keeps the scrollable figbox it always had. */
+  .figzoom { position: relative; }
+  .figzoom .figbox { cursor: zoom-in; }
+  .zoom-open {
+    position: absolute; top: 9px; right: 9px; z-index: 2;
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 8px; border: 1px solid var(--line); border-radius: 7px;
+    background: var(--surface); color: var(--ink-faint); cursor: zoom-in;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .12em;
+    text-transform: uppercase; transition: opacity .15s, color .15s, border-color .15s;
+  }
+  .zoom-open svg { flex: none; width: 12px; height: 12px; min-width: 0; }
+  .zoom-open:hover { color: var(--brand-ink); border-color: var(--brand); }
+  /* Hidden until hover where there is a pointer; always visible on touch,
+     which has no hover to reveal it. */
+  @media (hover: hover) {
+    .zoom-open { opacity: 0; }
+    .figzoom:hover .zoom-open { opacity: 1; }
+  }
+  .zoom-open:focus-visible { opacity: 1; }
+
+  #zoomDlg {
+    width: min(96vw, 1680px); height: fit-content; max-height: 94vh;
+    max-width: none; padding: 0; overflow: hidden;
+    border: 1px solid var(--line); border-radius: 12px;
+    background: var(--surface); color: var(--ink);
+    box-shadow: 0 24px 64px rgb(var(--shadow) / .3);
+  }
+  #zoomDlg::backdrop { background: rgb(var(--shadow) / .55); }
+  .zd-wrap { display: flex; flex-direction: column; max-height: 100%; }
+  .zd-head {
+    flex: none; display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-bottom: 1px solid var(--line);
+  }
+  .zd-label {
+    flex: 1 1 auto; min-width: 0; margin: 0; max-width: none;
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-faint);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .zd-tools { flex: none; display: flex; align-items: center; gap: 4px; }
+  .zd-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 29px; height: 29px; padding: 0 8px;
+    border: 1px solid var(--line); border-radius: 6px;
+    background: var(--surface); color: var(--ink-soft);
+    font-family: var(--mono); font-size: 11px; line-height: 1; cursor: pointer;
+  }
+  .zd-btn:hover:not(:disabled) { border-color: var(--brand); color: var(--brand-ink); }
+  .zd-btn:disabled { opacity: .35; cursor: default; }
+  .zd-pct {
+    min-width: 48px; text-align: center; font-variant-numeric: tabular-nums;
+    font-family: var(--mono); font-size: 10px; color: var(--ink-faint);
+  }
+  /* Height is set per diagram on open; see layout() below. */
+  .zd-stage {
+    flex: 0 0 auto; position: relative; overflow: hidden;
+    background: var(--paper); touch-action: none;
+  }
+  .zd-stage.pannable { cursor: grab; }
+  .zd-stage.dragging { cursor: grabbing; }
+  .zd-canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; }
+  /* Overrides the page's `figure svg { min-width: 660px }`, which would other-
+     wise fight the transform that does the scaling here. */
+  .zd-canvas svg { display: block; width: 100%; height: 100%; min-width: 0; }
+  .zd-foot {
+    flex: none; display: flex; align-items: flex-start; gap: 14px;
+    padding: 10px 12px; border-top: 1px solid var(--line);
+    font-size: .86rem; color: var(--ink-soft); line-height: 1.45;
+  }
+  .zd-cap { flex: 1 1 auto; min-width: 0; max-height: 5.8em; overflow-y: auto; }
+  .zd-hint { flex: none; font-family: var(--mono); font-size: 9.5px; color: var(--ink-faint); }
+  @media (max-width: 640px) { .zd-hint { display: none; } }
+
+  @media print { .theme-btn, .zoom-open { display: none; } }
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
 </style>
 
@@ -499,204 +594,318 @@
     <h2>The architecture, end to end</h2>
 
     <p>
-      Everything above assembles into one system. The picture below is the whole of it —
-      the single portal at the top, the systems we do not control at the bottom, and the
-      five layers in between that turn a click into a submitted authorization.
+      Everything above assembles into one system. The picture below is the whole of it:
+      <strong>six numbered layers</strong>, read top to bottom, with the dashed boundary
+      marking what we actually run. A request enters at layer 1 and leaves at layer 6;
+      every hop between them is labelled with what crosses it.
     </p>
 
     <p>
-      Two rules shape it, and both are visible in the drawing. <strong>The core is closed;
-      the fabric is open</strong> — a new payer or EHR is a new adapter in the integration
-      fabric, never a change to the engine above it. And <strong>everything persists
-      through one boundary</strong>: the data-and-trust rail on the right, where PHI,
-      provenance and the audit chain live, and which every layer writes to rather than
-      keeping state of its own.
+      Three claims are load-bearing, and all three are visible in the drawing rather than
+      only asserted here.
     </p>
 
+    <ul>
+      <li>
+        <strong>One portal, not one per customer.</strong> Layer 1 holds every persona and
+        every tenant in a single application. What separates them is the token minted at
+        layer 2 — the arrow out of it is labelled
+        <code>tenant_id + scopes</code>, and that is the whole isolation mechanism.
+      </li>
+      <li>
+        <strong>The core is closed; the fabric is open.</strong> A new payer or EHR is a
+        new adapter at layer 5, never a change to layers 3 or 4. The agent reaches the
+        outside world only by a tool call <em>down</em> through the fabric — which is what
+        makes “a new payer is a new adapter” true rather than aspirational.
+      </li>
+      <li>
+        <strong>Everything persists through one boundary.</strong> The data-and-trust rail
+        on the right is where PHI, provenance and the audit chain live. Layers 3, 4 and 5
+        all write into it; none of them keeps state of its own, so the PHI boundary stays
+        a single line rather than a scattering of exceptions.
+      </li>
+    </ul>
+
     <figure>
+      <p class="figcap-top">Architecture diagram &middot; six layers, read top to bottom</p>
       <div class="figbox">
-        <svg viewBox="0 0 900 496" role="img" aria-label="A layered architecture diagram. At the top, the experience layer — one portal serving every tenant and every persona — contains Staff slash Operations, Clinical Reviewer, Admin, and an EHR-embedded launch using SMART and CDS Hooks. Below it, the edge and identity layer: an API gateway doing TLS, rate limiting and WAF, and Keycloak providing one realm per tenant with MFA, and a tenant id plus scopes on every token. Below that, the execution core, closed for modification, containing the case service and its state machine, the rules engine holding payer criteria and thresholds, SLA timers for the 72-hour and 7-day clocks and expiry, the human task queue, and notifications and metering which carry no PHI. Below that, the agent runtime, a single pipeline running left to right: orchestrator, then coverage, clinical and compliance, then decision, then submission, then follow-up. Below that, the integration fabric, open for extension under one adapter contract: EHR and practice-management connectors, clearinghouse, payer API, portal workers and voice with fax. At the bottom, across a dashed boundary, the systems we do not control: EHRs, clearinghouses, payer APIs, payer portals and phone lines. Running down the right-hand side, spanning the core, the agent runtime and the fabric, is a data and trust rail marked as the PHI boundary, containing PostgreSQL with row-level security, the FHIR store holding raw data and provenance, the object store for documents and recordings, the outbox feeding an event bus, and the hash-chained write-once audit ledger with the secrets vault. Arrows run downward through the layers, and three arrows run from the core, the agent runtime and the fabric into the data rail.">
+        <svg viewBox="0 0 960 758" role="img" aria-label="A layered architecture diagram with six numbered layers, read top to bottom, with a legend showing a solid blue arrow for the request path and a dashed arrow for what comes back. A dashed blue trust boundary encloses layers one to five and is labelled: our infrastructure, inside the BAA. Layer one, Experience — one portal serving every tenant and every persona — holds four tiles: Staff slash Operations who work exceptions, the licensed Clinical Reviewer who judges, Admin who handles configuration and holds no PHI, and an EHR-embedded launch over SMART and CDS Hooks. An arrow labelled sign-in over HTTPS leads to layer two, Edge and identity: an API gateway doing TLS, rate limiting and WAF, and Keycloak with one realm per tenant and MFA. An arrow labelled every call carries tenant id plus scopes leads to layer three, the Execution core, closed for modification: the case service and its state machine, the rules engine holding payer criteria, SLA timers for the 72-hour and 7-day clocks and expiry, the human task queue of exceptions, and notifications which carry no PHI in the payload. An arrow labelled run of case — the core sequences, the agent executes — leads to layer four, the Agent runtime, a single pipeline running left to right: orchestrator which opens the case, then coverage, clinical and compliance covering eligibility, evidence and minimum necessary, then decision which computes confidence and applies the gate, then submission which runs the waterfall, then follow-up which handles pends and rechecks. An arrow labelled tool call through an internal MCP-style router leads to layer five, the Integration fabric, open for extension under one adapter contract: EHR and practice-management over FHIR and SMART, clearinghouse over X12 270/271 and 278, payer API over CRD, DTR and PAS, portal bots running isolated browsers, and voice and fax using IVR plus a human. Two arrows cross the trust boundary: a solid one down labelled inquire and submit, and a dashed one back up labelled decision, pend and documents. Below the boundary is layer six, Outside our boundary: EHRs such as Epic, Oracle and athenahealth; clearinghouses such as Availity; payer APIs using Da Vinci where live; payer portals whose UI changes; and phone lines with their IVR and hold queue. Down the right-hand side, spanning layers three to five, a Data and trust rail marked as the PHI boundary holds PostgreSQL with row-level security and one policy per tenant, the FHIR store holding raw data and provenance, the object store for documents and recordings, the outbox feeding an event bus with state and event committed in one commit, and the hash-chained write-once audit ledger and secrets vault. Three arrows labelled persist and audit run from the core, the agent runtime and the fabric into that rail, which is captioned: every layer above writes here.">
+          <!-- Icon library. 24×24 symbols, stroked in currentColor so the
+               .ic-* class on each <use> tints them and both themes work. -->
+          <defs>
+            <symbol id="ai-users" viewBox="0 0 24 24"><g class="icon"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.2 6-5.2s6 1.9 6 5.2"/><path d="M16.4 6.5a3.2 3.2 0 0 1 0 6"/><path d="M18 15c2.1.6 3.5 2.3 3.5 5"/></g></symbol>
+            <symbol id="ai-steth" viewBox="0 0 24 24"><g class="icon"><path d="M7 3v6a4 4 0 0 0 8 0V3"/><path d="M5 3h4M13 3h4"/><path d="M11 13v3a4 4 0 0 0 8 0v-2"/><circle cx="19" cy="11" r="2"/></g></symbol>
+            <symbol id="ai-sliders" viewBox="0 0 24 24"><g class="icon"><path d="M3.5 7.5h10M18.5 7.5h2M3.5 16.5h4M12.5 16.5h8"/><circle cx="16" cy="7.5" r="2.4"/><circle cx="10" cy="16.5" r="2.4"/></g></symbol>
+            <symbol id="ai-window" viewBox="0 0 24 24"><g class="icon"><rect x="3" y="4.5" width="18" height="15" rx="2.4"/><path d="M3 9.5h18"/><path d="M6.4 7h.01M9 7h.01"/><path d="M10.5 16.5 13.5 14l-3-2.5"/></g></symbol>
+            <symbol id="ai-shield" viewBox="0 0 24 24"><g class="icon"><path d="M12 3.2 20 6v6.1c0 4.9-3.4 8-8 8.8-4.6-.8-8-3.9-8-8.8V6l8-2.8z"/><path d="M9.2 12.2 11.3 14.4l3.6-3.9"/></g></symbol>
+            <symbol id="ai-key" viewBox="0 0 24 24"><g class="icon"><circle cx="8" cy="12" r="4.2"/><path d="M12.2 12H21M17.6 12v3.6M20.4 12v2.6"/></g></symbol>
+            <symbol id="ai-flow" viewBox="0 0 24 24"><g class="icon"><circle cx="5.6" cy="6" r="2.6"/><circle cx="18.4" cy="6" r="2.6"/><circle cx="12" cy="18" r="2.6"/><path d="M8.2 6h7.6M6.8 8.3 10.6 15.6M17.2 8.3 13.4 15.6"/></g></symbol>
+            <symbol id="ai-rules" viewBox="0 0 24 24"><g class="icon"><rect x="4.5" y="4" width="15" height="16.5" rx="2.2"/><rect x="8.5" y="2" width="7" height="3.6" rx="1.2"/><path d="M8.6 12.4 11 14.8l4.6-4.8"/></g></symbol>
+            <symbol id="ai-clock" viewBox="0 0 24 24"><g class="icon"><circle cx="12" cy="12" r="8.6"/><path d="M12 6.8V12.4l3.6 2.1"/></g></symbol>
+            <symbol id="ai-inbox" viewBox="0 0 24 24"><g class="icon"><path d="M3.4 13.6h4.2l1.6 2.6h5.6l1.6-2.6h4.2"/><path d="M3.4 13.6 6.2 5.3a2 2 0 0 1 1.9-1.4h7.8a2 2 0 0 1 1.9 1.4l2.8 8.3v4.3a2.2 2.2 0 0 1-2.2 2.2H5.6a2.2 2.2 0 0 1-2.2-2.2z"/></g></symbol>
+            <symbol id="ai-bell" viewBox="0 0 24 24"><g class="icon"><path d="M18 9.4a6 6 0 1 0-12 0c0 5.8-2.2 7.2-2.2 7.2h16.4S18 15.2 18 9.4z"/><path d="M13.9 19.8a2.1 2.1 0 0 1-3.8 0"/></g></symbol>
+            <symbol id="ai-cpu" viewBox="0 0 24 24"><g class="icon"><rect x="6.6" y="6.6" width="10.8" height="10.8" rx="2.2"/><rect x="10.2" y="10.2" width="3.6" height="3.6" rx="1"/><path d="M9.8 3v3.6M14.2 3v3.6M9.8 17.4V21M14.2 17.4V21M3 9.8h3.6M3 14.2h3.6M17.4 9.8H21M17.4 14.2H21"/></g></symbol>
+            <symbol id="ai-search" viewBox="0 0 24 24"><g class="icon"><circle cx="10.8" cy="10.8" r="6.6"/><path d="M15.6 15.6 20.8 20.8"/></g></symbol>
+            <symbol id="ai-gauge" viewBox="0 0 24 24"><g class="icon"><path d="M3.6 17.4a8.6 8.6 0 1 1 16.8 0"/><path d="M12 17.4 16.4 12.4"/><circle cx="12" cy="17.4" r="1.4"/></g></symbol>
+            <symbol id="ai-send" viewBox="0 0 24 24"><g class="icon"><path d="M20.8 3.4 10.4 13.8"/><path d="M20.8 3.4 14.3 20.8l-3.9-7-7-3.9 17.4-6.5z"/></g></symbol>
+            <symbol id="ai-refresh" viewBox="0 0 24 24"><g class="icon"><path d="M20.4 12a8.4 8.4 0 1 1-2.5-6"/><path d="M20.8 3.8v4.6h-4.6"/></g></symbol>
+            <symbol id="ai-plug" viewBox="0 0 24 24"><g class="icon"><path d="M9 3v5.2M15 3v5.2"/><path d="M6 8.2h12v2.9a6 6 0 0 1-12 0z"/><path d="M12 17.1V21"/></g></symbol>
+            <symbol id="ai-exchange" viewBox="0 0 24 24"><g class="icon"><path d="M3.6 8.6h15.2M15.4 5.2 18.8 8.6l-3.4 3.4"/><path d="M20.4 15.4H5.2M8.6 12 5.2 15.4l3.4 3.4"/></g></symbol>
+            <symbol id="ai-cloud" viewBox="0 0 24 24"><g class="icon"><path d="M7.2 19.2h10a4.4 4.4 0 0 0 .6-8.8 6.2 6.2 0 0 0-12-1.5 4.6 4.6 0 0 0 1.4 10.3z"/></g></symbol>
+            <symbol id="ai-browser" viewBox="0 0 24 24"><g class="icon"><rect x="3" y="4.4" width="18" height="15.2" rx="2.4"/><path d="M3 9.6h18"/><path d="M6.4 7h.01M9 7h.01M11.6 7h.01"/></g></symbol>
+            <symbol id="ai-phone" viewBox="0 0 24 24"><g class="icon"><path d="M8.4 4.2 10 8l-2 1.6a12 12 0 0 0 6.4 6.4L16 14l3.8 1.6v3a1.9 1.9 0 0 1-2.1 1.9C9.6 19.9 4.1 14.4 3.5 6.3a1.9 1.9 0 0 1 1.9-2.1h3z"/></g></symbol>
+            <symbol id="ai-db" viewBox="0 0 24 24"><g class="icon"><ellipse cx="12" cy="6" rx="7.4" ry="3"/><path d="M4.6 6v12c0 1.7 3.3 3 7.4 3s7.4-1.3 7.4-3V6"/><path d="M4.6 12c0 1.7 3.3 3 7.4 3s7.4-1.3 7.4-3"/></g></symbol>
+            <symbol id="ai-layers" viewBox="0 0 24 24"><g class="icon"><path d="M12 2.8 20.8 7.4 12 12 3.2 7.4 12 2.8z"/><path d="M3.2 12.4 12 17l8.8-4.6"/><path d="M3.2 16.9 12 21.5l8.8-4.6"/></g></symbol>
+            <symbol id="ai-archive" viewBox="0 0 24 24"><g class="icon"><rect x="3" y="4" width="18" height="4.6" rx="1.6"/><path d="M4.9 8.6V19a1.8 1.8 0 0 0 1.8 1.8h10.6A1.8 1.8 0 0 0 19.1 19V8.6"/><path d="M10 12.6h4"/></g></symbol>
+            <symbol id="ai-queue" viewBox="0 0 24 24"><g class="icon"><rect x="2.6" y="8.8" width="5.2" height="6.4" rx="1.3"/><rect x="9.6" y="8.8" width="5.2" height="6.4" rx="1.3"/><path d="M16.8 12h4.6M19 9.6 21.4 12 19 14.4"/></g></symbol>
+            <symbol id="ai-lock" viewBox="0 0 24 24"><g class="icon"><rect x="4.4" y="10" width="15.2" height="10.6" rx="2.3"/><path d="M8 10V7.2a4 4 0 0 1 8 0V10"/><path d="M12 14.1v2.6"/></g></symbol>
+            <symbol id="ai-building" viewBox="0 0 24 24"><g class="icon"><path d="M4 21V5.4a1.8 1.8 0 0 1 1.8-1.8h7.4A1.8 1.8 0 0 1 15 5.4V21"/><path d="M15 10.2h3.2A1.8 1.8 0 0 1 20 12V21"/><path d="M2.4 21h19.2"/><path d="M7.6 7.4h.01M11.2 7.4h.01M7.6 11h.01M11.2 11h.01M7.6 14.6h.01M11.2 14.6h.01"/></g></symbol>
+          </defs>
 
-          <!-- ---------- band 1 · experience ---------- -->
-          <text class="d-cap" x="15" y="16">Experience — one portal · every tenant · every persona</text>
+          <!-- ===== legend ===== -->
+          <line class="d-lb" x1="66" y1="16" x2="90" y2="16" marker-end="url(#arb)"/>
+          <text class="d-mm" x="98" y="19.5">request path</text>
+          <line class="d-ld" x1="196" y1="16" x2="220" y2="16" marker-end="url(#ar)"/>
+          <text class="d-mm" x="228" y="19.5">what comes back</text>
 
-          <rect class="d-hot" x="15"  y="24" width="206" height="44" rx="8"/>
-          <text class="d-t" x="118" y="45" text-anchor="middle">Staff / Operations</text>
-          <text class="d-mm" x="118" y="60" text-anchor="middle">exceptions · submissions</text>
+          <!-- ===== trust boundary ===== -->
+          <rect class="d-trust" x="56" y="28" width="882" height="576" rx="16"/>
+          <rect class="d-patch" x="660" y="21" width="272" height="14"/>
+          <text class="d-cap" x="924" y="32" text-anchor="end">Our infrastructure — inside the BAA</text>
 
-          <rect class="d-warn" x="231" y="24" width="206" height="44" rx="8"/>
-          <text class="d-t d-warn-t" x="334" y="45" text-anchor="middle">Clinical Reviewer</text>
-          <text class="d-mm d-warn-t" x="334" y="60" text-anchor="middle">licensed · medical calls only</text>
+          <!-- ===== 1 · experience ===== -->
+          <circle class="d-num" cx="74" cy="46.5" r="8.5"/>
+          <text class="d-numt" x="74" y="54" text-anchor="middle">1</text>
+          <text class="d-cap" x="90" y="54">Experience — one portal · every tenant · every persona</text>
 
-          <rect class="d-soft" x="447" y="24" width="206" height="44" rx="8"/>
-          <text class="d-t" x="550" y="45" text-anchor="middle">Admin</text>
-          <text class="d-mm" x="550" y="60" text-anchor="middle">tenant or platform · no PHI</text>
+          <rect class="d-hot" x="66" y="58" width="150" height="64" rx="9"/>
+          <use href="#ai-users" class="ic-b" x="131" y="67" width="20" height="20"/>
+          <text class="d-t" x="141" y="103" text-anchor="middle">Staff / Operations</text>
+          <text class="d-mm" x="141" y="116" text-anchor="middle">works exceptions</text>
 
-          <rect class="d-box" x="663" y="24" width="222" height="44" rx="8"/>
-          <text class="d-t" x="774" y="45" text-anchor="middle">EHR-embedded launch</text>
-          <text class="d-mm" x="774" y="60" text-anchor="middle">SMART app · CDS Hooks card</text>
+          <rect class="d-warn" x="227" y="58" width="150" height="64" rx="9"/>
+          <use href="#ai-steth" class="ic-w" x="292" y="67" width="20" height="20"/>
+          <text class="d-t d-warn-t" x="302" y="103" text-anchor="middle">Clinical Reviewer</text>
+          <text class="d-mm d-warn-t" x="302" y="116" text-anchor="middle">licensed · judges</text>
 
-          <path class="d-lb" d="M620,68 V92" marker-end="url(#arb)"/>
+          <rect class="d-soft" x="388" y="58" width="150" height="64" rx="9"/>
+          <use href="#ai-sliders" class="ic" x="453" y="67" width="20" height="20"/>
+          <text class="d-t" x="463" y="103" text-anchor="middle">Admin</text>
+          <text class="d-mm" x="463" y="116" text-anchor="middle">config · no PHI</text>
 
-          <!-- ---------- band 2 · edge ---------- -->
-          <text class="d-cap" x="15" y="88">Edge and identity</text>
+          <rect class="d-box" x="549" y="58" width="151" height="64" rx="9"/>
+          <use href="#ai-window" class="ic" x="614.5" y="67" width="20" height="20"/>
+          <text class="d-t" x="624.5" y="103" text-anchor="middle">EHR-embedded</text>
+          <text class="d-mm" x="624.5" y="116" text-anchor="middle">SMART · CDS Hooks</text>
 
-          <rect class="d-box" x="15"  y="96" width="430" height="42" rx="8"/>
-          <text class="d-t" x="230" y="116" text-anchor="middle">API gateway</text>
-          <text class="d-mm" x="230" y="131" text-anchor="middle">TLS · rate limit · WAF</text>
+          <path class="d-lb" d="M330,124 V146" marker-end="url(#arb)"/>
+          <text class="d-lab" x="342" y="138">sign-in · HTTPS</text>
 
-          <rect class="d-box" x="455" y="96" width="430" height="42" rx="8"/>
-          <text class="d-t" x="670" y="116" text-anchor="middle">Keycloak</text>
-          <text class="d-mm" x="670" y="131" text-anchor="middle">one realm per tenant · MFA · tenant_id + scopes on every token</text>
+          <!-- ===== 2 · edge and identity ===== -->
+          <circle class="d-num" cx="74" cy="162.5" r="8.5"/>
+          <text class="d-numt" x="74" y="170" text-anchor="middle">2</text>
+          <text class="d-cap" x="90" y="170">Edge and identity</text>
 
-          <path class="d-lb" d="M620,138 V170" marker-end="url(#arb)"/>
+          <rect class="d-box" x="66" y="174" width="311" height="64" rx="9"/>
+          <use href="#ai-shield" class="ic" x="211.5" y="183" width="20" height="20"/>
+          <text class="d-t" x="221.5" y="219" text-anchor="middle">API gateway</text>
+          <text class="d-mm" x="221.5" y="232" text-anchor="middle">TLS · rate limit · WAF</text>
 
-          <!-- ---------- data and trust rail (spans bands 3–5) ---------- -->
-          <rect class="d-soft" x="700" y="160" width="185" height="282" rx="10"/>
-          <text class="d-cap" x="712" y="178">Data and trust</text>
-          <text class="d-mm" x="712" y="192">the PHI boundary</text>
+          <rect class="d-box" x="389" y="174" width="311" height="64" rx="9"/>
+          <use href="#ai-key" class="ic" x="534.5" y="183" width="20" height="20"/>
+          <text class="d-t" x="544.5" y="219" text-anchor="middle">Keycloak</text>
+          <text class="d-mm" x="544.5" y="232" text-anchor="middle">one realm per tenant · MFA</text>
 
-          <rect class="d-box" x="712" y="202" width="161" height="34" rx="6"/>
-          <text class="d-t" x="792" y="217" text-anchor="middle">PostgreSQL + RLS</text>
-          <text class="d-mm" x="792" y="230" text-anchor="middle">one policy per tenant</text>
+          <path class="d-lb" d="M330,240 V262" marker-end="url(#arb)"/>
+          <text class="d-lab" x="342" y="254">every call carries tenant_id + scopes</text>
 
-          <rect class="d-box" x="712" y="246" width="161" height="34" rx="6"/>
-          <text class="d-t" x="792" y="261" text-anchor="middle">FHIR store</text>
-          <text class="d-mm" x="792" y="274" text-anchor="middle">raw + provenance</text>
+          <!-- ===== data and trust rail (spans layers 3–5) ===== -->
+          <rect class="d-rail" x="724" y="268" width="204" height="318" rx="12"/>
+          <text class="d-cap" x="736" y="288">Data and trust</text>
+          <text class="d-mm" x="736" y="301">the PHI boundary</text>
 
-          <rect class="d-box" x="712" y="290" width="161" height="34" rx="6"/>
-          <text class="d-t" x="792" y="305" text-anchor="middle">Object store</text>
-          <text class="d-mm" x="792" y="318" text-anchor="middle">documents · recordings</text>
+          <rect class="d-box" x="736" y="310" width="180" height="44" rx="7"/>
+          <use href="#ai-db" class="ic" x="748" y="323" width="18" height="18"/>
+          <text class="d-t" x="774" y="330">PostgreSQL + RLS</text>
+          <text class="d-mm" x="774" y="343">one policy per tenant</text>
 
-          <rect class="d-box" x="712" y="334" width="161" height="34" rx="6"/>
-          <text class="d-t" x="792" y="349" text-anchor="middle">Outbox → bus</text>
-          <text class="d-mm" x="792" y="362" text-anchor="middle">state + event, one commit</text>
+          <rect class="d-box" x="736" y="364" width="180" height="44" rx="7"/>
+          <use href="#ai-layers" class="ic" x="748" y="377" width="18" height="18"/>
+          <text class="d-t" x="774" y="384">FHIR store</text>
+          <text class="d-mm" x="774" y="397">raw + provenance</text>
 
-          <rect class="d-bad" x="712" y="378" width="161" height="34" rx="6"/>
-          <text class="d-t d-bad-t" x="792" y="393" text-anchor="middle">Audit · vault</text>
-          <text class="d-mm d-bad-t" x="792" y="406" text-anchor="middle">hash-chained · write-once</text>
+          <rect class="d-box" x="736" y="418" width="180" height="44" rx="7"/>
+          <use href="#ai-archive" class="ic" x="748" y="431" width="18" height="18"/>
+          <text class="d-t" x="774" y="438">Object store</text>
+          <text class="d-mm" x="774" y="451">documents · recordings</text>
 
-          <text class="d-mm" x="712" y="430">every layer writes here</text>
+          <rect class="d-box" x="736" y="472" width="180" height="44" rx="7"/>
+          <use href="#ai-queue" class="ic" x="748" y="485" width="18" height="18"/>
+          <text class="d-t" x="774" y="492">Outbox → bus</text>
+          <text class="d-mm" x="774" y="505">one commit, no loss</text>
 
-          <!-- ---------- band 3 · execution core ---------- -->
-          <text class="d-cap" x="15" y="166">Execution core — closed for modification</text>
+          <rect class="d-bad" x="736" y="526" width="180" height="44" rx="7"/>
+          <use href="#ai-lock" class="ic-x" x="748" y="539" width="18" height="18"/>
+          <text class="d-t d-bad-t" x="774" y="546">Audit · vault</text>
+          <text class="d-mm d-bad-t" x="774" y="559">hash-chained, write-once</text>
 
-          <rect class="d-hot" x="15"  y="174" width="125" height="48" rx="8"/>
-          <text class="d-t" x="78"  y="195" text-anchor="middle">Case service</text>
-          <text class="d-mm" x="78"  y="211" text-anchor="middle">state machine</text>
+          <text class="d-mm" x="736" y="580">every layer above writes here</text>
 
-          <rect class="d-hot" x="150" y="174" width="125" height="48" rx="8"/>
-          <text class="d-t" x="213" y="195" text-anchor="middle">Rules engine</text>
-          <text class="d-mm" x="213" y="211" text-anchor="middle">criteria · thresholds</text>
+          <line class="d-l" x1="702" y1="322" x2="722" y2="322" marker-end="url(#ar)"/>
+          <line class="d-l" x1="702" y1="438" x2="722" y2="438" marker-end="url(#ar)"/>
+          <line class="d-l" x1="702" y1="554" x2="722" y2="554" marker-end="url(#ar)"/>
+          <text class="d-mm" x="712" y="400" text-anchor="middle" transform="rotate(-90 712 400)">persist · audit</text>
 
-          <rect class="d-hot" x="285" y="174" width="125" height="48" rx="8"/>
-          <text class="d-t" x="348" y="195" text-anchor="middle">SLA timers</text>
-          <text class="d-mm" x="348" y="211" text-anchor="middle">72h · 7d · expiry</text>
+          <!-- ===== 3 · execution core ===== -->
+          <circle class="d-num" cx="74" cy="278.5" r="8.5"/>
+          <text class="d-numt" x="74" y="286" text-anchor="middle">3</text>
+          <text class="d-cap" x="90" y="286">Execution core — closed for modification</text>
 
-          <rect class="d-hot" x="420" y="174" width="125" height="48" rx="8"/>
-          <text class="d-t" x="483" y="195" text-anchor="middle">Human tasks</text>
-          <text class="d-mm" x="483" y="211" text-anchor="middle">the exception queue</text>
+          <rect class="d-hot" x="66" y="290" width="118" height="64" rx="9"/>
+          <use href="#ai-flow" class="ic-b" x="115" y="299" width="20" height="20"/>
+          <text class="d-t" x="125" y="335" text-anchor="middle">Case service</text>
+          <text class="d-mm" x="125" y="348" text-anchor="middle">state machine</text>
 
-          <rect class="d-hot" x="555" y="174" width="125" height="48" rx="8"/>
-          <text class="d-t" x="618" y="195" text-anchor="middle">Notifications</text>
-          <text class="d-mm" x="618" y="211" text-anchor="middle">+ metering · no PHI</text>
+          <rect class="d-hot" x="195" y="290" width="118" height="64" rx="9"/>
+          <use href="#ai-rules" class="ic-b" x="244" y="299" width="20" height="20"/>
+          <text class="d-t" x="254" y="335" text-anchor="middle">Rules engine</text>
+          <text class="d-mm" x="254" y="348" text-anchor="middle">payer criteria</text>
 
-          <line class="d-l" x1="682" y1="198" x2="696" y2="198" marker-end="url(#ar)"/>
-          <path class="d-lb" d="M620,222 V248" marker-end="url(#arb)"/>
+          <rect class="d-hot" x="324" y="290" width="118" height="64" rx="9"/>
+          <use href="#ai-clock" class="ic-b" x="373" y="299" width="20" height="20"/>
+          <text class="d-t" x="383" y="335" text-anchor="middle">SLA timers</text>
+          <text class="d-mm" x="383" y="348" text-anchor="middle">72h · 7d · expiry</text>
 
-          <!-- ---------- band 4 · agent runtime ---------- -->
-          <text class="d-cap" x="15" y="244">Agent runtime — one pipeline, left to right</text>
+          <rect class="d-hot" x="453" y="290" width="118" height="64" rx="9"/>
+          <use href="#ai-inbox" class="ic-b" x="502" y="299" width="20" height="20"/>
+          <text class="d-t" x="512" y="335" text-anchor="middle">Human tasks</text>
+          <text class="d-mm" x="512" y="348" text-anchor="middle">the exceptions</text>
 
-          <rect class="d-aqua" x="15" y="252" width="665" height="48" rx="8"/>
-          <line class="d-div" x1="140" y1="258" x2="140" y2="294"/>
-          <line class="d-div" x1="380" y1="258" x2="380" y2="294"/>
-          <line class="d-div" x1="490" y1="258" x2="490" y2="294"/>
-          <line class="d-div" x1="585" y1="258" x2="585" y2="294"/>
+          <rect class="d-hot" x="582" y="290" width="118" height="64" rx="9"/>
+          <use href="#ai-bell" class="ic-b" x="631" y="299" width="20" height="20"/>
+          <text class="d-t" x="641" y="335" text-anchor="middle">Notifications</text>
+          <text class="d-mm" x="641" y="348" text-anchor="middle">no PHI in payload</text>
 
-          <text class="d-t"  x="77"  y="273" text-anchor="middle">Orchestrator</text>
-          <text class="d-mm" x="77"  y="288" text-anchor="middle">opens the case</text>
+          <path class="d-lb" d="M330,356 V378" marker-end="url(#arb)"/>
+          <text class="d-lab" x="342" y="370">run(case) — the core sequences, the agent executes</text>
 
-          <text class="d-t"  x="260" y="273" text-anchor="middle">Coverage · Clinical · Compliance</text>
-          <text class="d-mm" x="260" y="288" text-anchor="middle">eligibility · evidence · completeness</text>
+          <!-- ===== 4 · agent runtime ===== -->
+          <circle class="d-num" cx="74" cy="394.5" r="8.5"/>
+          <text class="d-numt" x="74" y="402" text-anchor="middle">4</text>
+          <text class="d-cap" x="90" y="402">Agent runtime — one pipeline, left to right</text>
 
-          <text class="d-t"  x="435" y="273" text-anchor="middle">Decision</text>
-          <text class="d-mm" x="435" y="288" text-anchor="middle">confidence + gate</text>
+          <rect class="d-aqua" x="66" y="406" width="634" height="64" rx="9"/>
+          <line class="d-div" x1="175" y1="414" x2="175" y2="462"/>
+          <line class="d-div" x1="405" y1="414" x2="405" y2="462"/>
+          <line class="d-div" x1="505" y1="414" x2="505" y2="462"/>
+          <line class="d-div" x1="602" y1="414" x2="602" y2="462"/>
 
-          <text class="d-t"  x="537" y="273" text-anchor="middle">Submission</text>
-          <text class="d-mm" x="537" y="288" text-anchor="middle">the waterfall</text>
+          <use href="#ai-cpu" class="ic-a" x="111.5" y="413" width="18" height="18"/>
+          <text class="d-t" x="120.5" y="447" text-anchor="middle">Orchestrator</text>
+          <text class="d-mm" x="120.5" y="460" text-anchor="middle">opens the case</text>
 
-          <text class="d-t"  x="632" y="273" text-anchor="middle">Follow-Up</text>
-          <text class="d-mm" x="632" y="288" text-anchor="middle">pends · recheck</text>
+          <use href="#ai-search" class="ic-a" x="281" y="413" width="18" height="18"/>
+          <text class="d-t" x="290" y="447" text-anchor="middle">Coverage · Clinical · Compliance</text>
+          <text class="d-mm" x="290" y="460" text-anchor="middle">eligibility · evidence · scope</text>
 
-          <line class="d-l" x1="682" y1="276" x2="696" y2="276" marker-end="url(#ar)"/>
-          <path class="d-lb" d="M620,300 V326" marker-end="url(#arb)"/>
+          <use href="#ai-gauge" class="ic-a" x="446" y="413" width="18" height="18"/>
+          <text class="d-t" x="455" y="447" text-anchor="middle">Decision</text>
+          <text class="d-mm" x="455" y="460" text-anchor="middle">score + gate</text>
 
-          <!-- ---------- band 5 · integration fabric ---------- -->
-          <text class="d-cap" x="15" y="322">Integration fabric — open for extension · one adapter contract</text>
+          <use href="#ai-send" class="ic-a" x="544.5" y="413" width="18" height="18"/>
+          <text class="d-t" x="553.5" y="447" text-anchor="middle">Submission</text>
+          <text class="d-mm" x="553.5" y="460" text-anchor="middle">the waterfall</text>
 
-          <rect class="d-box" x="15"  y="330" width="128" height="48" rx="8"/>
-          <text class="d-t" x="79"  y="351" text-anchor="middle">EHR / PM</text>
-          <text class="d-mm" x="79"  y="367" text-anchor="middle">FHIR · SMART</text>
+          <use href="#ai-refresh" class="ic-a" x="642" y="413" width="18" height="18"/>
+          <text class="d-t" x="651" y="447" text-anchor="middle">Follow-Up</text>
+          <text class="d-mm" x="651" y="460" text-anchor="middle">pends · recheck</text>
 
-          <rect class="d-box" x="149" y="330" width="128" height="48" rx="8"/>
-          <text class="d-t" x="213" y="351" text-anchor="middle">Clearinghouse</text>
-          <text class="d-mm" x="213" y="367" text-anchor="middle">X12 270/271 · 278</text>
+          <path class="d-lb" d="M330,472 V494" marker-end="url(#arb)"/>
+          <text class="d-lab" x="342" y="486">tool call · internal MCP-style router</text>
 
-          <rect class="d-box" x="283" y="330" width="128" height="48" rx="8"/>
-          <text class="d-t" x="347" y="351" text-anchor="middle">Payer API</text>
-          <text class="d-mm" x="347" y="367" text-anchor="middle">CRD · DTR · PAS</text>
+          <!-- ===== 5 · integration fabric ===== -->
+          <circle class="d-num" cx="74" cy="510.5" r="8.5"/>
+          <text class="d-numt" x="74" y="518" text-anchor="middle">5</text>
+          <text class="d-cap" x="90" y="518">Integration fabric — open for extension · one adapter contract</text>
 
-          <rect class="d-box" x="417" y="330" width="128" height="48" rx="8"/>
-          <text class="d-t" x="481" y="351" text-anchor="middle">Portal workers</text>
-          <text class="d-mm" x="481" y="367" text-anchor="middle">isolated browsers</text>
+          <rect class="d-box" x="66" y="522" width="118" height="64" rx="9"/>
+          <use href="#ai-plug" class="ic" x="115" y="531" width="20" height="20"/>
+          <text class="d-t" x="125" y="567" text-anchor="middle">EHR / PM</text>
+          <text class="d-mm" x="125" y="580" text-anchor="middle">FHIR · SMART</text>
 
-          <rect class="d-box" x="551" y="330" width="129" height="48" rx="8"/>
-          <text class="d-t" x="615" y="351" text-anchor="middle">Voice · fax</text>
-          <text class="d-mm" x="615" y="367" text-anchor="middle">IVR + a human</text>
+          <rect class="d-box" x="195" y="522" width="118" height="64" rx="9"/>
+          <use href="#ai-exchange" class="ic" x="244" y="531" width="20" height="20"/>
+          <text class="d-t" x="254" y="567" text-anchor="middle">Clearinghouse</text>
+          <text class="d-mm" x="254" y="580" text-anchor="middle">X12 270/271 · 278</text>
 
-          <line class="d-l" x1="682" y1="354" x2="696" y2="354" marker-end="url(#ar)"/>
-          <path class="d-lb" d="M620,378 V404" marker-end="url(#arb)"/>
+          <rect class="d-box" x="324" y="522" width="118" height="64" rx="9"/>
+          <use href="#ai-cloud" class="ic" x="373" y="531" width="20" height="20"/>
+          <text class="d-t" x="383" y="567" text-anchor="middle">Payer API</text>
+          <text class="d-mm" x="383" y="580" text-anchor="middle">CRD · DTR · PAS</text>
 
-          <!-- ---------- band 6 · outside ---------- -->
-          <line class="d-div" x1="15" y1="392" x2="680" y2="392"/>
-          <text class="d-cap" x="15" y="400">Outside — the systems we do not control</text>
+          <rect class="d-box" x="453" y="522" width="118" height="64" rx="9"/>
+          <use href="#ai-browser" class="ic" x="502" y="531" width="20" height="20"/>
+          <text class="d-t" x="512" y="567" text-anchor="middle">Portal bots</text>
+          <text class="d-mm" x="512" y="580" text-anchor="middle">isolated browsers</text>
 
-          <rect class="d-soft" x="15"  y="408" width="128" height="42" rx="8"/>
-          <text class="d-t" x="79"  y="427" text-anchor="middle">EHRs</text>
-          <text class="d-mm" x="79"  y="441" text-anchor="middle">Epic · Oracle · athena</text>
+          <rect class="d-box" x="582" y="522" width="118" height="64" rx="9"/>
+          <use href="#ai-phone" class="ic" x="631" y="531" width="20" height="20"/>
+          <text class="d-t" x="641" y="567" text-anchor="middle">Voice · fax</text>
+          <text class="d-mm" x="641" y="580" text-anchor="middle">IVR + a human</text>
 
-          <rect class="d-soft" x="149" y="408" width="128" height="42" rx="8"/>
-          <text class="d-t" x="213" y="427" text-anchor="middle">Clearinghouses</text>
-          <text class="d-mm" x="213" y="441" text-anchor="middle">Availity</text>
+          <!-- ===== crossing the boundary ===== -->
+          <path class="d-lb" d="M448,590 V650" marker-end="url(#arb)"/>
+          <text class="d-lab" x="436" y="622" text-anchor="end">inquire · submit</text>
 
-          <rect class="d-soft" x="283" y="408" width="128" height="42" rx="8"/>
-          <text class="d-t" x="347" y="427" text-anchor="middle">Payer APIs</text>
-          <text class="d-mm" x="347" y="441" text-anchor="middle">Da Vinci, where live</text>
+          <path class="d-ld" d="M577,650 V590" marker-end="url(#ar)"/>
+          <text class="d-mm" x="589" y="622">decision · pend · documents</text>
 
-          <rect class="d-soft" x="417" y="408" width="128" height="42" rx="8"/>
-          <text class="d-t" x="481" y="427" text-anchor="middle">Payer portals</text>
-          <text class="d-mm" x="481" y="441" text-anchor="middle">the UI changes</text>
+          <!-- ===== 6 · outside ===== -->
+          <circle class="d-num" cx="74" cy="646.5" r="8.5"/>
+          <text class="d-numt" x="74" y="654" text-anchor="middle">6</text>
+          <text class="d-cap" x="90" y="654">Outside our boundary</text>
 
-          <rect class="d-soft" x="551" y="408" width="129" height="42" rx="8"/>
-          <text class="d-t" x="615" y="427" text-anchor="middle">Phone lines</text>
-          <text class="d-mm" x="615" y="441" text-anchor="middle">IVR + hold queue</text>
+          <rect class="d-soft" x="66" y="662" width="162" height="58" rx="9"/>
+          <use href="#ai-building" class="ic" x="138" y="669" width="18" height="18"/>
+          <text class="d-t" x="147" y="703" text-anchor="middle">EHRs</text>
+          <text class="d-mm" x="147" y="715" text-anchor="middle">Epic · Oracle · athena</text>
 
-          <text class="d-mm" x="15" y="472">Requests run down. Decisions, pends and documents come back up the same path — onto the same case, whichever channel resolved it.</text>
-          <text class="d-mm" x="15" y="488">Nothing in the fabric decides anything: adapters translate at the edge, and the core never learns a vendor's dialect.</text>
+          <rect class="d-soft" x="241" y="662" width="162" height="58" rx="9"/>
+          <use href="#ai-exchange" class="ic" x="313" y="669" width="18" height="18"/>
+          <text class="d-t" x="322" y="703" text-anchor="middle">Clearinghouses</text>
+          <text class="d-mm" x="322" y="715" text-anchor="middle">Availity</text>
+
+          <rect class="d-soft" x="416" y="662" width="162" height="58" rx="9"/>
+          <use href="#ai-cloud" class="ic" x="488" y="669" width="18" height="18"/>
+          <text class="d-t" x="497" y="703" text-anchor="middle">Payer APIs</text>
+          <text class="d-mm" x="497" y="715" text-anchor="middle">Da Vinci, where live</text>
+
+          <rect class="d-soft" x="591" y="662" width="162" height="58" rx="9"/>
+          <use href="#ai-browser" class="ic" x="663" y="669" width="18" height="18"/>
+          <text class="d-t" x="672" y="703" text-anchor="middle">Payer portals</text>
+          <text class="d-mm" x="672" y="715" text-anchor="middle">the UI changes</text>
+
+          <rect class="d-soft" x="766" y="662" width="162" height="58" rx="9"/>
+          <use href="#ai-phone" class="ic" x="838" y="669" width="18" height="18"/>
+          <text class="d-t" x="847" y="703" text-anchor="middle">Phone lines</text>
+          <text class="d-mm" x="847" y="715" text-anchor="middle">IVR + hold queue</text>
+
+          <text class="d-mm" x="66" y="744">Adapters translate at the edge. Nothing in the fabric decides anything, and the core never learns a vendor's dialect.</text>
         </svg>
       </div>
       <figcaption>
-        The agent runtime sits <em>inside</em> the boundary and reaches the outside world
-        only through the fabric, using an internal tool router. That is what makes
-        “a new payer is a new adapter” true rather than aspirational — and it is also what
-        keeps the PHI boundary a single line rather than a scattering of exceptions.
+        The two arrows that cross the dashed boundary are the only places our
+        infrastructure talks to someone else's — once to ask or submit, once to receive a
+        decision, a pend or a document. Everything else in the picture happens on our side
+        of it, which is why the compliance story is a line on a diagram rather than a list
+        of exceptions.
       </figcaption>
     </figure>
 
     <h4>Where each stage of this document happens</h4>
     <p>
-      The nine stages that follow are a walk down and back up that picture. This is the
-      map between them.
+      The nine stages that follow are a walk down and back up that picture. The layer
+      numbers below are the ones on the diagram.
     </p>
     <div class="tablewrap">
       <table>
@@ -706,47 +915,47 @@
         <tbody>
           <tr>
             <td><strong>1 · The request starts</strong></td>
-            <td>Experience or EHR launch → edge → <strong>case service</strong> → orchestrator</td>
+            <td><strong>1</strong> experience or EHR launch → <strong>2</strong> edge → <strong>3</strong> case service → <strong>4</strong> orchestrator</td>
             <td>Case at <code>RECEIVED</code>, idempotency key, first audit entry</td>
           </tr>
           <tr>
             <td><strong>2 · Is authorization required?</strong></td>
-            <td><strong>Coverage</strong> role → clearinghouse and payer-API adapters → rules engine for the payer matrix</td>
+            <td><strong>4</strong> Coverage role → <strong>5</strong> clearinghouse and payer-API adapters → <strong>3</strong> rules engine for the payer matrix</td>
             <td>An evidenced answer with its source and reference number</td>
           </tr>
           <tr>
             <td><strong>3 · Assembling the packet</strong></td>
-            <td><strong>Clinical</strong> and <strong>Compliance</strong> roles → EHR/PM and document adapters → FHIR store and object store</td>
+            <td><strong>4</strong> Clinical and Compliance roles → <strong>5</strong> EHR/PM and document adapters → the FHIR and object stores on the rail</td>
             <td>Only the documents the matched rule asked for, each with provenance</td>
           </tr>
           <tr>
             <td><strong>4 · The assessment and the gate</strong></td>
-            <td><strong>Decision</strong> role → rules engine → human-task service when it holds</td>
+            <td><strong>4</strong> Decision role → <strong>3</strong> rules engine, then the human-task service when it holds</td>
             <td>A confidence vector, and the audit entry naming which check held the case</td>
           </tr>
           <tr>
             <td><strong>5 · Submitting</strong></td>
-            <td><strong>Submission</strong> role → payer API, then portal workers, then voice, then a human task</td>
+            <td><strong>4</strong> Submission role → <strong>5</strong> payer API, then portal bots, then voice — then a <strong>3</strong> human task</td>
             <td>One <code>SubmissionAttempt</code> per channel — failures kept, not discarded</td>
           </tr>
           <tr>
             <td><strong>6 · Pended</strong></td>
-            <td><strong>Follow-Up</strong> role → the adapter that pended → EHR adapter for that one document</td>
+            <td><strong>4</strong> Follow-Up role → <strong>5</strong> the adapter that pended, and the EHR adapter for that one document</td>
             <td>A resupply on the existing case, and a recheck on the scheduler</td>
           </tr>
           <tr>
             <td><strong>7 · The determination arrives</strong></td>
-            <td>Any fabric adapter → case service → human-task service on a denial</td>
+            <td><strong>6</strong> the payer → <strong>5</strong> any fabric adapter → <strong>3</strong> case service, and the human-task service on a denial</td>
             <td>A <code>Decision</code> recorded as the payer's act, never as ours</td>
           </tr>
           <tr>
             <td><strong>8 · Outcome and write-back</strong></td>
-            <td>Case service → EHR adapter → SLA timers for expiry → outbox → notifications</td>
+            <td><strong>3</strong> case service → <strong>5</strong> EHR adapter → <strong>3</strong> SLA timers → the outbox on the rail → notifications</td>
             <td>Auth number and valid dates in the chart; an alert carrying no PHI</td>
           </tr>
           <tr>
             <td><strong>9 · The record left behind</strong></td>
-            <td>The audit ledger, written to at every step above</td>
+            <td>The audit ledger on the rail, written to at every step above</td>
             <td>A hash-chained trail that can be replayed in an appeal or a dispute</td>
           </tr>
         </tbody>
@@ -754,22 +963,19 @@
     </div>
 
     <div class="note">
-      <span class="t">What the drawing is claiming</span>
-      <p>
-        <strong>One portal, not one per customer.</strong> Four tenants and three personas
-        share the top band. What separates them is a Keycloak realm, a
-        <code>tenant_id</code> on every row and a row-level-security policy in the rail —
-        never a second deployment.
-      </p>
+      <span class="t">Two things the layering is doing that are easy to miss</span>
       <p>
         <strong>One case, many channels.</strong> Electronic, portal, voice and human are
-        four adapters in the same band, writing attempts onto the same case. The waterfall
-        is a routing decision inside the Submission role, not four different products.
+        four adapters sitting side by side in layer 5, all writing attempts onto the same
+        case. The waterfall is a routing decision inside the Submission role — not four
+        different products, and not four different records.
       </p>
       <p>
-        <strong>LLMs reason; rules decide.</strong> The agent runtime extracts, classifies
-        and drafts. Payer requirements, thresholds, routing and deadlines all come from the
-        rules engine in the band above it, which the model cannot overrule.
+        <strong>LLMs reason; rules decide.</strong> Layer 4 extracts, classifies and
+        drafts. Payer requirements, thresholds, routing and deadlines all come from the
+        rules engine in layer 3 — above it in the drawing, and above it in authority. The
+        model cannot overrule them, which is why the gate is drawn in the core rather than
+        inside the agent.
       </p>
     </div>
   </section>
@@ -785,6 +991,7 @@
     </p>
 
     <figure>
+      <p class="figcap-top">Overview diagram &middot; the whole journey, end to end</p>
       <div class="figbox">
         <svg viewBox="0 0 900 352" role="img" aria-label="The whole journey. A main line of six stages runs left to right: order placed, is PA required, assemble packet, the automation gate, submit, decision. Three branches drop below it: no authorization required stops the case, a clinical gap routes to a licensed human, and a denial always routes to a licensed human. Beneath, the submission waterfall shows four channels in increasing cost order: electronic, payer portal, phone call, human.">
           <!-- main row -->
@@ -2191,6 +2398,29 @@
 
 </div>
 
+<!-- Diagram zoom. One dialog, reused by every figure; filled on open. -->
+<dialog id="zoomDlg" aria-labelledby="zdLabel">
+  <div class="zd-wrap">
+    <div class="zd-head">
+      <p class="zd-label" id="zdLabel">Diagram</p>
+      <div class="zd-tools">
+        <button class="zd-btn" type="button" id="zdOut" aria-label="Zoom out">&#8722;</button>
+        <span class="zd-pct" id="zdPct">100%</span>
+        <button class="zd-btn" type="button" id="zdIn" aria-label="Zoom in">+</button>
+        <button class="zd-btn" type="button" id="zdFit">Fit</button>
+        <button class="zd-btn" type="button" id="zdClose" aria-label="Close">&#10005;</button>
+      </div>
+    </div>
+    <div class="zd-stage" id="zdStage">
+      <div class="zd-canvas" id="zdCanvas"></div>
+    </div>
+    <div class="zd-foot">
+      <div class="zd-cap" id="zdCap"></div>
+      <p class="zd-hint">scroll or pinch to zoom &middot; drag to pan &middot; esc to close</p>
+    </div>
+  </div>
+</dialog>
+
 <script>
   // Theme toggle. Falls back silently where storage is blocked.
   (function () {
@@ -2212,6 +2442,270 @@
       var next = current === "dark" ? "light" : "dark";
       root.setAttribute("data-theme", next);
       save(next);
+    });
+  })();
+</script>
+<script>
+  // Diagram zoom. Every figure gets an Enlarge control that opens the one
+  // dialog above with that diagram scaled to fit, then pannable and zoomable.
+  (function () {
+    var dlg = document.getElementById("zoomDlg");
+    // No <dialog> support: leave the figures exactly as they were — each figbox
+    // already scrolls, so nothing is lost.
+    if (!dlg || typeof dlg.showModal !== "function") return;
+
+    var stage  = document.getElementById("zdStage");
+    var canvas = document.getElementById("zdCanvas");
+    var label  = document.getElementById("zdLabel");
+    var cap    = document.getElementById("zdCap");
+    var pct    = document.getElementById("zdPct");
+    var btnIn  = document.getElementById("zdIn");
+    var btnOut = document.getElementById("zdOut");
+
+    var MAX = 8;        // deepest zoom, as a multiple of the fit scale
+    var MINW = 420;     // below this the header controls and caption stop fitting
+    var STEP = 1.5;     // per click of the + / - buttons
+    var vbW = 0, vbH = 0;
+    var fit = 1, scale = 1, tx = 0, ty = 0;
+    var opener = null;
+
+    function clamp(v, lo, hi) { return v < lo ? lo : (v > hi ? hi : v); }
+
+    function apply() {
+      var cw = vbW * scale, ch = vbH * scale;
+      var sw = stage.clientWidth, sh = stage.clientHeight;
+      // Centre an axis that fits; otherwise hold the diagram's edges against
+      // the stage so panning cannot strand it off-screen.
+      tx = cw <= sw ? (sw - cw) / 2 : clamp(tx, sw - cw, 0);
+      ty = ch <= sh ? (sh - ch) / 2 : clamp(ty, sh - ch, 0);
+      canvas.style.width  = vbW + "px";
+      canvas.style.height = vbH + "px";
+      canvas.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + scale + ")";
+      pct.textContent = Math.round(scale / fit * 100) + "%";
+      btnOut.disabled = scale <= fit * 1.001;
+      btnIn.disabled  = scale >= fit * MAX * 0.999;
+      stage.classList.toggle("pannable", scale > fit * 1.001);
+    }
+
+    // Zoom about a point in stage coordinates, so the pixel under the cursor
+    // stays under the cursor.
+    function zoomAt(next, px, py) {
+      next = clamp(next, fit, fit * MAX);
+      if (next === scale) return;
+      var k = next / scale;
+      tx = px - (px - tx) * k;
+      ty = py - (py - ty) * k;
+      scale = next;
+      apply();
+    }
+
+    function mid() { return [stage.clientWidth / 2, stage.clientHeight / 2]; }
+
+    // Match the stage to the diagram's shape, within what the viewport allows,
+    // so a 900x158 strip does not open inside a 900px-tall box.
+    function layout() {
+      var headEl = dlg.querySelector(".zd-head");
+      var footEl = dlg.querySelector(".zd-foot");
+      var w = 0, h = 0;
+      // Two passes: the caption rewraps when the dialog narrows, so the chrome
+      // is measured again at the width the first pass chose.
+      for (var i = 0; i < 2; i++) {
+        stage.style.height = "1px";
+        var availH = Math.round(window.innerHeight * 0.94)
+                   - headEl.offsetHeight - footEl.offsetHeight - 2;
+        var availW = i === 0 ? maxWidth() : dlg.clientWidth;
+        var k = Math.min(availW / vbW, availH / vbH);
+        // Widen a very narrow diagram so the header controls still fit, but
+        // never past what the viewport allows — on a phone the cap wins.
+        w = Math.min(maxWidth(), Math.max(MINW, Math.round(vbW * k)));
+        h = Math.max(110, Math.round(vbH * Math.min(k, w / vbW)));
+        dlg.style.width = w + "px";
+        stage.style.height = h + "px";
+      }
+    }
+
+    // What the CSS would give the dialog if nothing constrained it.
+    function maxWidth() {
+      return Math.min(Math.round(window.innerWidth * 0.96), 1680);
+    }
+
+    function toFit() {
+      var sw = stage.clientWidth, sh = stage.clientHeight;
+      if (!vbW || !vbH || !sw || !sh) return;
+      fit = Math.min(sw / vbW, sh / vbH);
+      scale = fit; tx = 0; ty = 0;
+      apply();
+    }
+
+    function open(fig, svg) {
+      var vb = (svg.getAttribute("viewBox") || "").split(/[\s,]+/);
+      vbW = parseFloat(vb[2]) || 900;
+      vbH = parseFloat(vb[3]) || 500;
+
+      var clone = svg.cloneNode(true);
+      // The icon <symbol>s are defined inside the first diagram and referenced
+      // by all of them. A copy here would duplicate every one of those ids, and
+      // the clone resolves its <use> against the originals either way.
+      Array.prototype.forEach.call(clone.querySelectorAll("defs"), function (d) {
+        d.parentNode.removeChild(d);
+      });
+      clone.removeAttribute("width");
+      clone.removeAttribute("height");
+      canvas.innerHTML = "";
+      canvas.appendChild(clone);
+
+      var top = fig.querySelector(".figcap-top");
+      var fc  = fig.querySelector("figcaption");
+      label.textContent = top ? top.textContent.trim() : "Diagram";
+      cap.textContent = fc ? fc.textContent.replace(/\s+/g, " ").trim() : "";
+
+      // Opened by clicking the diagram itself, nothing was focused, so fall
+      // back to this figure's own control — closing then returns the reader to
+      // the diagram rather than to the top of the document.
+      var active = document.activeElement;
+      opener = active && active !== document.body ? active : fig.querySelector(".zoom-open");
+      dlg.showModal();
+      layout();
+      toFit();
+    }
+
+    dlg.addEventListener("close", function () {
+      canvas.innerHTML = "";
+      if (opener && typeof opener.focus === "function") opener.focus();
+      opener = null;
+    });
+
+    document.getElementById("zdClose").addEventListener("click", function () { dlg.close(); });
+    document.getElementById("zdFit").addEventListener("click", toFit);
+    btnIn.addEventListener("click", function () { var c = mid(); zoomAt(scale * STEP, c[0], c[1]); });
+    btnOut.addEventListener("click", function () { var c = mid(); zoomAt(scale / STEP, c[0], c[1]); });
+
+    // A click landing on the dialog itself is a click on the backdrop, since
+    // .zd-wrap covers the whole box. Closing on click rather than pointerdown
+    // lets the click's own focus default settle first, so restoring focus to
+    // the opener is not immediately undone by it.
+    dlg.addEventListener("click", function (e) { if (e.target === dlg) dlg.close(); });
+
+    function stagePoint(e) {
+      var r = stage.getBoundingClientRect();
+      return [e.clientX - r.left, e.clientY - r.top];
+    }
+
+    stage.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var p = stagePoint(e);
+      zoomAt(scale * Math.exp(-e.deltaY * 0.0018), p[0], p[1]);
+    }, { passive: false });
+
+    stage.addEventListener("dblclick", function (e) {
+      var p = stagePoint(e);
+      zoomAt(scale > fit * 1.05 ? fit : fit * 2.5, p[0], p[1]);
+    });
+
+    // Drag to pan, two pointers to pinch.
+    var pts = {}, n = 0, last = null, pinch = null;
+
+    function pinchState() {
+      var a = [];
+      for (var id in pts) { if (pts.hasOwnProperty(id)) a.push(pts[id]); }
+      var r = stage.getBoundingClientRect();
+      return {
+        d: Math.max(1, Math.sqrt(Math.pow(a[0].x - a[1].x, 2) + Math.pow(a[0].y - a[1].y, 2))),
+        x: (a[0].x + a[1].x) / 2 - r.left,
+        y: (a[0].y + a[1].y) / 2 - r.top,
+        s: scale
+      };
+    }
+
+    stage.addEventListener("pointerdown", function (e) {
+      if (pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      n++;
+      if (n === 1) {
+        stage.setPointerCapture(e.pointerId);
+        last = { x: e.clientX, y: e.clientY };
+        stage.classList.add("dragging");
+      } else if (n === 2) {
+        pinch = pinchState();
+        last = null;
+      }
+    });
+
+    stage.addEventListener("pointermove", function (e) {
+      if (!pts[e.pointerId]) return;
+      pts[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (n >= 2 && pinch) {
+        var g = pinchState();
+        zoomAt(pinch.s * (g.d / pinch.d), pinch.x, pinch.y);
+      } else if (last) {
+        if (scale > fit * 1.001) {
+          tx += e.clientX - last.x;
+          ty += e.clientY - last.y;
+          apply();
+        }
+        last = { x: e.clientX, y: e.clientY };
+      }
+    });
+
+    function release(e) {
+      if (!pts[e.pointerId]) return;
+      delete pts[e.pointerId];
+      n--;
+      if (n < 2) pinch = null;
+      if (n === 0) { last = null; stage.classList.remove("dragging"); }
+    }
+    stage.addEventListener("pointerup", release);
+    stage.addEventListener("pointercancel", release);
+
+    dlg.addEventListener("keydown", function (e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      var c = mid(), step = 70;
+      if (e.key === "+" || e.key === "=") zoomAt(scale * STEP, c[0], c[1]);
+      else if (e.key === "-" || e.key === "_") zoomAt(scale / STEP, c[0], c[1]);
+      else if (e.key === "0") toFit();
+      else if (e.key === "ArrowLeft")  { tx += step; apply(); }
+      else if (e.key === "ArrowRight") { tx -= step; apply(); }
+      else if (e.key === "ArrowUp")    { ty += step; apply(); }
+      else if (e.key === "ArrowDown")  { ty -= step; apply(); }
+      else return;
+      e.preventDefault();
+    });
+
+    window.addEventListener("resize", function () { if (dlg.open) { layout(); toFit(); } });
+
+    // Wire up every diagram.
+    Array.prototype.forEach.call(document.querySelectorAll("figure > .figbox"), function (box) {
+      var svg = box.querySelector("svg");
+      var fig = box.parentNode;
+      if (!svg) return;
+
+      var wrap = document.createElement("div");
+      wrap.className = "figzoom";
+      fig.insertBefore(wrap, box);
+      wrap.appendChild(box);
+
+      var top = fig.querySelector(".figcap-top");
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "zoom-open";
+      btn.innerHTML =
+        '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
+        '<g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">' +
+        '<circle cx="10.5" cy="10.5" r="6.5"/>' +
+        '<path d="M15.4 15.4 21.5 21.5M10.5 7.6v5.8M7.6 10.5h5.8"/>' +
+        "</g></svg>Enlarge";
+      btn.setAttribute("aria-label", "Enlarge diagram" + (top ? ": " + top.textContent.trim() : ""));
+      wrap.appendChild(btn);
+
+      // The whole figure is clickable, but a drag that scrolled the figbox
+      // sideways should not count as a click on it.
+      var down = null;
+      wrap.addEventListener("pointerdown", function (e) { down = { x: e.clientX, y: e.clientY }; });
+      wrap.addEventListener("click", function (e) {
+        var moved = down && Math.abs(e.clientX - down.x) + Math.abs(e.clientY - down.y) > 8;
+        down = null;
+        if (!moved) open(fig, svg);
+      });
     });
   })();
 </script>
